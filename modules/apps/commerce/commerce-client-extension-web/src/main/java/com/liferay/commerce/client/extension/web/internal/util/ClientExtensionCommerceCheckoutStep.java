@@ -109,15 +109,17 @@ public class ClientExtensionCommerceCheckoutStep
 			(CommerceOrder)httpServletRequest.getAttribute(
 				CommerceCheckoutWebKeys.COMMERCE_ORDER);
 
+		JSONObject jsonObject = JSONUtil.put(
+			"commerceOrderId", commerceOrder.getCommerceOrderId());
+
 		User currentUser = _userService.getCurrentUser();
 
 		try {
 			String status = new String(
 				_portalCatapult.launch(
 					commerceOrder.getCompanyId(), Http.Method.GET,
-					_oAuth2ApplicationExternalReferenceCode,
-					_jsonFactory.createJSONObject(), "/ready",
-					currentUser.getUserId()
+					_oAuth2ApplicationExternalReferenceCode, jsonObject,
+					"/ready", currentUser.getUserId()
 				).get());
 
 			if (Objects.equals(status, "READY") && _active &&

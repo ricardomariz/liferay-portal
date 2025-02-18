@@ -41,6 +41,8 @@ test(
 		const expectedButtons = [
 			'Undo',
 			'Redo',
+			'Styles',
+			'Normal',
 			'Bold',
 			'Italic',
 			'Underline',

@@ -11,6 +11,7 @@ import com.liferay.commerce.product.discovery.CPConfigurationListDiscovery;
 import com.liferay.commerce.product.model.CPConfigurationList;
 import com.liferay.commerce.product.service.CPConfigurationListLocalService;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.util.ListUtil;
 
 import java.util.List;
 
@@ -38,16 +39,12 @@ public class CPConfigurationListHierarchyDiscoveryImpl
 				companyId, groupId, accountEntryId, accountGroupIds,
 				commerceChannelId, commerceOrderTypeId);
 
-		for (CPConfigurationList cpConfigurationList : cpConfigurationLists) {
-			if (cpConfigurationList.isMaster()) {
-				continue;
-			}
-
-			return cpConfigurationList;
+		if (ListUtil.isEmpty(cpConfigurationLists)) {
+			return _cpConfigurationListLocalService.
+				getMasterCPConfigurationList(groupId);
 		}
 
-		return _cpConfigurationListLocalService.getMasterCPConfigurationList(
-			groupId);
+		return cpConfigurationLists.get(0);
 	}
 
 	@Override

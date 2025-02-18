@@ -11,9 +11,6 @@ import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldValue;
 import com.liferay.info.field.type.DateInfoFieldType;
 import com.liferay.info.field.type.DateTimeInfoFieldType;
-import com.liferay.info.field.type.HTMLInfoFieldType;
-import com.liferay.info.field.type.LongTextInfoFieldType;
-import com.liferay.info.field.type.TextInfoFieldType;
 import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.localized.InfoLocalizedValue;
 import com.liferay.list.type.model.ListTypeEntry;
@@ -32,7 +29,7 @@ import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.KeyValuePair;
-import com.liferay.portal.vulcan.util.LocalizedMapUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 
 import java.text.Format;
 
@@ -169,53 +166,54 @@ public class ObjectEntryUtil {
 
 			Object value = infoFieldValue.getValue();
 
-			if (Objects.equals(
-					DateInfoFieldType.INSTANCE, infoField.getInfoFieldType()) &&
-				(value instanceof Date)) {
+			if (infoField.isLocalizable() &&
+				(value instanceof InfoLocalizedValue)) {
 
-				Format format = FastDateFormatFactoryUtil.getSimpleDateFormat(
-					"yyyy-MM-dd");
+				InfoLocalizedValue<Object> infoLocalizedValue =
+					(InfoLocalizedValue<Object>)value;
 
-				properties.put(infoField.getName(), format.format(value));
-			}
-			else if (Objects.equals(
-						DateTimeInfoFieldType.INSTANCE,
-						infoField.getInfoFieldType()) &&
-					 (value instanceof LocalDateTime)) {
+				Map<Locale, Object> values = infoLocalizedValue.getValues();
 
-				DateTimeFormatter dateTimeFormatter =
-					DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+				Map<String, Object> languageIdMap = new HashMap<>();
 
-				properties.put(
-					infoField.getName(),
-					dateTimeFormatter.format((LocalDateTime)value));
-			}
-			else if ((Objects.equals(
-						HTMLInfoFieldType.INSTANCE,
-						infoField.getInfoFieldType()) ||
-					  Objects.equals(
-						  LongTextInfoFieldType.INSTANCE,
-						  infoField.getInfoFieldType()) ||
-					  Objects.equals(
-						  TextInfoFieldType.INSTANCE,
-						  infoField.getInfoFieldType())) &&
-					 infoField.isLocalizable() &&
-					 (value instanceof InfoLocalizedValue)) {
+				values.forEach(
+					(locale, localizedValue) -> languageIdMap.put(
+						LocaleUtil.toLanguageId(locale),
+						_parseValue(infoField, localizedValue)));
 
-				InfoLocalizedValue<String> infoLocalizedValue =
-					(InfoLocalizedValue<String>)value;
-
-				properties.put(
-					infoField.getName() + "_i18n",
-					LocalizedMapUtil.getLanguageIdMap(
-						infoLocalizedValue.getValues()));
+				properties.put(infoField.getName() + "_i18n", languageIdMap);
 			}
 			else {
-				properties.put(infoField.getName(), value);
+				properties.put(
+					infoField.getName(), _parseValue(infoField, value));
 			}
 		}
 
 		return properties;
+	}
+
+	private static Object _parseValue(InfoField<?> infoField, Object value) {
+		if (Objects.equals(
+				DateInfoFieldType.INSTANCE, infoField.getInfoFieldType()) &&
+			(value instanceof Date)) {
+
+			Format format = FastDateFormatFactoryUtil.getSimpleDateFormat(
+				"yyyy-MM-dd");
+
+			return format.format(value);
+		}
+		else if (Objects.equals(
+					DateTimeInfoFieldType.INSTANCE,
+					infoField.getInfoFieldType()) &&
+				 (value instanceof LocalDateTime)) {
+
+			DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(
+				"yyyy-MM-dd HH:mm");
+
+			return dateTimeFormatter.format((LocalDateTime)value);
+		}
+
+		return value;
 	}
 
 }

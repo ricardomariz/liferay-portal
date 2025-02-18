@@ -23,6 +23,7 @@ page import="com.liferay.portal.kernel.util.PortalUtil" %>
 
 <%
 long accountEntryId = (long)request.getAttribute("liferay-commerce:cart:accountEntryId");
+String baseOrderDetailURL = (String)request.getAttribute("liferay-commerce:cart:baseOrderDetailURL");
 Map<String, String> cartViews = (Map<String, String>)request.getAttribute("liferay-commerce:cart:cartViews");
 String checkoutURL = (String)request.getAttribute("liferay-commerce:cart:checkoutURL");
 long commerceChannelGroupId = (long)request.getAttribute("liferay-commerce:cart:commerceChannelGroupId");
@@ -32,6 +33,7 @@ String cssClasses = (String)request.getAttribute("liferay-commerce:cart:cssClass
 boolean displayDiscountLevels = (boolean)request.getAttribute("liferay-commerce:cart:displayDiscountLevels");
 boolean displayTotalItemsQuantity = (boolean)request.getAttribute("liferay-commerce:cart:displayTotalItemsQuantity");
 boolean guestOrderEnabled = (boolean)request.getAttribute("liferay-commerce:cart:guestOrderEnabled");
+boolean hasCommerceOpenOrderContentPortlet = (boolean)request.getAttribute("liferay-commerce:cart:hasCommerceOpenOrderContentPortlet");
 int itemsQuantity = (int)request.getAttribute("liferay-commerce:cart:itemsQuantity");
 Map<String, String> labels = (Map<String, String>)request.getAttribute("liferay-commerce:cart:labels");
 String orderDetailURL = (String)request.getAttribute("liferay-commerce:cart:orderDetailURL");

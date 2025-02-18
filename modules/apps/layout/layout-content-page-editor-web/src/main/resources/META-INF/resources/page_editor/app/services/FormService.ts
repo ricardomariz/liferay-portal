@@ -9,7 +9,10 @@ import serviceFetch from './serviceFetch';
 
 import type {FormLayoutDataItem} from '../../types/layout_data/FormLayoutDataItem';
 import type {LayoutData} from '../../types/layout_data/LayoutData';
-import type {FragmentEntryLinkMap} from '../actions/addFragmentEntryLinks';
+import type {
+	FragmentEntryLink,
+	FragmentEntryLinkMap,
+} from '../actions/addFragmentEntryLinks';
 
 export interface FormField {
 	key: string;
@@ -66,18 +69,49 @@ export default {
 		);
 	},
 
+	removeFormStep({
+		itemId,
+		onNetworkStatus,
+		segmentsExperienceId,
+		stepperFragmentEntryLinkId,
+	}: {
+		itemId: string;
+		onNetworkStatus: OnNetworkStatus;
+		segmentsExperienceId: string;
+		stepperFragmentEntryLinkId?: string;
+	}) {
+		return draftServiceFetch<{
+			fragmentEntryLinks: FragmentEntryLinkMap;
+			layoutData: LayoutData;
+			movedItemIds: {itemId: string; parentId: string}[];
+			removedItemIds: string[];
+		}>(
+			config.deleteFormStepURL,
+			{
+				body: {
+					itemId,
+					segmentsExperienceId,
+					stepperFragmentEntryLinkId,
+				},
+			},
+			onNetworkStatus
+		);
+	},
+
 	updateFormItemConfig({
 		fields,
 		itemConfig,
 		itemId,
 		onNetworkStatus,
 		segmentsExperienceId,
+		stepperFragmentEntryLinkId,
 	}: {
 		fields: string[] | undefined;
 		itemConfig: FormLayoutDataItem['config'];
 		itemId: string;
 		onNetworkStatus: OnNetworkStatus;
 		segmentsExperienceId: string;
+		stepperFragmentEntryLinkId: FragmentEntryLink['fragmentEntryLinkId'];
 	}) {
 		return draftServiceFetch<{
 			addedFragmentEntryLinks: FragmentEntryLinkMap;
@@ -92,6 +126,7 @@ export default {
 					itemConfig: JSON.stringify(itemConfig),
 					itemId,
 					segmentsExperienceId,
+					stepperFragmentEntryLinkId,
 				},
 			},
 			onNetworkStatus

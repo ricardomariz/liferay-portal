@@ -103,9 +103,8 @@ public abstract class BaseAccountRoleResourceTestCase {
 		com.liferay.portal.kernel.model.User testCompanyAdminUser =
 			UserTestUtil.getAdminUser(testCompany.getCompanyId());
 
-		AccountRoleResource.Builder builder = AccountRoleResource.builder();
-
-		accountRoleResource = builder.authentication(
+		accountRoleResource = AccountRoleResource.builder(
+		).authentication(
 			testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
@@ -1850,6 +1849,14 @@ public abstract class BaseAccountRoleResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("roleType", additionalAssertFieldName)) {
+				if (accountRole.getRoleType() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			throw new IllegalArgumentException(
 				"Invalid additional assert field name " +
 					additionalAssertFieldName);
@@ -2038,6 +2045,17 @@ public abstract class BaseAccountRoleResourceTestCase {
 			if (Objects.equals("roleId", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						accountRole1.getRoleId(), accountRole2.getRoleId())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("roleType", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						accountRole1.getRoleType(),
+						accountRole2.getRoleType())) {
 
 					return false;
 				}
@@ -2351,6 +2369,12 @@ public abstract class BaseAccountRoleResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
+		if (entityFieldName.equals("roleType")) {
+			sb.append(String.valueOf(accountRole.getRoleType()));
+
+			return sb.toString();
+		}
+
 		throw new IllegalArgumentException(
 			"Invalid entity field " + entityFieldName);
 	}
@@ -2406,6 +2430,7 @@ public abstract class BaseAccountRoleResourceTestCase {
 				id = RandomTestUtil.randomLong();
 				name = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				roleId = RandomTestUtil.randomLong();
+				roleType = RandomTestUtil.randomInt();
 			}
 		};
 	}

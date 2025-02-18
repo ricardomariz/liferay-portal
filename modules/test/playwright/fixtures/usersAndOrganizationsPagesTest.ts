@@ -5,10 +5,13 @@
 
 import {test} from '@playwright/test';
 
+import {UserLocaleOptionsPage} from '../pages/portal-user-locale-options-web/UserLocaleOptionsPage';
 import {SiteConfigurationDetailsPage} from '../pages/site-admin-web/SiteConfigurationDetailsPage';
 import {SiteSettingsPage} from '../pages/site-admin-web/SiteSettingsPage';
 import {ExportUserDataPage} from '../pages/user-associated-data-web/ExportUserDataPage';
 import {PersonalDataErasurePage} from '../pages/user-associated-data-web/PersonalDataErasurePage';
+import {UserAssociatedDataJournalPage} from '../pages/user-associated-data-web/journal-article-web/UserAssociatedDataJournalPage';
+import {UserAssociatedDataSiteStagingPage} from '../pages/user-associated-data-web/site-staging-web/UserAssociatedDataSiteStagingPage';
 import {AssignUsersPage} from '../pages/users-admin-web/AssignUsersPage';
 import {EditOrganizationPage} from '../pages/users-admin-web/EditOrganizationPage';
 import {EditUserPage} from '../pages/users-admin-web/EditUserPage';
@@ -29,6 +32,9 @@ const usersAndOrganizationsPagesTest = test.extend<{
 	siteConfigurationDetailsPage: SiteConfigurationDetailsPage;
 	siteSettingsPage: SiteSettingsPage;
 	teamsPage: TeamsPage;
+	userAssociatedDataJournalPage: UserAssociatedDataJournalPage;
+	userAssociatedDataSiteStagingPage: UserAssociatedDataSiteStagingPage;
+	userLocaleOptionsPage: UserLocaleOptionsPage;
 	userPersonalSitePage: UserPersonalSitePage;
 	usersAndOrganizationsPage: UsersAndOrganizationsPage;
 }>({
@@ -61,6 +67,15 @@ const usersAndOrganizationsPagesTest = test.extend<{
 	},
 	teamsPage: async ({page}, use) => {
 		await use(new TeamsPage(page));
+	},
+	userAssociatedDataJournalPage: async ({page}, use) => {
+		await use(new UserAssociatedDataJournalPage(page));
+	},
+	userAssociatedDataSiteStagingPage: async ({page}, use) => {
+		await use(new UserAssociatedDataSiteStagingPage(page));
+	},
+	userLocaleOptionsPage: async ({page}, use) => {
+		await use(new UserLocaleOptionsPage(page));
 	},
 	userPersonalSitePage: async ({page}, use) => {
 		await use(new UserPersonalSitePage(page));

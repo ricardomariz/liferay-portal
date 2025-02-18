@@ -87,7 +87,6 @@ import javax.portlet.Portlet;
 import org.apache.felix.cm.PersistenceManager;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -129,16 +128,6 @@ public class CompanyLocalServiceDBPartitionTest
 		_bundleContext = bundle.getBundleContext();
 
 		_defaultCompanyId = PortalInstancePool.getDefaultCompanyId();
-
-		_resourceActions = ReflectionTestUtil.getFieldValue(
-			ResourceActionLocalServiceImpl.class, "_resourceActions");
-
-		_regenerateResourceActions();
-	}
-
-	@AfterClass
-	public static void tearDownClass() throws Exception {
-		_regenerateResourceActions();
 	}
 
 	@After
@@ -751,13 +740,6 @@ public class CompanyLocalServiceDBPartitionTest
 		}
 	}
 
-	private static void _regenerateResourceActions() throws Exception {
-		_resourceActions.clear();
-
-		DBPartitionUtil.forEachCompanyId(
-			companyId -> _resourceActionLocalService.checkResourceActions());
-	}
-
 	private void _addCopyDBPartitionCompanyCache(long companyId) {
 		_className1 = _classNameLocalService.addClassName(_CLASS_NAME_1);
 		_className2 = _classNameLocalService.addClassName(_CLASS_NAME_2);
@@ -811,21 +793,20 @@ public class CompanyLocalServiceDBPartitionTest
 			RepositoryClassDefinitionCatalogUtil.getRepositoryClassDefinition(
 				companyId, CompanyLocalServiceDBPartitionTest.class.getName());
 
-		Assert.assertNotNull(repositoryClassDefinition);
-
 		Assert.assertEquals(
 			cached,
 			MapUtil.isNotEmpty(
 				(Map<Long, Map<Long, LocalRepository>>)
 					ReflectionTestUtil.getFieldValue(
 						repositoryClassDefinition, "_localRepositoriesMap")));
-
 		Assert.assertEquals(
 			cached,
 			MapUtil.isNotEmpty(
 				(Map<Long, Map<Long, Repository>>)
 					ReflectionTestUtil.getFieldValue(
 						repositoryClassDefinition, "_repositoriesMap")));
+
+		Assert.assertEquals(cached, _hasResourceActionsCached(companyId));
 	}
 
 	private void _assertCompanyConfiguration(
@@ -901,6 +882,8 @@ public class CompanyLocalServiceDBPartitionTest
 				_counter,
 				_counterLocalService.increment(
 					CompanyLocalServiceDBPartitionTest.class.getName()));
+
+			Assert.assertTrue(_hasResourceActionsCached(companyId));
 		}
 	}
 
@@ -1184,6 +1167,26 @@ public class CompanyLocalServiceDBPartitionTest
 		return viewNames.size();
 	}
 
+	private boolean _hasResourceActionsCached(long companyId) {
+		AopInvocationHandler aopInvocationHandler =
+			ProxyUtil.fetchInvocationHandler(
+				_resourceActionLocalService, AopInvocationHandler.class);
+
+		Map<String, ResourceAction> resourceActions =
+			ReflectionTestUtil.getFieldValue(
+				(ResourceActionLocalServiceImpl)
+					aopInvocationHandler.getTarget(),
+				"_resourceActions");
+
+		for (String key : resourceActions.keySet()) {
+			if (key.endsWith(StringPool.AT + companyId)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private static final String _CLASS_NAME_1 =
 		CompanyLocalServiceDBPartitionTest.class.getName() + 1;
 
@@ -1203,11 +1206,6 @@ public class CompanyLocalServiceDBPartitionTest
 	private static CounterLocalService _counterLocalService;
 
 	private static long _defaultCompanyId;
-
-	@Inject
-	private static ResourceActionLocalService _resourceActionLocalService;
-
-	private static Map<String, ResourceAction> _resourceActions;
 
 	@Inject
 	private static VirtualHostLocalService _virtualHostLocalService;
@@ -1238,6 +1236,9 @@ public class CompanyLocalServiceDBPartitionTest
 
 	@Inject
 	private RepositoryLocalService _repositoryLocalService;
+
+	@Inject
+	private ResourceActionLocalService _resourceActionLocalService;
 
 	private ServiceRegistration<RepositoryDefiner> _serviceRegistration;
 

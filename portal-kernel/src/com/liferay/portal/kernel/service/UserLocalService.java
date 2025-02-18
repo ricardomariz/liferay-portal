@@ -816,17 +816,6 @@ public interface UserLocalService
 	public User fetchUserByFacebookId(long companyId, long facebookId);
 
 	/**
-	 * Returns the user with the Google user ID.
-	 *
-	 * @param companyId the primary key of the user's company
-	 * @param googleUserId the user's Google user ID
-	 * @return the user with the Google user ID, or <code>null</code> if a user
-	 with the Google user ID could not be found
-	 */
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public User fetchUserByGoogleUserId(long companyId, String googleUserId);
-
-	/**
 	 * Returns the user with the primary key.
 	 *
 	 * @param userId the primary key of the user
@@ -835,19 +824,6 @@ public interface UserLocalService
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public User fetchUserById(long userId);
-
-	/**
-	 * Returns the user with the OpenID.
-	 *
-	 * @param companyId the primary key of the user's company
-	 * @param openId the user's OpenID
-	 * @return the user with the OpenID, or <code>null</code> if a user with
-	 the OpenID could not be found
-	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
-	 */
-	@Deprecated
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public User fetchUserByOpenId(long companyId, String openId);
 
 	/**
 	 * Returns the user with the portrait ID.
@@ -1381,17 +1357,6 @@ public interface UserLocalService
 		throws PortalException;
 
 	/**
-	 * Returns the user with the Google user ID.
-	 *
-	 * @param companyId the primary key of the user's company
-	 * @param googleUserId the user's Google user ID
-	 * @return the user with the Google user ID
-	 */
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public User getUserByGoogleUserId(long companyId, String googleUserId)
-		throws PortalException;
-
-	/**
 	 * Returns the user with the primary key.
 	 *
 	 * @param userId the primary key of the user
@@ -1409,19 +1374,6 @@ public interface UserLocalService
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public User getUserById(long companyId, long userId) throws PortalException;
-
-	/**
-	 * Returns the user with the OpenID.
-	 *
-	 * @param companyId the primary key of the user's company
-	 * @param openId the user's OpenID
-	 * @return the user with the OpenID
-	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
-	 */
-	@Deprecated
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public User getUserByOpenId(long companyId, String openId)
-		throws PortalException;
 
 	/**
 	 * Returns the user with the portrait ID.
@@ -2188,16 +2140,6 @@ public interface UserLocalService
 		throws PortalException;
 
 	/**
-	 * Updates the user's Google user ID.
-	 *
-	 * @param userId the primary key of the user
-	 * @param googleUserId the new Google user ID
-	 * @return the user
-	 */
-	public User updateGoogleUserId(long userId, String googleUserId)
-		throws PortalException;
-
-	/**
 	 * Sets the groups the user is in, removing and adding groups as necessary.
 	 *
 	 * @param userId the primary key of the user
@@ -2346,17 +2288,6 @@ public interface UserLocalService
 	@Indexable(type = IndexableType.REINDEX)
 	public User updateModifiedDate(long userId, Date modifiedDate)
 		throws PortalException;
-
-	/**
-	 * Updates the user's OpenID.
-	 *
-	 * @param userId the primary key of the user
-	 * @param openId the new OpenID
-	 * @return the user
-	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
-	 */
-	@Deprecated
-	public User updateOpenId(long userId, String openId) throws PortalException;
 
 	/**
 	 * Sets the organizations that the user is in, removing and adding

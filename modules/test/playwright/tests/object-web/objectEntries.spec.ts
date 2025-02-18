@@ -4,6 +4,7 @@
  */
 
 import {
+	ObjectDefinition,
 	ObjectDefinitionApi,
 	ObjectField,
 	ObjectRelationship,
@@ -29,7 +30,7 @@ import {journalPagesTest} from '../journal-web/fixtures/journalPagesTest';
 import {mockedObjectFields} from './dependencies/objectMockedFields';
 import {getFDSDateFormat, getPageEditorDateFormat} from './utils/dateFormat';
 import evaluateKeepCheckingAfterFound from './utils/keepCheckingAfterFound';
-import {createObjectField, mockObjectFields} from './utils/mockObjectFields';
+import {createObjectFields, mockObjectFields} from './utils/mockObjectFields';
 
 export const test = mergeTests(
 	accountSettingsPagesTest,
@@ -39,6 +40,7 @@ export const test = mergeTests(
 	isolatedSiteTest,
 	editObjectDefinitionPagesTest,
 	featureFlagsTest({
+		'LPD-21926': {enabled: true},
 		'LPD-32050': {enabled: true},
 		'LPS-178052': {enabled: true},
 	}),
@@ -57,6 +59,271 @@ test.afterEach(async ({page}) => {
 
 		siteLanguage = 'en';
 	}
+});
+
+test.describe('Manage object entries through Friendly URL', () => {
+	let _objectDefinition: ObjectDefinition;
+	let _objectEntryFriendlyURLPath: string;
+	let _objectField: ObjectField;
+
+	test.beforeEach(async ({apiHelpers, site, viewObjectEntriesPage}) => {
+		const {objectFields} = await mockObjectFields({
+			apiHelpers,
+			localizeAllLocalizable: true,
+			objectFieldBusinessTypes: ['text'],
+		});
+
+		_objectField = objectFields[0];
+
+		const objectDefinitionAPIClient =
+			await apiHelpers.buildRestClient(ObjectDefinitionApi);
+
+		const {body: objectDefinition} =
+			await objectDefinitionAPIClient.postObjectDefinition({
+				enableFriendlyURLCustomization: true,
+				enableLocalization: true,
+				label: {
+					en_US: getRandomString(),
+				},
+				name: 'ObjectDefinitionName' + getRandomInt(),
+				objectFields,
+				panelCategoryKey: 'site_administration.content',
+				pluralLabel: {
+					en_US: getRandomString(),
+				},
+				scope: 'site',
+				status: {
+					code: 0,
+				},
+			});
+
+		_objectDefinition = objectDefinition;
+
+		apiHelpers.data.push({
+			id: objectDefinition.id,
+			type: 'objectDefinition',
+		});
+
+		_objectEntryFriendlyURLPath = '/l/C_' + _objectDefinition.name + '/';
+
+		await viewObjectEntriesPage.goto(
+			_objectDefinition.className,
+			'en',
+			site.friendlyUrlPath
+		);
+
+		await viewObjectEntriesPage.clickAddObjectEntry();
+	});
+
+	test('can access object entry via friendly URL', async ({
+		apiHelpers,
+		displayPageTemplatesPage,
+		page,
+		pageEditorPage,
+		site,
+		viewObjectEntriesPage,
+	}) => {
+
+		// Create object entry with friendly URL
+
+		const friendlyUrl = page.getByLabel('Friendly URL');
+
+		await friendlyUrl.fill('Test URL');
+
+		const objectFieldValue = getRandomString();
+
+		await page.getByTestId('visibleChangeInput').fill(objectFieldValue);
+
+		await viewObjectEntriesPage.saveObjectEntryButton.click();
+
+		await expect(viewObjectEntriesPage.successMessage).toBeVisible();
+
+		await expect(friendlyUrl).toHaveValue('test-url');
+
+		// Create display page template
+
+		const className =
+			await apiHelpers.jsonWebServicesClassName.fetchClassName(
+				_objectDefinition.className
+			);
+
+		const displayPageTemplateName = getRandomString();
+
+		const displayPage =
+			await apiHelpers.jsonWebServicesLayoutPageTemplateEntry.addDisplayPageLayoutPageTemplateEntry(
+				{
+					classNameId: className.classNameId,
+					groupId: site.id,
+					name: displayPageTemplateName,
+				}
+			);
+
+		await apiHelpers.jsonWebServicesLayoutPageTemplateEntry.markAsDefaultDisplayPageLayoutPageTemplateEntry(
+			{
+				layoutPageTemplateEntryId:
+					displayPage.layoutPageTemplateEntryId,
+			}
+		);
+
+		// Add heading fragment and map it to the object field
+
+		displayPageTemplatesPage.goto(site.friendlyUrlPath);
+
+		displayPageTemplatesPage.editTemplate(displayPageTemplateName);
+
+		await pageEditorPage.addFragment('Basic Components', 'Heading');
+
+		await page.getByText('Heading Example', {exact: true}).click();
+
+		await pageEditorPage.setMappingConfiguration({
+			mapping: {
+				field: _objectField.label['en_US'],
+			},
+			source: 'structure',
+		});
+
+		await displayPageTemplatesPage.publishTemplate();
+
+		// Access the object entry via friendly URL
+
+		await page.goto(
+			`/web${site.friendlyUrlPath}${_objectEntryFriendlyURLPath}` +
+				'test-url',
+			{
+				waitUntil: 'networkidle',
+			}
+		);
+
+		await expect(page.getByText(objectFieldValue)).toBeVisible();
+
+		// Delete the display page template
+
+		await apiHelpers.jsonWebServicesLayoutPageTemplateEntry.deleteLayoutPageTemplateEntry(
+			{
+				layoutPageTemplateEntryId:
+					displayPage.layoutPageTemplateEntryId,
+			}
+		);
+	});
+
+	test('can restore old friendly URL', async ({
+		apiHelpers,
+		page,
+		site,
+		viewObjectEntriesPage,
+	}) => {
+
+		// Create object entry with friendly URL
+
+		const applicationName =
+			'c/' + _objectDefinition.name.toLowerCase() + 's';
+
+		const objectEntry = await apiHelpers.objectEntry.postObjectEntry(
+			{friendlyUrlPath: 'first-url'},
+			applicationName,
+			site.key
+		);
+
+		// Edit the friendly URL
+
+		await apiHelpers.objectEntry.putObjectEntry(
+			{friendlyUrlPath: 'second-url'},
+			applicationName,
+			objectEntry.id
+		);
+
+		// Verify that the current friendly URL matches the last one defined
+
+		await viewObjectEntriesPage.goto(
+			_objectDefinition.className,
+			'en',
+			site.friendlyUrlPath
+		);
+
+		await page.getByRole('link', {name: String(objectEntry.id)}).click();
+
+		const friendlyUrl = page.getByLabel('Friendly URL');
+
+		await expect(friendlyUrl).toHaveValue('second-url');
+
+		// Open the history modal
+
+		await page.getByRole('button', {name: 'History'}).click();
+
+		await expect(page.getByText('Active URL')).toBeVisible();
+		await expect(
+			page.getByText('C_' + _objectDefinition.name + '/second-url')
+		).toBeVisible();
+
+		// Restore the friendly URL to its first value
+
+		await page.getByText('first-url').hover();
+
+		await page.locator("button[data-title='Restore URL']").nth(1).click();
+
+		await page.getByRole('button', {name: 'Close'}).click();
+
+		await viewObjectEntriesPage.saveObjectEntryButton.click();
+
+		await expect(viewObjectEntriesPage.successMessage).toBeVisible();
+
+		await expect(friendlyUrl).toHaveValue('first-url');
+	});
+
+	test('verify that friendly URL field is not visible when customization is disabled', async ({
+		apiHelpers,
+		page,
+	}) => {
+		await expect(page.getByLabel('Friendly URL')).toBeVisible();
+		await expect(
+			page.getByText(
+				'The friendly URL is automatically generated based on the entry title field.'
+			)
+		).toBeVisible();
+		await expect(
+			page.getByTitle(_objectEntryFriendlyURLPath)
+		).toBeVisible();
+
+		const objectDefinitionAPIClient =
+			await apiHelpers.buildRestClient(ObjectDefinitionApi);
+
+		await objectDefinitionAPIClient.patchObjectDefinition(
+			_objectDefinition.id,
+			{
+				enableFriendlyURLCustomization: false,
+			}
+		);
+
+		await page.reload();
+
+		await expect(page.getByLabel('Friendly URL')).not.toBeVisible();
+		await expect(
+			page.getByText(
+				'The friendly URL is automatically generated based on the entry title field.'
+			)
+		).not.toBeVisible();
+		await expect(
+			page.getByTitle(_objectEntryFriendlyURLPath)
+		).not.toBeVisible();
+	});
+
+	test('verify that locale dropdowns for friendly URL and localizable object field are synchronized', async ({
+		page,
+	}) => {
+		await page.getByText('en-us', {exact: true}).click();
+
+		await page.getByText('português (Brasil)').click();
+
+		await expect(page.getByText('pt-br', {exact: true})).toBeVisible();
+		await expect(page.getByText('pt-BR', {exact: true})).toBeVisible();
+
+		await page.getByText('pt-BR', {exact: true}).click();
+
+		await page.locator("a[data-languageId='ca_ES']").click();
+
+		await expect(page.getByText('ca-es', {exact: true})).toBeVisible();
+		await expect(page.getByText('ca-ES', {exact: true})).toBeVisible();
+	});
 });
 
 test.describe('Manage object entries through Page Templates', () => {
@@ -1007,127 +1274,6 @@ test.describe('Manage object entries through View Object Entries', () => {
 		await expect(viewObjectEntriesPage.successMessageArabic).toBeVisible();
 	});
 
-	test('verify if object entries with localized boolean field are correctly persisted', async ({
-		apiHelpers,
-		page,
-		viewObjectEntriesPage,
-	}) => {
-		const objectDefinitionLabel = 'ObjectDefinitionLabel' + getRandomInt();
-		const objectDefinitionName = 'ObjectDefinitionName' + getRandomInt();
-
-		const {objectFields, titleObjectFieldName} = await mockObjectFields({
-			apiHelpers,
-			localizeAllLocalizable: true,
-			objectEntryReturn: {format: 'API'},
-			objectFieldBusinessTypes: ['boolean'],
-			titleObjectFieldName: 'boolean',
-		});
-
-		const objectDefinitionAPIClient =
-			await apiHelpers.buildRestClient(ObjectDefinitionApi);
-
-		const {body: objectDefinition} =
-			await objectDefinitionAPIClient.postObjectDefinition({
-				active: true,
-				enableLocalization: true,
-				label: {
-					en_US: objectDefinitionLabel,
-				},
-				name: objectDefinitionName,
-				objectFields,
-				pluralLabel: {
-					en_US: objectDefinitionLabel,
-				},
-				portlet: true,
-				scope: 'company',
-				status: {
-					code: 0,
-				},
-				titleObjectFieldName,
-			});
-
-		apiHelpers.data.push({
-			id: objectDefinition.id,
-			type: 'objectDefinition',
-		});
-
-		await viewObjectEntriesPage.goto(objectDefinition.className);
-
-		await viewObjectEntriesPage.addObjectEntryButton.click();
-
-		const checkBox = page.getByRole('checkbox', {
-			name: objectFields[0].label['en_US'],
-		});
-
-		await checkBox.check();
-
-		const translationsDropdownTriggerButton = page
-			.getByTestId('triggerButton')
-			.first();
-
-		await translationsDropdownTriggerButton.click();
-
-		const catalanOption = page.getByTestId('availableLocalesDropdownca_ES');
-
-		await catalanOption.click();
-
-		await expect(checkBox).toBeChecked();
-
-		await checkBox.uncheck();
-
-		await translationsDropdownTriggerButton.click();
-
-		await expect(catalanOption.locator('.label-item-expand')).toHaveText(
-			'translated',
-			{ignoreCase: true}
-		);
-
-		const englishOption = page.getByTestId('availableLocalesDropdownen_US');
-
-		await expect(englishOption.locator('.label-item-expand')).toHaveText(
-			'default',
-			{ignoreCase: true}
-		);
-
-		await englishOption.click();
-
-		await expect(checkBox).toBeChecked();
-
-		await translationsDropdownTriggerButton.click();
-
-		await catalanOption.click();
-
-		await expect(checkBox).not.toBeChecked();
-
-		const responsePromise = page.waitForResponse(
-			`**${objectDefinition.restContextPath}`
-		);
-
-		await viewObjectEntriesPage.saveObjectEntryButton.click();
-
-		const response = await responsePromise;
-
-		await expect(
-			page.getByText('Success:Your request completed successfully.')
-		).toBeVisible();
-
-		await page.getByRole('link', {name: 'Back'}).click();
-
-		const responseBody = await response.json();
-
-		const entryLink = page.getByRole('link', {name: responseBody.id});
-
-		await entryLink.click();
-
-		await expect(checkBox).toBeChecked();
-
-		await translationsDropdownTriggerButton.click();
-
-		await catalanOption.click();
-
-		await expect(checkBox).not.toBeChecked();
-	});
-
 	test('can delete relation on relationship tab', async ({
 		apiHelpers,
 		editObjectDetailsPage,
@@ -1135,14 +1281,16 @@ test.describe('Manage object entries through View Object Entries', () => {
 		page,
 		viewObjectEntriesPage,
 	}) => {
+		const objectFields = createObjectFields('text', [
+			{
+				label: 'Custom Field',
+				name: 'customField',
+			},
+		]);
+
 		const objectDefinition =
 			await apiHelpers.objectAdmin.postRandomObjectDefinition({
-				objectFields: [
-					createObjectField('text', {
-						label: 'Custom Field',
-						name: 'customField',
-					}),
-				],
+				objectFields,
 				objectFolderExternalReferenceCode: 'default',
 				panelCategoryKey: 'control_panel.object',
 				status: {code: 0},

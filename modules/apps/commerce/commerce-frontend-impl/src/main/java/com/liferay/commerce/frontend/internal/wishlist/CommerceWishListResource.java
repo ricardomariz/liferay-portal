@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.liferay.commerce.constants.CommerceWebKeys;
 import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.context.CommerceContextFactory;
+import com.liferay.commerce.context.CommerceContextThreadLocal;
 import com.liferay.commerce.frontend.internal.wishlist.model.WishListItemUpdated;
 import com.liferay.commerce.product.catalog.CPCatalogEntry;
 import com.liferay.commerce.product.model.CPInstance;
@@ -81,6 +82,8 @@ public class CommerceWishListResource {
 					getCommerceChannelGroupIdBySiteGroupId(groupId),
 				userId, 0, commerceAccountId);
 
+			CommerceContextThreadLocal.set(commerceContext);
+
 			httpServletRequest.setAttribute(
 				CommerceWebKeys.COMMERCE_CONTEXT, commerceContext);
 
@@ -90,13 +93,12 @@ public class CommerceWishListResource {
 			serviceContext.setScopeGroupId(groupId);
 
 			CommerceWishList commerceWishList =
-				_commerceWishListService.getDefaultCommerceWishList(
-					groupId, userId);
+				_commerceWishListService.getDefaultCommerceWishList(groupId);
 
 			if (commerceWishList == null) {
 				commerceWishList = _commerceWishListService.addCommerceWishList(
-					_language.get(serviceContext.getLocale(), "default"), true,
-					serviceContext);
+					groupId,
+					_language.get(serviceContext.getLocale(), "default"), true);
 			}
 
 			CPCatalogEntry cpCatalogEntry =
@@ -122,8 +124,7 @@ public class CommerceWishListResource {
 			if (commerceWishListItemCount == 0) {
 				_commerceWishListItemService.addCommerceWishListItem(
 					commerceAccountId, commerceWishList.getCommerceWishListId(),
-					cpCatalogEntry.getCProductId(), cpInstanceUuid, options,
-					serviceContext);
+					cpInstanceUuid, cpCatalogEntry.getCProductId(), options);
 
 				wishListItemUpdated.setSuccess(true);
 			}

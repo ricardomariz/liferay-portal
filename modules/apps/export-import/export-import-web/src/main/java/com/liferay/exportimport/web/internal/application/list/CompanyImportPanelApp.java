@@ -9,6 +9,7 @@ import com.liferay.application.list.BasePanelApp;
 import com.liferay.application.list.PanelApp;
 import com.liferay.application.list.constants.PanelCategoryKeys;
 import com.liferay.exportimport.constants.ExportImportPortletKeys;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Portlet;
@@ -40,12 +41,18 @@ public class CompanyImportPanelApp extends BasePanelApp {
 
 	@Override
 	public String getPortletId() {
-		return ExportImportPortletKeys.IMPORT;
+		return ExportImportPortletKeys.COMPANY_IMPORT;
 	}
 
 	@Override
-	public boolean isShow(PermissionChecker permissionChecker, Group group) {
-		return FeatureFlagManagerUtil.isEnabled("LPD-35914");
+	public boolean isShow(PermissionChecker permissionChecker, Group group)
+		throws PortalException {
+
+		if (!FeatureFlagManagerUtil.isEnabled("LPD-35914")) {
+			return false;
+		}
+
+		return super.isShow(permissionChecker, group);
 	}
 
 	@Override
@@ -58,7 +65,7 @@ public class CompanyImportPanelApp extends BasePanelApp {
 	private Portal _portal;
 
 	@Reference(
-		target = "(javax.portlet.name=" + ExportImportPortletKeys.IMPORT + ")"
+		target = "(javax.portlet.name=" + ExportImportPortletKeys.COMPANY_IMPORT + ")"
 	)
 	private Portlet _portlet;
 

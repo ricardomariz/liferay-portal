@@ -72,6 +72,27 @@ public class FrontendTokenDefinitionRegistryImpl
 	}
 
 	@Override
+	public FrontendTokenDefinition getFrontendTokenDefinition(
+		long companyId, String themeId) {
+
+		FrontendTokenDefinition frontendTokenDefinition =
+			_frontendTokenDefinitions.get(themeId);
+
+		if (frontendTokenDefinition != null) {
+			return frontendTokenDefinition;
+		}
+
+		Map<String, FrontendTokenDefinition> frontendTokenDefinitions =
+			_frontendTokenDefinitionsMap.get(companyId);
+
+		if (frontendTokenDefinitions == null) {
+			return null;
+		}
+
+		return frontendTokenDefinitions.get(themeId);
+	}
+
+	@Override
 	public List<FrontendTokenDefinition> getFrontendTokenDefinitions(
 		long companyId) {
 

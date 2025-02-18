@@ -4,6 +4,8 @@
  */
 
 import {expect, mergeTests} from '@playwright/test';
+import {createReadStream} from 'fs';
+import path from 'path';
 
 import {apiHelpersTest} from '../../fixtures/apiHelpersTest';
 import {applicationsMenuPageTest} from '../../fixtures/applicationsMenuPageTest';
@@ -1825,6 +1827,71 @@ test.describe('Page Contents Panel', () => {
 			}).toPass();
 		}
 	);
+
+	test(
+		'When multiple fragments are hidden with "Hide Fragments", the action changes to "Show Fragments"',
+		{
+			tag: '@LPD-46809',
+		},
+		async ({apiHelpers, page, pageEditorPage, site}) => {
+
+			// Create a page with two Heading fragments
+
+			const firstHeadingId = getRandomString();
+
+			const firstHeadingDefinition = getFragmentDefinition({
+				id: firstHeadingId,
+				key: 'BASIC_COMPONENT-heading',
+			});
+
+			const secondHeadingId = getRandomString();
+
+			const secondHeadingDefinition = getFragmentDefinition({
+				id: secondHeadingId,
+				key: 'BASIC_COMPONENT-heading',
+			});
+
+			const layoutTitle = getRandomString();
+
+			const layout = await apiHelpers.headlessDelivery.createSitePage({
+				pageDefinition: getPageDefinition([
+					firstHeadingDefinition,
+					secondHeadingDefinition,
+				]),
+				siteId: site.id,
+				title: layoutTitle,
+			});
+
+			// Go to edit mode and select both fragments
+
+			await pageEditorPage.goto(layout, site.friendlyUrlPath);
+
+			await pageEditorPage.goToSidebarTab('Browser');
+
+			await pageEditorPage.selectFragment(firstHeadingId);
+
+			await page.keyboard.down('Control');
+
+			await pageEditorPage.selectFragment(secondHeadingId);
+
+			await page.keyboard.up('Control');
+
+			//  Open the Action dropdown and select "Hide Fragments"
+
+			await clickAndExpectToBeVisible({
+				autoClick: true,
+				target: page.getByRole('menuitem', {name: 'Hide Fragments'}),
+				trigger: page.getByLabel('Actions for Selected Items'),
+			});
+
+			// Open again the Action dropdown to check that the "Show Fragments" action is shown
+
+			await clickAndExpectToBeVisible({
+				target: page.getByRole('menuitem', {name: 'Show Fragments'}),
+				trigger: page.getByLabel('Actions for Selected Items'),
+			});
+		}
+	);
 });
 
 test.describe('Page Design Options', () => {
@@ -2030,12 +2097,6 @@ test.describe('Rules Panel', () => {
 
 			await clickAndExpectToBeVisible({
 				autoClick: true,
-				target: page.getByRole('option', {name: 'Fragment'}),
-				trigger: page.getByLabel('Select Item for the Action'),
-			});
-
-			await clickAndExpectToBeVisible({
-				autoClick: true,
 				target: page.getByRole('option', {name: 'Button'}),
 				trigger: page.getByLabel('Select Fragment'),
 			});
@@ -2052,7 +2113,7 @@ test.describe('Rules Panel', () => {
 			// Assert rule is created
 
 			await expect(
-				page.getByText('IfUserIs the UsertestHideFragmentButton')
+				page.getByText('IfUserIs the UsertestHideButton')
 			).toBeVisible();
 
 			// Edit rule
@@ -2087,7 +2148,7 @@ test.describe('Rules Panel', () => {
 			// Assert rule was updated
 
 			await expect(
-				page.getByText('IfUserHas the Role OfGuestHideFragmentButton')
+				page.getByText('IfUserHas the Role OfGuestHideButton')
 			).toBeVisible();
 
 			// Delete rule
@@ -2190,12 +2251,6 @@ test.describe('Rules Panel', () => {
 				autoClick: true,
 				target: page.getByRole('option', {name: 'Hide'}),
 				trigger: page.getByLabel('Select Action'),
-			});
-
-			await clickAndExpectToBeVisible({
-				autoClick: true,
-				target: page.getByRole('option', {name: 'Fragment'}),
-				trigger: page.getByLabel('Select Item for the Action'),
 			});
 
 			await clickAndExpectToBeVisible({
@@ -2308,5 +2363,76 @@ test(
 		style = await getStyle();
 
 		expect(style).toBe('--sidebar-content-width: 280px;');
+	}
+);
+
+test(
+	'Check that structure tree does not render multiple times on hover or click',
+	{tag: ['@LPD-47993']},
+	async ({apiHelpers, page, pageEditorPage, site}) => {
+
+		// Add basic image document
+
+		const document = await apiHelpers.headlessDelivery.postDocument(
+			site.id,
+			createReadStream(
+				path.join(__dirname, '/dependencies/file_upload_image_1.jpg')
+			)
+		);
+
+		// Create a page with a image fragment
+
+		const imageId = getRandomString();
+
+		const imageFragment = getFragmentDefinition({
+			id: imageId,
+			key: 'BASIC_COMPONENT-image',
+		});
+
+		const layout = await apiHelpers.headlessDelivery.createSitePage({
+			pageDefinition: getPageDefinition([imageFragment]),
+			siteId: site.id,
+			title: getRandomString(),
+		});
+
+		// Set up the image document
+
+		await pageEditorPage.goto(layout, site.friendlyUrlPath);
+
+		await pageEditorPage.selectDirectImage(document.title, imageId);
+
+		// Go to Browser tab
+
+		await pageEditorPage.goToSidebarTab('Browser');
+
+		// Start to check the requests
+
+		let requestWasMade = false;
+
+		page.on('request', (request) => {
+			if (request.url().includes(document.fileName)) {
+				requestWasMade = true;
+			}
+		});
+
+		// Hover and select the image fragment in structure tree
+
+		const selectImage = page.getByLabel('Select Image');
+
+		await selectImage.hover();
+
+		await selectImage.click();
+
+		// Hover and select the image fragment in layout
+
+		const fragment = pageEditorPage.getFragment(imageId, true);
+
+		await fragment.hover();
+
+		await fragment.click();
+
+		// Check if request was made
+
+		expect(requestWasMade).toBeFalsy();
 	}
 );

@@ -4,15 +4,17 @@
 	position: absolute;
 }
 
-.rich-text-input .form-control[aria-readonly='true'] {
-	background-color: #fff;
-	border-color: #e7e7ed;
-	cursor: text;
-	opacity: 1;
+.rich-text-input--disabled {
+	position: relative;
 }
 
-.rich-text-input .form-control[aria-readonly='true']:focus,
-.rich-text-input .form-control[aria-readonly='true']:focus-visible {
-	border-color: #80acff;
-	box-shadow: none;
+.rich-text-input--disabled:after {
+	background-color: transparent;
+	content: '';
+	cursor: not-allowed;
+	height: 100%;
+	left: 0;
+	position: absolute;
+	top: 0;
+	width: 100%;
 }

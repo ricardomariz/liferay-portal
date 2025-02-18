@@ -7,10 +7,12 @@ import {getRandomInt} from '../utils/getRandomInt';
 import {ApiHelpers, DataApiHelpers} from './ApiHelpers';
 
 type TAccount = {
+	alternateName?: string;
 	description?: string;
 	externalReferenceCode?: string;
 	id?: number;
 	name?: string;
+	status?: number;
 	type?: string;
 };
 
@@ -119,7 +121,7 @@ export class HeadlessAdminUserApiHelper {
 	}
 
 	async assignUserToOrganizationRole(
-		roleId: string,
+		roleId: number | string,
 		userAccountId: string,
 		organizationId: string
 	) {
@@ -212,6 +214,20 @@ export class HeadlessAdminUserApiHelper {
 		);
 
 		return accountResponse?.items?.at(0);
+	}
+
+	async getAccountGroupByExternalReferenceCode(
+		externalReferenceCode: string
+	): Promise<TAccountGroup> {
+		return this.apiHelpers.get(
+			`${this.apiHelpers.baseUrl}${this.basePath}/account-groups/by-external-reference-code/${externalReferenceCode}`
+		);
+	}
+
+	async getMyUserAccount(): Promise<TAccount> {
+		return this.apiHelpers.get(
+			`${this.apiHelpers.baseUrl}${this.basePath}/my-user-account`
+		);
 	}
 
 	async getOrganizationByName(organizationName: string): Promise<TAccount> {
@@ -397,18 +413,25 @@ export class HeadlessAdminUserApiHelper {
 	}
 
 	async postRole(role: TRole) {
-		role = {
-			roleType: 'regular',
-			...role,
-		};
-
-		return this.apiHelpers.post(
+		role = await this.apiHelpers.post(
 			`${this.apiHelpers.baseUrl}${this.basePath}/roles`,
 			{
-				data: role,
+				data: {
+					roleType: 'regular',
+					...role,
+				},
 				failOnStatusCode: true,
 			}
 		);
+
+		if (this.apiHelpers instanceof DataApiHelpers) {
+			this.apiHelpers.data.push({
+				id: role.id,
+				type: 'role',
+			});
+		}
+
+		return role;
 	}
 
 	async postUserAccount(

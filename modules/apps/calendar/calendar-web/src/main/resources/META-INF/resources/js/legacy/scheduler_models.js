@@ -275,11 +275,20 @@ AUI.add(
 				_uiSetColor(value) {
 					const instance = this;
 					const node = instance.get('node');
-					const opacity = instance._isPastEvent() ? '26' : 'B3';
+					const eventStatus = instance.get('status');
+					const isPastEvent = instance._isPastEvent();
 
-					node.setStyles({
-						backgroundColor: value + opacity,
-					});
+					if (eventStatus === 0 && !isPastEvent) {
+						node.setStyles({
+							backgroundColor: value,
+						});
+					}
+					else {
+						node.setStyles({
+							backgroundColor: value,
+							opacity: '0.8',
+						});
+					}
 				},
 
 				_uiSetEndDate(val) {

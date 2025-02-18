@@ -50,15 +50,13 @@ String url = (String)request.getAttribute("liferay-captcha:captcha:url");
 	</div>
 
 	<aui:script>
-		var hasEventAttached = false;
-
-		function attachEvent() {
+		function <portlet:namespace />attachEvent() {
 			var refreshCaptcha = document.getElementById(
 				'<portlet:namespace />refreshCaptcha'
 			);
 
-			if (refreshCaptcha && !hasEventAttached) {
-				hasEventAttached = true;
+			if (refreshCaptcha && !refreshCaptcha.hasEventAttached) {
+				refreshCaptcha.hasEventAttached = true;
 				refreshCaptcha.addEventListener('click', () => {
 					var url = Liferay.Util.addParams(
 						't=' + Date.now(),
@@ -76,8 +74,11 @@ String url = (String)request.getAttribute("liferay-captcha:captcha:url");
 			}
 		}
 
-		attachEvent();
+		<portlet:namespace />attachEvent();
 
-		Liferay.on('<portlet:namespace />simplecaptcha_attachEvent', attachEvent);
+		Liferay.on(
+			'<portlet:namespace />simplecaptcha_attachEvent',
+			<portlet:namespace />attachEvent
+		);
 	</aui:script>
 </c:if>

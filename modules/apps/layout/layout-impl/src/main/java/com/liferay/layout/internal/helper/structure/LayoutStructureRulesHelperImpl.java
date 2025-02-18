@@ -9,15 +9,25 @@ import com.liferay.layout.helper.structure.LayoutStructureRulesHelper;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureRule;
 import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Víctor Galán
@@ -33,6 +43,8 @@ public class LayoutStructureRulesHelperImpl
 
 		Set<String> displayedItemIds = new HashSet<>();
 		Set<String> hiddenItemIds = new HashSet<>();
+		Map<String, List<String>> itemIdsMap = new HashMap<>();
+		Map<String, List<String>> layoutStructureRuleIdsMap = new HashMap<>();
 		LayoutStructureRulesContext layoutStructureRulesContext =
 			new LayoutStructureRulesContext(
 				groupId, permissionChecker, segmentsEntryIds);
@@ -40,51 +52,69 @@ public class LayoutStructureRulesHelperImpl
 		for (LayoutStructureRule layoutStructureRule :
 				layoutStructure.getLayoutStructureRules()) {
 
-			if (!_isLayoutStructureRuleActive(
-					layoutStructureRule, layoutStructureRulesContext)) {
+			List<String> itemIds = _getItemIds(layoutStructureRule);
+
+			if (itemIds.isEmpty()) {
+				_processActions(
+					layoutStructureRule.getActionsJSONArray(), displayedItemIds,
+					hiddenItemIds,
+					!_evaluateLayoutStructureRule(
+						Collections.emptyMap(), layoutStructureRule,
+						layoutStructureRulesContext));
 
 				continue;
 			}
 
+			itemIds = ListUtil.filter(
+				ListUtil.unique(itemIds),
+				itemId ->
+					layoutStructure.getLayoutStructureItem(itemId) != null);
+
+			if (itemIds.isEmpty()) {
+				continue;
+			}
+
+			layoutStructureRuleIdsMap.put(layoutStructureRule.getId(), itemIds);
+
+			for (String itemId : itemIds) {
+				List<String> layoutStructureRuleIds =
+					itemIdsMap.computeIfAbsent(
+						itemId, key -> new ArrayList<>());
+
+				layoutStructureRuleIds.add(layoutStructureRule.getId());
+			}
+		}
+
+		return new LayoutStructureRulesResult(
+			displayedItemIds, hiddenItemIds, itemIdsMap,
+			layoutStructureRuleIdsMap);
+	}
+
+	@Override
+	public JSONArray processLayoutStructureRules(
+		long groupId, Map<String, Object> fieldValuesMap,
+		List<LayoutStructureRule> layoutStructureRules,
+		PermissionChecker permissionChecker, long[] segmentsEntryIds) {
+
+		JSONArray jsonArray = _jsonFactory.createJSONArray();
+
+		LayoutStructureRulesContext layoutStructureRulesContext =
+			new LayoutStructureRulesContext(
+				groupId, permissionChecker, segmentsEntryIds);
+
+		for (LayoutStructureRule layoutStructureRule : layoutStructureRules) {
 			_processActions(
-				layoutStructureRule.getActionsJSONArray(), displayedItemIds,
-				hiddenItemIds);
+				layoutStructureRule.getActionsJSONArray(), jsonArray,
+				!_evaluateLayoutStructureRule(
+					fieldValuesMap, layoutStructureRule,
+					layoutStructureRulesContext));
 		}
 
-		return new LayoutStructureRulesResult(displayedItemIds, hiddenItemIds);
+		return jsonArray;
 	}
 
-	private boolean _isConditionActive(
-		JSONObject conditionJSONObject,
-		LayoutStructureRulesContext layoutStructureRulesContext) {
-
-		long value = conditionJSONObject.getLong("value");
-
-		if (Objects.equals(
-				conditionJSONObject.getString("condition"), "role")) {
-
-			return ArrayUtil.contains(
-				layoutStructureRulesContext.getRoleIds(), value);
-		}
-
-		if (Objects.equals(
-				conditionJSONObject.getString("condition"), "segment")) {
-
-			return ArrayUtil.contains(
-				layoutStructureRulesContext.getSegmentsEntryIds(), value);
-		}
-
-		if (Objects.equals(
-				conditionJSONObject.getString("condition"), "user") &&
-			Objects.equals(layoutStructureRulesContext.getUserId(), value)) {
-
-			return true;
-		}
-
-		return false;
-	}
-
-	private boolean _isLayoutStructureRuleActive(
+	private boolean _evaluateLayoutStructureRule(
+		Map<String, Object> fieldValuesMap,
 		LayoutStructureRule layoutStructureRule,
 		LayoutStructureRulesContext layoutStructureRulesContext) {
 
@@ -95,10 +125,10 @@ public class LayoutStructureRulesHelperImpl
 			JSONObject conditionJSONObject = conditionsJSONArray.getJSONObject(
 				i);
 
-			boolean conditionActive = _isConditionActive(
-				conditionJSONObject, layoutStructureRulesContext);
+			if (_isConditionActive(
+					conditionJSONObject, fieldValuesMap,
+					layoutStructureRulesContext)) {
 
-			if (conditionActive) {
 				if (Objects.equals(
 						layoutStructureRule.getConditionType(), "any")) {
 
@@ -112,23 +142,202 @@ public class LayoutStructureRulesHelperImpl
 			}
 		}
 
+		if (Objects.equals(layoutStructureRule.getConditionType(), "any")) {
+			return false;
+		}
+
 		return true;
 	}
 
+	private boolean _evaluateUserTypeCondition(
+		String field, LayoutStructureRulesContext layoutStructureRulesContext,
+		boolean negated, long value) {
+
+		if (Objects.equals(field, "role")) {
+			if (negated) {
+				return !ArrayUtil.contains(
+					layoutStructureRulesContext.getRoleIds(), value);
+			}
+
+			return ArrayUtil.contains(
+				layoutStructureRulesContext.getRoleIds(), value);
+		}
+
+		if (Objects.equals(field, "segment")) {
+			if (negated) {
+				return !ArrayUtil.contains(
+					layoutStructureRulesContext.getSegmentsEntryIds(), value);
+			}
+
+			return ArrayUtil.contains(
+				layoutStructureRulesContext.getSegmentsEntryIds(), value);
+		}
+
+		if (Objects.equals(field, "user")) {
+			if (negated) {
+				return !Objects.equals(
+					layoutStructureRulesContext.getUserId(), value);
+			}
+
+			return Objects.equals(
+				layoutStructureRulesContext.getUserId(), value);
+		}
+
+		return false;
+	}
+
+	private Action _getAction(boolean negated, String type) {
+		if (Objects.equals(type, "disable")) {
+			if (negated) {
+				return Action.ENABLE;
+			}
+
+			return Action.DISABLE;
+		}
+		else if (Objects.equals(type, "enable")) {
+			if (negated) {
+				return Action.DISABLE;
+			}
+
+			return Action.ENABLE;
+		}
+		else if (Objects.equals(type, "show")) {
+			if (negated) {
+				return Action.HIDE;
+			}
+
+			return Action.SHOW;
+		}
+		else if (Objects.equals(type, "hide")) {
+			if (negated) {
+				return Action.SHOW;
+			}
+
+			return Action.HIDE;
+		}
+
+		throw new IllegalArgumentException("Unknown action type: " + type);
+	}
+
+	private List<String> _getItemIds(LayoutStructureRule layoutStructureRule) {
+		List<String> itemIds = new ArrayList<>();
+
+		JSONArray conditionsJSONArray =
+			layoutStructureRule.getConditionsJSONArray();
+
+		for (int i = 0; i < conditionsJSONArray.length(); i++) {
+			JSONObject conditionJSONObject = conditionsJSONArray.getJSONObject(
+				i);
+
+			if (Objects.equals(conditionJSONObject.getString("type"), "user")) {
+				continue;
+			}
+
+			itemIds.add(conditionJSONObject.getString("field"));
+		}
+
+		return itemIds;
+	}
+
+	private boolean _isConditionActive(
+		JSONObject conditionJSONObject, Map<String, Object> fieldValuesMap,
+		LayoutStructureRulesContext layoutStructureRulesContext) {
+
+		boolean negated = false;
+		Object value = 0L;
+
+		JSONObject optionsJSONObject = conditionJSONObject.getJSONObject(
+			"options");
+
+		if (optionsJSONObject != null) {
+			if (Objects.equals(
+					optionsJSONObject.getString("type"), "not-equal")) {
+
+				negated = true;
+			}
+
+			value = optionsJSONObject.get("value");
+		}
+
+		if (Objects.equals(conditionJSONObject.getString("type"), "form")) {
+			if (negated) {
+				return !Objects.equals(
+					fieldValuesMap.get(conditionJSONObject.getString("field")),
+					value);
+			}
+
+			return Objects.equals(
+				fieldValuesMap.get(conditionJSONObject.getString("field")),
+				value);
+		}
+
+		if (Objects.equals(conditionJSONObject.getString("type"), "user")) {
+			return _evaluateUserTypeCondition(
+				conditionJSONObject.getString("field"),
+				layoutStructureRulesContext, negated,
+				GetterUtil.getLong(value));
+		}
+
+		return false;
+	}
+
 	private void _processActions(
-		JSONArray actionsJSONArray, Set<String> displayedItemIds,
-		Set<String> hiddenItemIds) {
+		JSONArray actionsJSONArray, JSONArray jsonArray, boolean negated) {
 
 		for (int i = 0; i < actionsJSONArray.length(); i++) {
 			JSONObject actionsJSONObject = actionsJSONArray.getJSONObject(i);
 
-			if (Objects.equals(actionsJSONObject.getString("type"), "show")) {
+			jsonArray.put(
+				JSONUtil.put(
+					"action",
+					() -> {
+						Action action = _getAction(
+							negated, actionsJSONObject.getString("type"));
+
+						return action.getValue();
+					}
+				).put(
+					"itemId", actionsJSONObject.getString("itemId")
+				));
+		}
+	}
+
+	private void _processActions(
+		JSONArray actionsJSONArray, Set<String> displayedItemIds,
+		Set<String> hiddenItemIds, boolean negated) {
+
+		for (int i = 0; i < actionsJSONArray.length(); i++) {
+			JSONObject actionsJSONObject = actionsJSONArray.getJSONObject(i);
+
+			if (Objects.equals(
+					_getAction(negated, actionsJSONObject.getString("type")),
+					Action.SHOW)) {
+
 				displayedItemIds.add(actionsJSONObject.getString("itemId"));
 			}
 			else {
 				hiddenItemIds.add(actionsJSONObject.getString("itemId"));
 			}
 		}
+	}
+
+	@Reference
+	private JSONFactory _jsonFactory;
+
+	private enum Action {
+
+		DISABLE("disable"), ENABLE("enable"), HIDE("hide"), SHOW("show");
+
+		public String getValue() {
+			return _value;
+		}
+
+		private Action(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
 	}
 
 	private class LayoutStructureRulesContext {

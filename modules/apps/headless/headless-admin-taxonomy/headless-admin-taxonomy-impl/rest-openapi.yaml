@@ -249,6 +249,10 @@ components:
                             type: object
                     readOnly: true
                     type: object
+                permissions:
+                    items:
+                        type: permission
+                    type: array
                 siteExternalReferenceCode:
                     description:
                         The external reference code of the site to which this category is scoped.
@@ -383,6 +387,10 @@ components:
                         The number of categories that directly depend on this vocabulary.
                     readOnly: true
                     type: integer
+                permissions:
+                    items:
+                        type: permission
+                    type: array
                 siteExternalReferenceCode:
                     description:
                         The external reference code of the site to which this vocabulary is scoped.
@@ -406,7 +414,7 @@ components:
 info:
     description:
         "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
-        'com.liferay.headless.admin.taxonomy.client', and version '4.0.37'."
+        'com.liferay.headless.admin.taxonomy.client', and version '4.0.38'."
     license:
         name: "Apache 2.0"
         url: "http://www.apache.org/licenses/LICENSE-2.0.html"

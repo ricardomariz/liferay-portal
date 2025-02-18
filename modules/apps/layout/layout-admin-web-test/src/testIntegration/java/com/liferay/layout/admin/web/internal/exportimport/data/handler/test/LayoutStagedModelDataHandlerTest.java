@@ -59,13 +59,19 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureRelLocalService;
+import com.liferay.layout.page.template.test.util.DisplayPageTemplateTestUtil;
 import com.liferay.layout.provider.LayoutStructureProvider;
 import com.liferay.layout.seo.model.LayoutSEOEntry;
+import com.liferay.layout.seo.model.LayoutSEOEntryCustomMetaTag;
+import com.liferay.layout.seo.model.LayoutSEOEntryCustomMetaTagProperty;
 import com.liferay.layout.seo.service.LayoutSEOEntryLocalService;
 import com.liferay.layout.test.util.ContentLayoutTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.layout.util.LayoutServiceContextHelper;
 import com.liferay.layout.util.constants.LayoutDataItemTypeConstants;
+import com.liferay.layout.utility.page.kernel.constants.LayoutUtilityPageEntryConstants;
+import com.liferay.layout.utility.page.model.LayoutUtilityPageEntry;
+import com.liferay.layout.utility.page.service.LayoutUtilityPageEntryLocalService;
 import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -133,6 +139,7 @@ import com.liferay.template.model.TemplateEntry;
 import com.liferay.template.service.TemplateEntryLocalService;
 import com.liferay.template.test.util.TemplateTestUtil;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -260,6 +267,69 @@ public class LayoutStagedModelDataHandlerTest
 		finally {
 			serviceRegistration.unregister();
 		}
+	}
+
+	@Test
+	@TestInfo("LPD-46179")
+	public void testDeleteLayoutWithLayoutPageTemplateEntry() throws Exception {
+		Group group = GroupTestUtil.addGroup();
+
+		_stagingLocalService.enableLocalStaging(
+			TestPropsValues.getUserId(), group, false, false,
+			ServiceContextTestUtil.getServiceContext(
+				group.getGroupId(), TestPropsValues.getUserId()));
+
+		Group stagingGroup = group.getStagingGroup();
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			DisplayPageTemplateTestUtil.addDisplayPageTemplate(
+				stagingGroup.getGroupId(),
+				_portal.getClassNameId(AssetCategory.class.getName()), 0, true,
+				WorkflowConstants.STATUS_APPROVED);
+
+		LayoutUtilityPageEntry layoutUtilityPageEntry =
+			_layoutUtilityPageEntryLocalService.addLayoutUtilityPageEntry(
+				null, TestPropsValues.getUserId(), stagingGroup.getGroupId(), 0,
+				0, false, RandomTestUtil.randomString(),
+				LayoutUtilityPageEntryConstants.TYPE_SC_INTERNAL_SERVER_ERROR,
+				0,
+				ServiceContextTestUtil.getServiceContext(
+					stagingGroup.getGroupId(), TestPropsValues.getUserId()));
+
+		_publishLayouts(group, stagingGroup);
+
+		LayoutPageTemplateEntry liveLayoutPageTemplateEntry =
+			_layoutPageTemplateEntryLocalService.
+				getLayoutPageTemplateEntryByUuidAndGroupId(
+					layoutPageTemplateEntry.getUuid(), group.getGroupId());
+
+		Assert.assertEquals(
+			layoutPageTemplateEntry.getName(),
+			liveLayoutPageTemplateEntry.getName());
+
+		_layoutPageTemplateEntryLocalService.deleteLayoutPageTemplateEntry(
+			layoutPageTemplateEntry);
+
+		LayoutUtilityPageEntry liveLayoutUtilityPageEntry =
+			_layoutUtilityPageEntryLocalService.
+				getLayoutUtilityPageEntryByUuidAndGroupId(
+					layoutUtilityPageEntry.getUuid(), group.getGroupId());
+
+		Assert.assertEquals(
+			layoutUtilityPageEntry.getName(),
+			liveLayoutUtilityPageEntry.getName());
+
+		_layoutUtilityPageEntryLocalService.deleteLayoutUtilityPageEntry(
+			layoutUtilityPageEntry);
+
+		_publishLayouts(group, stagingGroup);
+
+		Assert.assertNull(
+			_layoutPageTemplateEntryLocalService.fetchLayoutPageTemplateEntry(
+				liveLayoutPageTemplateEntry.getLayoutPageTemplateEntryId()));
+		Assert.assertNull(
+			_layoutUtilityPageEntryLocalService.fetchLayoutUtilityPageEntry(
+				liveLayoutUtilityPageEntry.getLayoutUtilityPageEntryId()));
 	}
 
 	@Test
@@ -1671,7 +1741,48 @@ public class LayoutStagedModelDataHandlerTest
 			_layoutSEOEntryLocalService.fetchLayoutSEOEntryByUuidAndGroupId(
 				uuid, groupId);
 
+		_assertLayoutSEOEntryCustomMetaTags(layoutSEOEntry);
 		_assertMapEquals(canonicalURLMap, layoutSEOEntry.getCanonicalURLMap());
+	}
+
+	private void _assertLayoutSEOEntryCustomMetaTags(
+		LayoutSEOEntry layoutSEOEntry) {
+
+		List<LayoutSEOEntryCustomMetaTag> layoutSEOEntryCustomMetaTags =
+			_layoutSEOEntryLocalService.getLayoutSEOEntryCustomMetaTags(
+				layoutSEOEntry.getGroupId(),
+				layoutSEOEntry.getLayoutSEOEntryId());
+
+		Assert.assertFalse(layoutSEOEntryCustomMetaTags.isEmpty());
+		Assert.assertEquals(
+			layoutSEOEntryCustomMetaTags.toString(), 2,
+			layoutSEOEntryCustomMetaTags.size());
+
+		LayoutSEOEntryCustomMetaTag firstLayoutSEOEntryCustomMetaTag =
+			layoutSEOEntryCustomMetaTags.get(0);
+
+		Assert.assertEquals(
+			"property1", firstLayoutSEOEntryCustomMetaTag.getProperty());
+		Assert.assertEquals(
+			"content1",
+			firstLayoutSEOEntryCustomMetaTag.getContent(
+				LocaleUtil.getSiteDefault()));
+		Assert.assertEquals(
+			"contenido1",
+			firstLayoutSEOEntryCustomMetaTag.getContent(LocaleUtil.SPAIN));
+
+		LayoutSEOEntryCustomMetaTag secondLayoutSEOEntryCustomMetaTag =
+			layoutSEOEntryCustomMetaTags.get(1);
+
+		Assert.assertEquals(
+			"property2", secondLayoutSEOEntryCustomMetaTag.getProperty());
+		Assert.assertEquals(
+			"content2",
+			secondLayoutSEOEntryCustomMetaTag.getContent(
+				LocaleUtil.getSiteDefault()));
+		Assert.assertEquals(
+			"contenido2",
+			secondLayoutSEOEntryCustomMetaTag.getContent(LocaleUtil.SPAIN));
 	}
 
 	private void _assertMapEquals(
@@ -1785,6 +1896,9 @@ public class LayoutStagedModelDataHandlerTest
 			ExportImportConfigurationParameterMapFactoryUtil.
 				buildParameterMap();
 
+		parameterMap.put(
+			PortletDataHandlerKeys.DELETIONS,
+			new String[] {Boolean.TRUE.toString()});
 		parameterMap.put(
 			PortletDataHandlerKeys.PORTLET_DATA,
 			new String[] {Boolean.TRUE.toString()});
@@ -2041,6 +2155,28 @@ public class LayoutStagedModelDataHandlerTest
 				ServiceContextTestUtil.getServiceContext(
 					layout.getGroupId(), TestPropsValues.getUserId()));
 
+		_layoutSEOEntryLocalService.updateCustomMetaTags(
+			TestPropsValues.getUserId(), layout.getGroupId(), false,
+			layout.getLayoutId(),
+			Arrays.asList(
+				new LayoutSEOEntryCustomMetaTagProperty(
+					HashMapBuilder.put(
+						LocaleUtil.getSiteDefault(), "content1"
+					).put(
+						LocaleUtil.SPAIN, "contenido1"
+					).build(),
+					"property1"),
+				new LayoutSEOEntryCustomMetaTagProperty(
+					HashMapBuilder.put(
+						LocaleUtil.getSiteDefault(), "content2"
+					).put(
+						LocaleUtil.SPAIN, "contenido2"
+					).build(),
+					"property2")),
+			ServiceContextTestUtil.getServiceContext(
+				layout.getGroupId(), TestPropsValues.getUserId()));
+
+		_assertLayoutSEOEntryCustomMetaTags(layoutSEOEntry);
 		_assertMapEquals(canonicalURLMap, layoutSEOEntry.getCanonicalURLMap());
 
 		return layoutSEOEntry;
@@ -2137,6 +2273,10 @@ public class LayoutStagedModelDataHandlerTest
 
 	@Inject
 	private LayoutStructureProvider _layoutStructureProvider;
+
+	@Inject
+	private LayoutUtilityPageEntryLocalService
+		_layoutUtilityPageEntryLocalService;
 
 	@Inject
 	private Portal _portal;

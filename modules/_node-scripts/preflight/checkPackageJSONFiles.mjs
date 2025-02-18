@@ -271,16 +271,12 @@ const ALLOWED_NAMED_SCOPE_EXCEPTIONS = [
 	'frontend-image-editor-capability-rotate',
 	'frontend-image-editor-capability-saturation',
 	'frontend-image-editor-web',
-	'frontend-js-alert-support-web',
 	'frontend-js-aui-web',
 	'frontend-js-clay-sample-web',
-	'frontend-js-collapse-support-web',
 	'frontend-js-components-web',
-	'frontend-js-dropdown-support-web',
 	'frontend-js-jquery-web',
 	'frontend-js-loader-modules-extender',
 	'frontend-js-lodash-web',
-	'frontend-js-node-shims',
 	'frontend-js-react-web',
 	'frontend-js-recharts',
 	'frontend-js-spa-web',
@@ -445,6 +441,7 @@ const ALLOWED_NAMED_SCOPE_EXCEPTIONS = [
 ];
 
 const ALLOWED_NON_GLOBAL_DEPENDENCIES = [
+	'@clayui/css',
 	'@liferay/amd-loader',
 	'@types/request',
 	'@types/node-fetch',

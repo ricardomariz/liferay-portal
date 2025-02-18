@@ -394,6 +394,10 @@ public class DefaultObjectEntryManagerImplTest
 						_createObjectFieldSetting(
 							"fileSource", "documentsAndMedia"),
 						_createObjectFieldSetting("maximumFileSize", "100"))
+				).readOnly(
+					"conditional"
+				).readOnlyConditionExpression(
+					"attachmentObjectFieldName != \"\" "
 				).build(),
 				new BooleanObjectFieldBuilder(
 				).labelMap(
@@ -574,6 +578,10 @@ public class DefaultObjectEntryManagerImplTest
 					listTypeDefinition.getListTypeDefinitionId()
 				).name(
 					"picklistObjectFieldName"
+				).readOnly(
+					"conditional"
+				).readOnlyConditionExpression(
+					"picklistObjectFieldName != \"\" "
 				).build(),
 				new PrecisionDecimalObjectFieldBuilder(
 				).labelMap(
@@ -671,8 +679,7 @@ public class DefaultObjectEntryManagerImplTest
 
 		_objectDefinition3 =
 			objectDefinitionLocalService.addCustomObjectDefinition(
-				adminUser.getUserId(), 0, null, false, false, true, false,
-				false,
+				adminUser.getUserId(), 0, null, false, false, true, true, false,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 				ObjectDefinitionTestUtil.getRandomName(), null, null,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
@@ -1153,6 +1160,113 @@ public class DefaultObjectEntryManagerImplTest
 
 		objectDefinitionLocalService.deleteObjectDefinition(
 			objectDefinition.getObjectDefinitionId());
+	}
+
+	@Test
+	public void testAddObjectEntryWithBooleanObjectField() throws Exception {
+		ObjectDefinition objectDefinition = _createObjectDefinition(
+			Arrays.asList(
+				new BooleanObjectFieldBuilder(
+				).labelMap(
+					LocalizedMapUtil.getLocalizedMap(
+						RandomTestUtil.randomString())
+				).name(
+					"booleanObjectFieldName1"
+				).objectFieldSettings(
+					Arrays.asList(
+						_createObjectFieldSetting(
+							ObjectFieldSettingConstants.NAME_DEFAULT_VALUE,
+							"false"),
+						_createObjectFieldSetting(
+							ObjectFieldSettingConstants.NAME_DEFAULT_VALUE_TYPE,
+							ObjectFieldSettingConstants.VALUE_INPUT_AS_VALUE))
+				).build(),
+				new BooleanObjectFieldBuilder(
+				).labelMap(
+					LocalizedMapUtil.getLocalizedMap(
+						RandomTestUtil.randomString())
+				).name(
+					"booleanObjectFieldName2"
+				).objectFieldSettings(
+					Arrays.asList(
+						_createObjectFieldSetting(
+							ObjectFieldSettingConstants.NAME_DEFAULT_VALUE,
+							"false"),
+						_createObjectFieldSetting(
+							ObjectFieldSettingConstants.NAME_DEFAULT_VALUE_TYPE,
+							ObjectFieldSettingConstants.VALUE_INPUT_AS_VALUE))
+				).build(),
+				new BooleanObjectFieldBuilder(
+				).labelMap(
+					LocalizedMapUtil.getLocalizedMap(
+						RandomTestUtil.randomString())
+				).name(
+					"booleanObjectFieldName3"
+				).objectFieldSettings(
+					Arrays.asList(
+						_createObjectFieldSetting(
+							ObjectFieldSettingConstants.NAME_DEFAULT_VALUE,
+							"true"),
+						_createObjectFieldSetting(
+							ObjectFieldSettingConstants.NAME_DEFAULT_VALUE_TYPE,
+							ObjectFieldSettingConstants.VALUE_INPUT_AS_VALUE))
+				).build(),
+				new BooleanObjectFieldBuilder(
+				).labelMap(
+					LocalizedMapUtil.getLocalizedMap(
+						RandomTestUtil.randomString())
+				).name(
+					"booleanObjectFieldName4"
+				).objectFieldSettings(
+					Arrays.asList(
+						_createObjectFieldSetting(
+							ObjectFieldSettingConstants.NAME_DEFAULT_VALUE,
+							"isEmailAddress(textObjectFieldName)"),
+						_createObjectFieldSetting(
+							ObjectFieldSettingConstants.NAME_DEFAULT_VALUE_TYPE,
+							ObjectFieldSettingConstants.
+								VALUE_EXPRESSION_BUILDER))
+				).build(),
+				new TextObjectFieldBuilder(
+				).labelMap(
+					LocalizedMapUtil.getLocalizedMap(
+						RandomTestUtil.randomString())
+				).name(
+					"textObjectFieldName"
+				).build()),
+			ObjectDefinitionConstants.SCOPE_COMPANY);
+
+		try {
+			ObjectEntry objectEntry = _defaultObjectEntryManager.addObjectEntry(
+				_simpleDTOConverterContext, objectDefinition,
+				new ObjectEntry() {
+					{
+						properties = HashMapBuilder.<String, Object>put(
+							"booleanObjectFieldName1", true
+						).put(
+							"textObjectFieldName", RandomTestUtil.randomString()
+						).build();
+					}
+				},
+				null);
+
+			Assert.assertTrue(
+				MapUtil.getBoolean(
+					objectEntry.getProperties(), "booleanObjectFieldName1"));
+			Assert.assertFalse(
+				MapUtil.getBoolean(
+					objectEntry.getProperties(), "booleanObjectFieldName2"));
+			Assert.assertTrue(
+				MapUtil.getBoolean(
+					objectEntry.getProperties(), "booleanObjectFieldName3"));
+			Assert.assertFalse(
+				MapUtil.getBoolean(
+					objectEntry.getProperties(), "booleanObjectFieldName4"));
+		}
+		finally {
+			objectDefinitionLocalService.deleteObjectDefinition(
+				objectDefinition);
+		}
 	}
 
 	@Test
@@ -1766,6 +1880,55 @@ public class DefaultObjectEntryManagerImplTest
 	}
 
 	@Test
+	public void testAddObjectEntryWithRelationshipObjectField()
+		throws Exception {
+
+		ObjectEntry objectEntry = _addObjectEntry(
+			_objectDefinition1,
+			HashMapBuilder.<String, Object>put(
+				"textObjectFieldName", RandomTestUtil.randomString()
+			).build());
+
+		_user = _addUser();
+
+		Role role = _addRoleUser(
+			new String[] {ObjectActionKeys.ADD_OBJECT_ENTRY},
+			_objectDefinition2, _user);
+
+		AssertUtils.assertFailure(
+			PrincipalException.MustHavePermission.class,
+			StringBundler.concat(
+				"User ", _user.getUserId(), " must have VIEW permission for ",
+				_objectDefinition1.getClassName(), StringPool.SPACE,
+				objectEntry.getId()),
+			() -> _addObjectEntry(
+				_objectDefinition2,
+				HashMapBuilder.<String, Object>put(
+					_objectRelationshipFieldName, objectEntry.getId()
+				).build()));
+
+		_resourcePermissionLocalService.setResourcePermissions(
+			companyId, _objectDefinition1.getClassName(),
+			ResourceConstants.SCOPE_INDIVIDUAL,
+			String.valueOf(objectEntry.getId()), role.getRoleId(),
+			new String[] {ActionKeys.VIEW});
+
+		assertEquals(
+			_addObjectEntry(
+				_objectDefinition2,
+				HashMapBuilder.<String, Object>put(
+					_objectRelationshipFieldName, objectEntry.getId()
+				).build()),
+			new ObjectEntry() {
+				{
+					properties = HashMapBuilder.<String, Object>put(
+						_objectRelationshipFieldName, objectEntry.getId()
+					).build();
+				}
+			});
+	}
+
+	@Test
 	public void testAddObjectEntryWithRichTextObjectField() throws Exception {
 		ObjectDefinition objectDefinition = _createObjectDefinition(
 			Collections.singletonList(
@@ -1859,6 +2022,65 @@ public class DefaultObjectEntryManagerImplTest
 					).build();
 				}
 			});
+	}
+
+	@FeatureFlags("LPD-21926")
+	@Test
+	public void testAddOrUpdateObjectEntryWithFriendlyURL() throws Exception {
+		ObjectDefinition objectDefinition =
+			ObjectDefinitionTestUtil.publishObjectDefinition();
+
+		ObjectEntry objectEntry = _defaultObjectEntryManager.addObjectEntry(
+			_simpleDTOConverterContext, objectDefinition,
+			new ObjectEntry() {
+				{
+					setFriendlyUrlPath(RandomTestUtil.randomString());
+				}
+			},
+			ObjectDefinitionConstants.SCOPE_COMPANY);
+
+		Assert.assertEquals(
+			objectEntry.getExternalReferenceCode(),
+			objectEntry.getFriendlyUrlPath());
+
+		objectDefinition.setEnableFriendlyURLCustomization(true);
+
+		objectDefinition = objectDefinitionLocalService.updateObjectDefinition(
+			objectDefinition);
+
+		objectEntry = _defaultObjectEntryManager.updateObjectEntry(
+			_simpleDTOConverterContext, objectDefinition, objectEntry.getId(),
+			new ObjectEntry() {
+				{
+					setFriendlyUrlPath("Test URL");
+				}
+			});
+
+		Assert.assertEquals("test-url", objectEntry.getFriendlyUrlPath());
+
+		objectEntry = _defaultObjectEntryManager.addObjectEntry(
+			_simpleDTOConverterContext, objectDefinition,
+			new ObjectEntry() {
+				{
+					setFriendlyUrlPath_i18n(
+						HashMapBuilder.put(
+							"en_US", "Test URL"
+						).put(
+							"pt_BR", ""
+						).build());
+				}
+			},
+			ObjectDefinitionConstants.SCOPE_COMPANY);
+
+		AssertUtils.assertEquals(
+			HashMapBuilder.put(
+				"en_US", "test-url-1"
+			).put(
+				"pt_BR", objectEntry.getExternalReferenceCode()
+			).build(),
+			objectEntry.getFriendlyUrlPath_i18n());
+
+		objectDefinitionLocalService.deleteObjectDefinition(objectDefinition);
 	}
 
 	@Test
@@ -4084,7 +4306,7 @@ public class DefaultObjectEntryManagerImplTest
 							parentObjectEntry2.getExternalReferenceCode()
 						).put(
 							_objectRelationshipFieldName,
-							RandomTestUtil.randomLong()
+							parentObjectEntry2.getId()
 						).build();
 					}
 				}),
@@ -4290,6 +4512,50 @@ public class DefaultObjectEntryManagerImplTest
 			() -> _dlAppLocalService.getFileEntry(fileEntry2.getId()));
 
 		objectDefinitionLocalService.deleteObjectDefinition(objectDefinition);
+	}
+
+	@Test
+	public void testPartialUpdateObjectEntryWithReadOnlyFields()
+		throws Exception {
+
+		ObjectEntry objectEntry = _defaultObjectEntryManager.addObjectEntry(
+			dtoConverterContext, _objectDefinition2,
+			new ObjectEntry() {
+				{
+					properties = HashMapBuilder.<String, Object>put(
+						"attachmentObjectFieldName",
+						_getAttachmentObjectFieldValue()
+					).put(
+						"picklistObjectFieldName", _addListTypeEntry()
+					).put(
+						"textObjectFieldName", "Foo"
+					).build();
+				}
+			},
+			ObjectDefinitionConstants.SCOPE_COMPANY);
+
+		Object value1 = objectEntry.getPropertyValue(
+			"attachmentObjectFieldName");
+		Object value2 = objectEntry.getPropertyValue("picklistObjectFieldName");
+
+		objectEntry = _defaultObjectEntryManager.updateObjectEntry(
+			TestPropsValues.getCompanyId(), dtoConverterContext,
+			objectEntry.getExternalReferenceCode(), _objectDefinition2,
+			new ObjectEntry() {
+				{
+					properties = HashMapBuilder.put(
+						"attachmentObjectFieldName", value1
+					).put(
+						"picklistObjectFieldName", value2
+					).put(
+						"textObjectFieldName", "Edited"
+					).build();
+				}
+			},
+			ObjectDefinitionConstants.SCOPE_COMPANY);
+
+		Assert.assertEquals(
+			"Edited", objectEntry.getPropertyValue("textObjectFieldName"));
 	}
 
 	@Test

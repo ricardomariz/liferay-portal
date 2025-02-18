@@ -1,4 +1,4 @@
-@component-name = "portal-upgrades"
+@component-name = "portal-search"
 definition {
 
 	property app.server.types = "tomcat";
@@ -37,7 +37,7 @@ definition {
 
 			WebContent.addCP(webContentTitle = "WC Title ${count}");
 
-			WebContent.publishWithPermissions();
+			PortletEntry.publish();
 		}
 
 		Navigator.openSpecificURL(url = "http://localhost:8080");

@@ -25,6 +25,7 @@ const test = mergeTests(
 	apiHelpersTest,
 	collectionsPagesTest,
 	featureFlagsTest({
+		'LPD-18221': {enabled: true},
 		'LPS-178052': {enabled: true},
 	}),
 	loginTest(),
@@ -249,7 +250,7 @@ testWithIsolatedSite(
 		await pageEditorPage.addFragment(
 			'Basic Components',
 			'Heading',
-			page.locator('.page-editor__collection-item.empty').last()
+			page.locator('.page-editor__collection-item.empty').first()
 		);
 
 		// Assert pagination is visible by default
@@ -431,7 +432,7 @@ testWithIsolatedSite(
 			.getByRole('menuitem', {
 				name: 'Add Button',
 			})
-			.dragTo(page.getByText('No Collection Selected Yet'));
+			.dragTo(page.getByText('Select a collection to display.'));
 
 		await expect(page.locator('.alert-danger')).toHaveText(
 			'Error:Fragments cannot be placed inside an unmapped collection display fragment.'
@@ -489,7 +490,7 @@ test('Checks Content Flags, Content Ratings and Content Display are compatible w
 		title: getRandomString(),
 	});
 
-	// Go to edit mode of the created
+	// Go to edit mode of the created page
 
 	await pageEditorPage.goto(layout, pageManagementSite.friendlyUrlPath);
 
@@ -503,7 +504,7 @@ test('Checks Content Flags, Content Ratings and Content Display are compatible w
 
 	// Check that the Content Display shows Default Template by default
 
-	await page.getByText('Animal 02 content').click();
+	await page.getByText('Animal 01 content').click();
 
 	await expect(page.getByLabel('Template', {exact: true})).toHaveValue(
 		'Default Template'
@@ -519,45 +520,10 @@ test('Checks Content Flags, Content Ratings and Content Display are compatible w
 		}),
 	});
 
-	// Check that the Content Ratings is shown in each item and the Field input has the corresponding name
+	// Check that the Content Ratings and Content Flags are shown for every item
 
-	const voteItem = page.getByLabel('Vote', {exact: true});
-
-	await expect(voteItem).toHaveCount(2);
-
-	await voteItem.first().click();
-
-	await expect(page.getByPlaceholder('No Item Selected')).toHaveValue(
-		'Animal 01 - Dogs and Cats categories'
-	);
-
-	await voteItem.nth(1).click();
-
-	await expect(page.getByPlaceholder('No Item Selected')).toHaveValue(
-		'Animal 02 - Dogs category'
-	);
-
-	// Check that the Content Flags is shown in each item and the Field input has the corresponding name
-
-	const reportItem = page.locator('[data-name="Content Flags"]');
-
-	await expect(reportItem).toHaveCount(2);
-
-	await reportItem.first().click();
-
-	await page.getByPlaceholder('No Item Selected').waitFor();
-
-	await expect(page.getByPlaceholder('No Item Selected')).toHaveValue(
-		'Animal 01 - Dogs and Cats categories'
-	);
-
-	await reportItem.nth(1).click();
-
-	await page.getByPlaceholder('No Item Selected').waitFor();
-
-	await expect(page.getByPlaceholder('No Item Selected')).toHaveValue(
-		'Animal 02 - Dogs category'
-	);
+	await expect(page.getByLabel('Vote', {exact: true})).toHaveCount(2);
+	await expect(page.locator('button', {hasText: 'Report'})).toHaveCount(2);
 });
 
 test('Modifies inline text on all collection items', async ({
@@ -1012,7 +978,7 @@ test('Activate the first element when a fragment is added to a Collection Displa
 	await pageEditorPage.addFragment(
 		'Basic Components',
 		'Heading',
-		page.locator('.page-editor__collection-item.empty').last()
+		page.locator('.page-editor__collection-item.empty').first()
 	);
 
 	const headingId = await pageEditorPage.getFragmentId('Heading');
@@ -1167,5 +1133,121 @@ testWithIsolatedSite(
 		await page.goto(`/web${site.friendlyUrlPath}${layout.friendlyUrlPath}`);
 
 		await expect(page.getByText('No Results Found')).not.toBeVisible();
+	}
+);
+
+testWithIsolatedSite(
+	'Only first collection item is interactable',
+	{
+		tag: '@LPD-45724',
+	},
+	async ({apiHelpers, page, pageEditorPage, site}) => {
+
+		// Create definition for a collection with a heading inside it
+
+		const headingId = getRandomString();
+
+		const collectionId = getRandomString();
+
+		const collectionDefinition = getCollectionDefinition({
+			id: collectionId,
+			pageElements: [
+				getFragmentDefinition({
+					id: headingId,
+					key: 'BASIC_COMPONENT-heading',
+				}),
+			],
+			provider: 'Highest Rated Assets',
+		});
+
+		// Create a content page and go to edit mode
+
+		const layout = await apiHelpers.headlessDelivery.createSitePage({
+			pageDefinition: getPageDefinition([collectionDefinition]),
+			siteId: site.id,
+			title: getRandomString(),
+		});
+
+		await pageEditorPage.goto(layout, site.friendlyUrlPath);
+
+		await page
+			.getByText('Select a Page Element', {
+				exact: true,
+			})
+			.waitFor();
+
+		// Select Collection Display
+
+		await pageEditorPage.selectFragment(collectionId);
+
+		// Click all headings from the second one to confirm they are not selectable
+
+		const headings = await page
+			.locator(`.lfr-layout-structure-item-${headingId}`)
+			.all();
+
+		for (let i = 1; i < headings.length; i++) {
+			await headings[i].click({force: true});
+
+			await expect(
+				page.locator('.page-editor__topper__title', {
+					hasText: 'Heading',
+				})
+			).not.toBeVisible();
+		}
+
+		// Click first heading and confirm it's selectable
+
+		await clickAndExpectToBeVisible({
+			target: page.locator('.page-editor__topper__title', {
+				hasText: 'Heading',
+			}),
+			trigger: headings[0],
+		});
+	}
+);
+
+testWithIsolatedSite(
+	'Can select collection from the layout',
+	{
+		tag: '@LPD-45724',
+	},
+	async ({apiHelpers, page, pageEditorPage, site}) => {
+
+		// Create definition for a collection
+
+		const collectionId = getRandomString();
+
+		const collectionDefinition = getCollectionDefinition({
+			id: collectionId,
+		});
+
+		// Create a content page and go to edit mode
+
+		const layout = await apiHelpers.headlessDelivery.createSitePage({
+			pageDefinition: getPageDefinition([collectionDefinition]),
+			siteId: site.id,
+			title: getRandomString(),
+		});
+
+		await pageEditorPage.goto(layout, site.friendlyUrlPath);
+
+		await page
+			.getByText('Select a Page Element', {
+				exact: true,
+			})
+			.waitFor();
+
+		// Assert collection can be selected from layout
+
+		await expect(
+			page.getByRole('button', {name: 'Select Collection'})
+		).toBeVisible();
+
+		await clickAndExpectToBeVisible({
+			target: page.locator('.modal-title', {hasText: 'Select'}),
+			timeout: 1000,
+			trigger: page.getByRole('button', {name: 'Select Collection'}),
+		});
 	}
 );

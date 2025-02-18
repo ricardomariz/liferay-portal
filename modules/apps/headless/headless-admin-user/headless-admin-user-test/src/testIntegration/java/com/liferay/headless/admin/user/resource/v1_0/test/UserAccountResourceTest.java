@@ -12,13 +12,23 @@ import com.liferay.account.service.AccountEntryLocalService;
 import com.liferay.account.service.AccountEntryUserRelLocalService;
 import com.liferay.account.service.AccountRoleLocalService;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.asset.entry.rel.service.AssetEntryAssetCategoryRelLocalService;
+import com.liferay.asset.kernel.model.AssetCategory;
+import com.liferay.asset.kernel.model.AssetEntry;
+import com.liferay.asset.kernel.model.AssetVocabulary;
+import com.liferay.asset.kernel.service.AssetEntryLocalService;
+import com.liferay.asset.test.util.AssetTestUtil;
 import com.liferay.captcha.simplecaptcha.SimpleCaptchaImpl;
+import com.liferay.depot.model.DepotEntry;
+import com.liferay.depot.service.DepotEntryGroupRelLocalService;
+import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.expando.kernel.model.ExpandoColumnConstants;
 import com.liferay.expando.kernel.model.ExpandoTable;
 import com.liferay.expando.kernel.service.ExpandoColumnLocalService;
 import com.liferay.expando.kernel.service.ExpandoTableLocalService;
+import com.liferay.headless.admin.user.client.dto.v1_0.Creator;
 import com.liferay.headless.admin.user.client.dto.v1_0.CustomField;
 import com.liferay.headless.admin.user.client.dto.v1_0.CustomValue;
 import com.liferay.headless.admin.user.client.dto.v1_0.EmailAddress;
@@ -123,6 +133,7 @@ import com.liferay.portal.test.mail.MailMessage;
 import com.liferay.portal.test.mail.MailServiceTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.SynchronousMailTestRule;
+import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.vulcan.jaxrs.exception.mapper.BaseExceptionMapper;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 
@@ -580,6 +591,7 @@ public class UserAccountResourceTest extends BaseUserAccountResourceTestCase {
 
 		_testGetUserAccountWithGender();
 		_testGetUserAccountWithMoreExternalReferenceCodes();
+		_testGetUserAccountWithNestedFields();
 	}
 
 	@Override
@@ -2229,6 +2241,80 @@ public class UserAccountResourceTest extends BaseUserAccountResourceTestCase {
 					_userGroup.getExternalReferenceCode())));
 	}
 
+	private void _testGetUserAccountWithNestedFields() throws Exception {
+		User user = UserTestUtil.addUser();
+
+		AssetEntry assetEntry = _assetEntryLocalService.fetchEntry(
+			_classNameLocalService.getClassNameId(User.class),
+			user.getUserId());
+
+		AssetVocabulary assetVocabulary = AssetTestUtil.addVocabulary(
+			TestPropsValues.getGroupId());
+
+		AssetCategory assetCategory = AssetTestUtil.addCategory(
+			TestPropsValues.getGroupId(), assetVocabulary.getVocabularyId());
+
+		_assetEntryAssetCategoryRelLocalService.addAssetEntryAssetCategoryRel(
+			assetEntry.getEntryId(), assetCategory.getCategoryId());
+
+		DepotEntry depotEntry = _depotEntryLocalService.addDepotEntry(
+			HashMapBuilder.put(
+				LocaleUtil.getDefault(), RandomTestUtil.randomString()
+			).build(),
+			new HashMap<>(),
+			ServiceContextTestUtil.getServiceContext(
+				TestPropsValues.getGroupId(), user.getUserId()));
+
+		_depotEntryGroupRelLocalService.addDepotEntryGroupRel(
+			depotEntry.getDepotEntryId(), user.getGroupId());
+
+		Role role = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
+
+		_resourcePermissionLocalService.setResourcePermissions(
+			TestPropsValues.getCompanyId(), User.class.getName(),
+			ResourceConstants.SCOPE_INDIVIDUAL,
+			String.valueOf(user.getUserId()), role.getRoleId(),
+			new String[] {ActionKeys.DELETE});
+
+		UserAccountResource userAccountResource = UserAccountResource.builder(
+		).authentication(
+			"test@liferay.com", PropsValues.DEFAULT_ADMIN_PASSWORD
+		).locale(
+			LocaleUtil.getDefault()
+		).parameters(
+			"nestedFields",
+			"assetLibraryBriefs,creator,permissions,taxonomyCategoryBriefs"
+		).build();
+
+		UserAccount userAccount = userAccountResource.getUserAccount(
+			user.getUserId());
+
+		Assert.assertTrue(
+			ArrayUtil.exists(
+				userAccount.getAssetLibraryBriefs(),
+				assetLibraryBrief -> Objects.equals(
+					assetLibraryBrief.getGroupId(), depotEntry.getGroupId())));
+		Assert.assertNotNull(userAccount.getCreator());
+
+		Creator creator = userAccount.getCreator();
+
+		Assert.assertTrue(creator.getId() == TestPropsValues.getUserId());
+
+		Assert.assertTrue(
+			ArrayUtil.exists(
+				userAccount.getPermissions(),
+				permission ->
+					Objects.equals(permission.getRoleName(), role.getName()) &&
+					(permission.getActionIds().length == 1) &&
+					Objects.equals(permission.getActionIds()[0], "DELETE")));
+		Assert.assertTrue(
+			ArrayUtil.exists(
+				userAccount.getTaxonomyCategoryBriefs(),
+				taxonomyCategoryBrief -> Objects.equals(
+					taxonomyCategoryBrief.getTaxonomyCategoryId(),
+					assetCategory.getCategoryId())));
+	}
+
 	private void _testGetUserAccountWithRoles(
 			Group group, UnsafeRunnable<Exception> unsafeRunnable, User user)
 		throws Exception {
@@ -2741,10 +2827,23 @@ public class UserAccountResourceTest extends BaseUserAccountResourceTestCase {
 	private AccountRoleLocalService _accountRoleLocalService;
 
 	@Inject
+	private AssetEntryAssetCategoryRelLocalService
+		_assetEntryAssetCategoryRelLocalService;
+
+	@Inject
+	private AssetEntryLocalService _assetEntryLocalService;
+
+	@Inject
 	private ClassNameLocalService _classNameLocalService;
 
 	@Inject
 	private CompanyLocalService _companyLocalService;
+
+	@Inject
+	private DepotEntryGroupRelLocalService _depotEntryGroupRelLocalService;
+
+	@Inject
+	private DepotEntryLocalService _depotEntryLocalService;
 
 	@Inject
 	private ExpandoColumnLocalService _expandoColumnLocalService;

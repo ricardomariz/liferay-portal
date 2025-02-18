@@ -104,9 +104,8 @@ public abstract class BaseUserAccountResourceTestCase {
 		com.liferay.portal.kernel.model.User testCompanyAdminUser =
 			UserTestUtil.getAdminUser(testCompany.getCompanyId());
 
-		UserAccountResource.Builder builder = UserAccountResource.builder();
-
-		userAccountResource = builder.authentication(
+		userAccountResource = UserAccountResource.builder(
+		).authentication(
 			testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
@@ -5689,8 +5688,26 @@ public abstract class BaseUserAccountResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals(
+					"assetLibraryBriefs", additionalAssertFieldName)) {
+
+				if (userAccount.getAssetLibraryBriefs() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("birthDate", additionalAssertFieldName)) {
 				if (userAccount.getBirthDate() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("creator", additionalAssertFieldName)) {
+				if (userAccount.getCreator() == null) {
 					valid = false;
 				}
 
@@ -5881,6 +5898,14 @@ public abstract class BaseUserAccountResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("permissions", additionalAssertFieldName)) {
+				if (userAccount.getPermissions() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("profileURL", additionalAssertFieldName)) {
 				if (userAccount.getProfileURL() == null) {
 					valid = false;
@@ -5907,6 +5932,16 @@ public abstract class BaseUserAccountResourceTestCase {
 
 			if (Objects.equals("status", additionalAssertFieldName)) {
 				if (userAccount.getStatus() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"taxonomyCategoryBriefs", additionalAssertFieldName)) {
+
+				if (userAccount.getTaxonomyCategoryBriefs() == null) {
 					valid = false;
 				}
 
@@ -6095,10 +6130,33 @@ public abstract class BaseUserAccountResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals(
+					"assetLibraryBriefs", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						userAccount1.getAssetLibraryBriefs(),
+						userAccount2.getAssetLibraryBriefs())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("birthDate", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						userAccount1.getBirthDate(),
 						userAccount2.getBirthDate())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("creator", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						userAccount1.getCreator(), userAccount2.getCreator())) {
 
 					return false;
 				}
@@ -6384,6 +6442,17 @@ public abstract class BaseUserAccountResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("permissions", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						userAccount1.getPermissions(),
+						userAccount2.getPermissions())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("profileURL", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						userAccount1.getProfileURL(),
@@ -6420,6 +6489,19 @@ public abstract class BaseUserAccountResourceTestCase {
 			if (Objects.equals("status", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						userAccount1.getStatus(), userAccount2.getStatus())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"taxonomyCategoryBriefs", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						userAccount1.getTaxonomyCategoryBriefs(),
+						userAccount2.getTaxonomyCategoryBriefs())) {
 
 					return false;
 				}
@@ -6661,6 +6743,11 @@ public abstract class BaseUserAccountResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("assetLibraryBriefs")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("birthDate")) {
 			if (operator.equals("between")) {
 				Date date = userAccount.getBirthDate();
@@ -6690,6 +6777,11 @@ public abstract class BaseUserAccountResourceTestCase {
 			}
 
 			return sb.toString();
+		}
+
+		if (entityFieldName.equals("creator")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
 		}
 
 		if (entityFieldName.equals("currentPassword")) {
@@ -7510,6 +7602,11 @@ public abstract class BaseUserAccountResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("permissions")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("profileURL")) {
 			Object object = userAccount.getProfileURL();
 
@@ -7567,6 +7664,11 @@ public abstract class BaseUserAccountResourceTestCase {
 		}
 
 		if (entityFieldName.equals("status")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("taxonomyCategoryBriefs")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}

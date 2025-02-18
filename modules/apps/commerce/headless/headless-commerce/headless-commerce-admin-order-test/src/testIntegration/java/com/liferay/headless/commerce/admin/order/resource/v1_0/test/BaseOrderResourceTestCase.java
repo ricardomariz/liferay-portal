@@ -104,9 +104,8 @@ public abstract class BaseOrderResourceTestCase {
 		com.liferay.portal.kernel.model.User testCompanyAdminUser =
 			UserTestUtil.getAdminUser(testCompany.getCompanyId());
 
-		OrderResource.Builder builder = OrderResource.builder();
-
-		orderResource = builder.authentication(
+		orderResource = OrderResource.builder(
+		).authentication(
 			testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
@@ -2577,9 +2576,8 @@ public abstract class BaseOrderResourceTestCase {
 			}
 
 			if (Objects.equals("customFields", additionalAssertFieldName)) {
-				if (!equals(
-						(Map)order1.getCustomFields(),
-						(Map)order2.getCustomFields())) {
+				if (!Objects.deepEquals(
+						order1.getCustomFields(), order2.getCustomFields())) {
 
 					return false;
 				}

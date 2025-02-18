@@ -180,6 +180,7 @@
 			font-weight: 700 !important;
 			line-height: 1.5rem;
 			padding: 0.5rem 1rem 0rem 0.625rem;
+			scroll-margin-top: 200px;
 		}
 
 		.search-results .search-results-entry .search-results-entry-title a {
@@ -204,6 +205,10 @@
 			border-top: 0.0625rem solid var(--color-neutral-2, #E2E2E4);
 		}
 	}
+
+	.lfr-layout-structure-item-row {
+		overflow: visible;
+	}
 </style>
 
 <div class="container-release-highlights-search">
@@ -216,10 +221,10 @@
 					<div class="align-items-stretch pt-2 search-results-entry">
 						<#assign
 							articleTitle = restArticle.title
-							dashedTitle = restArticle.title?replace(" ", "-")
+							escapedTitle = htmlUtil.escapeURL(articleTitle)
 						/>
 
-						<div class="font-weight-bold search-results-entry-title text-decoration-none unstyled" id="${dashedTitle}">
+						<div class="font-weight-bold search-results-entry-title text-decoration-none unstyled" id="${escapedTitle}">
 							<div class="product-capabilities">
 								<#list restArticle.taxonomyCategoryBriefs as taxonomyCategoryBrief>
 									<#assign taxonomyVocabularyName = taxonomyCategoryBrief.embeddedTaxonomyCategory.parentTaxonomyVocabulary.name />
@@ -232,7 +237,7 @@
 								</#list>
 							</div>
 
-							<a class="text-decoration-none" href="#${dashedTitle}">
+							<a class="text-decoration-none" href="#${escapedTitle}">
 								${articleTitle}
 							</a>
 

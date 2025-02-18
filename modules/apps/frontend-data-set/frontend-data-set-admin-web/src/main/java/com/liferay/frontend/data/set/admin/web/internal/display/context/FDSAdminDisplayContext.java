@@ -226,6 +226,19 @@ public class FDSAdminDisplayContext {
 		return resourceURL.toString();
 	}
 
+	public String getSystemDataSetsURL() {
+		ResourceURL resourceURL =
+			(ResourceURL)PortalUtil.getControlPanelPortletURL(
+				_renderRequest, _themeDisplay.getScopeGroup(),
+				FDSAdminPortletKeys.FDS_ADMIN, 0, 0,
+				RenderRequest.RESOURCE_PHASE);
+
+		resourceURL.setResourceID(
+			"/frontend_data_set_admin/get_system_data_sets");
+
+		return resourceURL.toString();
+	}
+
 	public JSONArray getSystemFDSEntryJSONArray() throws Exception {
 		Set<String> systemFDSNames =
 			_systemFDSEntryRegistry.getSystemFDSNames();

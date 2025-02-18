@@ -28,9 +28,11 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.ResultRow;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
@@ -890,7 +892,9 @@ public class FolderActionDisplayContext {
 	private Boolean _isCopyActionVisible() throws PortalException {
 		Folder folder = _getFolder();
 
-		if ((folder == null) ||
+		User user = _dlRequestHelper.getUser();
+
+		if ((folder == null) || user.isGuestUser() ||
 			RepositoryUtil.isExternalRepository(_getRepositoryId())) {
 
 			return false;
@@ -953,10 +957,21 @@ public class FolderActionDisplayContext {
 			return false;
 		}
 
-		return DLFolderPermission.contains(
-			_dlRequestHelper.getPermissionChecker(),
-			_dlRequestHelper.getScopeGroupId(), _getFolderId(),
-			ActionKeys.UPDATE);
+		if ((FeatureFlagManagerUtil.isEnabled(
+				_themeDisplay.getCompanyId(), "LPD-42452") &&
+			 DLFolderPermission.contains(
+				 _dlRequestHelper.getPermissionChecker(),
+				 _dlRequestHelper.getScopeGroupId(), _getFolderId(),
+				 ActionKeys.ADVANCED_UPDATE)) ||
+			DLFolderPermission.contains(
+				_dlRequestHelper.getPermissionChecker(),
+				_dlRequestHelper.getScopeGroupId(), _getFolderId(),
+				ActionKeys.UPDATE)) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private boolean _isMoveFolderActionVisible() throws PortalException {

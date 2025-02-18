@@ -9,6 +9,12 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.kernel.service.persistence.AssetEntryQuery;
+import com.liferay.commerce.currency.model.CommerceCurrency;
+import com.liferay.commerce.currency.test.util.CommerceCurrencyTestUtil;
+import com.liferay.commerce.model.CommerceOrder;
+import com.liferay.commerce.product.model.CommerceChannel;
+import com.liferay.commerce.service.CommerceOrderLocalServiceUtil;
+import com.liferay.commerce.test.util.CommerceTestUtil;
 import com.liferay.counter.kernel.service.CounterLocalService;
 import com.liferay.depot.model.DepotEntry;
 import com.liferay.depot.service.DepotEntryLocalService;
@@ -22,7 +28,6 @@ import com.liferay.expando.kernel.model.ExpandoTable;
 import com.liferay.expando.kernel.model.ExpandoTableConstants;
 import com.liferay.expando.test.util.ExpandoTestUtil;
 import com.liferay.friendly.url.model.FriendlyURLEntry;
-import com.liferay.friendly.url.model.FriendlyURLEntryLocalization;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
 import com.liferay.list.type.entry.util.ListTypeEntryUtil;
 import com.liferay.list.type.model.ListTypeDefinition;
@@ -53,6 +58,7 @@ import com.liferay.object.field.builder.FormulaObjectFieldBuilder;
 import com.liferay.object.field.builder.IntegerObjectFieldBuilder;
 import com.liferay.object.field.builder.LongIntegerObjectFieldBuilder;
 import com.liferay.object.field.builder.LongTextObjectFieldBuilder;
+import com.liferay.object.field.builder.MultiselectPicklistObjectFieldBuilder;
 import com.liferay.object.field.builder.PicklistObjectFieldBuilder;
 import com.liferay.object.field.builder.PrecisionDecimalObjectFieldBuilder;
 import com.liferay.object.field.builder.RichTextObjectFieldBuilder;
@@ -99,6 +105,8 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.audit.AuditMessage;
 import com.liferay.portal.kernel.audit.AuditRouter;
+import com.liferay.portal.kernel.dao.db.DBManagerUtil;
+import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -113,6 +121,8 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.ModelListener;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
+import com.liferay.portal.kernel.model.SystemEvent;
+import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -128,6 +138,7 @@ import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.SystemEventLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService;
 import com.liferay.portal.kernel.test.AssertUtils;
@@ -156,6 +167,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -234,7 +246,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
  * @author Marco Leo
  * @author Brian Wing Shun Chan
  */
-@FeatureFlags({"LPD-32050", "LPD-34594"})
+@FeatureFlags("LPD-34594")
 @RunWith(Arquillian.class)
 public class ObjectEntryLocalServiceTest {
 
@@ -251,14 +263,13 @@ public class ObjectEntryLocalServiceTest {
 	public void setUp() throws Exception {
 		_draftObjectDefinition =
 			ObjectDefinitionTestUtil.addCustomObjectDefinition(
-				false,
 				Arrays.asList(
 					ObjectFieldUtil.createObjectField(
 						ObjectFieldConstants.BUSINESS_TYPE_TEXT,
 						ObjectFieldConstants.DB_TYPE_STRING,
 						RandomTestUtil.randomString(), StringUtil.randomId())));
 		_irrelevantObjectDefinition = _publishCustomObjectDefinition(
-			false,
+			true,
 			Arrays.asList(
 				ObjectFieldUtil.createObjectField(
 					ObjectFieldConstants.BUSINESS_TYPE_TEXT,
@@ -279,7 +290,7 @@ public class ObjectEntryLocalServiceTest {
 						"Multiple List Type Entry Key ", 6)));
 
 		_objectDefinition = _publishCustomObjectDefinition(
-			false,
+			true,
 			Arrays.asList(
 				ObjectFieldUtil.createObjectField(
 					ObjectFieldConstants.BUSINESS_TYPE_LONG_INTEGER,
@@ -484,7 +495,6 @@ public class ObjectEntryLocalServiceTest {
 		_objectDefinitionLocalService.deleteObjectDefinition(_objectDefinition);
 	}
 
-	@FeatureFlags("LPD-43542")
 	@Test
 	public void testAddAndUpdateObjectEntryWithObjectValidationRule()
 		throws Exception {
@@ -651,6 +661,7 @@ public class ObjectEntryLocalServiceTest {
 		}
 	}
 
+	@FeatureFlags("LPD-32050")
 	@Test
 	public void testAddObjectEntry() throws Exception {
 		_assertCount(0);
@@ -1059,7 +1070,7 @@ public class ObjectEntryLocalServiceTest {
 
 		ObjectDefinition objectDefinition =
 			ObjectDefinitionTestUtil.publishObjectDefinition(
-				Collections.singletonList(objectField));
+				true, Collections.singletonList(objectField));
 
 		ObjectField localizedObjectField1 =
 			ObjectFieldUtil.addCustomObjectField(
@@ -1699,14 +1710,13 @@ public class ObjectEntryLocalServiceTest {
 		_objectFieldLocalService.deleteObjectField(objectField2);
 	}
 
-	@FeatureFlags("LPD-43542")
+	@FeatureFlags("LPD-32050")
 	@Test
 	public void testAddObjectEntryWithFormulaObjectFieldAndObjectRelationship()
 		throws Exception {
 
 		ObjectDefinition objectDefinition1 =
-			ObjectDefinitionTestUtil.publishObjectDefinition(
-				true, Collections.emptyList());
+			ObjectDefinitionTestUtil.publishObjectDefinition();
 		ObjectDefinition objectDefinition2 =
 			ObjectDefinitionTestUtil.publishObjectDefinition();
 
@@ -2036,6 +2046,65 @@ public class ObjectEntryLocalServiceTest {
 				objectDefinitionAAA.getName()
 			},
 			_objectEntryLocalService, _objectRelationshipLocalService);
+	}
+
+	@Test
+	public void testAddObjectEntryWithMultiselectPicklistObjectField()
+		throws Exception {
+
+		String prefixKey = RandomTestUtil.randomString(60);
+
+		ListTypeDefinition listTypeDefinition =
+			_listTypeDefinitionLocalService.addListTypeDefinition(
+				null, TestPropsValues.getUserId(),
+				Collections.singletonMap(
+					LocaleUtil.getDefault(), RandomTestUtil.randomString()),
+				false,
+				_createListTypeEntries(
+					prefixKey, RandomTestUtil.randomString(), 100));
+
+		ObjectDefinition objectDefinition =
+			ObjectDefinitionTestUtil.publishObjectDefinition(
+				Collections.singletonList(
+					new MultiselectPicklistObjectFieldBuilder(
+					).labelMap(
+						LocalizedMapUtil.getLocalizedMap(
+							RandomTestUtil.randomString())
+					).listTypeDefinitionId(
+						listTypeDefinition.getListTypeDefinitionId()
+					).name(
+						"multiselectPicklistObjectField"
+					).build()));
+
+		_objectEntryLocalService.addObjectEntry(
+			TestPropsValues.getUserId(), 0,
+			objectDefinition.getObjectDefinitionId(),
+			HashMapBuilder.<String, Serializable>put(
+				"multiselectPicklistObjectField",
+				_getMultiselectPicklistObjectFieldValue(prefixKey, 10)
+			).build(),
+			new ServiceContext());
+
+		int expectedMaxLength = 5000;
+
+		if (DBManagerUtil.getDBType() == DBType.SQLSERVER) {
+			expectedMaxLength = 4000;
+		}
+
+		AssertUtils.assertFailure(
+			ObjectEntryValuesException.ExceedsTextMaxLength.class,
+			StringBundler.concat(
+				"Object entry value exceeds the maximum length of ",
+				expectedMaxLength, " characters for object field ",
+				"\"multiselectPicklistObjectField\""),
+			() -> _objectEntryLocalService.addObjectEntry(
+				TestPropsValues.getUserId(), 0,
+				objectDefinition.getObjectDefinitionId(),
+				HashMapBuilder.<String, Serializable>put(
+					"multiselectPicklistObjectField",
+					_getMultiselectPicklistObjectFieldValue(prefixKey, 100)
+				).build(),
+				new ServiceContext()));
 	}
 
 	@Test
@@ -2641,11 +2710,11 @@ public class ObjectEntryLocalServiceTest {
 			0, companyObjectDefinition.getObjectDefinitionId(),
 			Collections.emptyMap());
 
-		_assertURLTitleMap(
+		AssertUtils.assertEquals(
 			HashMapBuilder.put(
 				"en_US", companyObjectEntry1.getExternalReferenceCode()
 			).build(),
-			companyObjectDefinition, companyObjectEntry1);
+			companyObjectEntry1.getURLTitleMap());
 
 		companyObjectEntry1 = _objectEntryLocalService.updateObjectEntry(
 			TestPropsValues.getUserId(), companyObjectEntry1.getObjectEntryId(),
@@ -2656,11 +2725,11 @@ public class ObjectEntryLocalServiceTest {
 			).build(),
 			ServiceContextTestUtil.getServiceContext());
 
-		_assertURLTitleMap(
+		AssertUtils.assertEquals(
 			HashMapBuilder.put(
 				"en_US", "test-url"
 			).build(),
-			companyObjectDefinition, companyObjectEntry1);
+			companyObjectEntry1.getURLTitleMap());
 
 		ObjectField objectField = ObjectFieldUtil.addCustomObjectField(
 			new TextObjectFieldBuilder(
@@ -2693,13 +2762,13 @@ public class ObjectEntryLocalServiceTest {
 				"able", RandomTestUtil.randomString()
 			).build());
 
-		_assertURLTitleMap(
+		AssertUtils.assertEquals(
 			HashMapBuilder.put(
 				"en_US", "test-url-1"
 			).put(
 				"pt_BR", "test-url-1"
 			).build(),
-			companyObjectDefinition, companyObjectEntry2);
+			companyObjectEntry2.getURLTitleMap());
 
 		_assertFriendlyURLEntriesSize(
 			2, companyObjectDefinition, companyObjectEntry1);
@@ -2728,11 +2797,11 @@ public class ObjectEntryLocalServiceTest {
 				"able", "Test URL"
 			).build());
 
-		_assertURLTitleMap(
+		AssertUtils.assertEquals(
 			HashMapBuilder.put(
 				"en_US", "test-url"
 			).build(),
-			siteObjectDefinition, siteObjectEntry1);
+			siteObjectEntry1.getURLTitleMap());
 
 		Group group2 = GroupTestUtil.addGroup();
 
@@ -2742,11 +2811,11 @@ public class ObjectEntryLocalServiceTest {
 				"able", "Test URL"
 			).build());
 
-		_assertURLTitleMap(
+		AssertUtils.assertEquals(
 			HashMapBuilder.put(
 				"en_US", "test-url"
 			).build(),
-			siteObjectDefinition, siteObjectEntry2);
+			siteObjectEntry2.getURLTitleMap());
 
 		_objectDefinitionLocalService.deleteObjectDefinition(
 			siteObjectDefinition);
@@ -3122,15 +3191,25 @@ public class ObjectEntryLocalServiceTest {
 		_objectEntryLocalService.deleteObjectEntry(
 			objectEntry1.getObjectEntryId());
 
+		List<SystemEvent> systemEvents =
+			_systemEventLocalService.getSystemEvents(
+				0, _portal.getClassNameId(objectEntry1.getModelClassName()),
+				objectEntry1.getPrimaryKey());
+
+		SystemEvent systemEvent = systemEvents.get(0);
+
+		Assert.assertEquals(
+			objectEntry1.getExternalReferenceCode(),
+			systemEvent.getClassExternalReferenceCode());
+		Assert.assertEquals(
+			SystemEventConstants.TYPE_DELETE, systemEvent.getType());
+
 		AssertUtils.assertFailure(
 			NoSuchObjectEntryException.class,
 			"No ObjectEntry exists with the primary key " +
 				objectEntry1.getObjectEntryId(),
 			() -> _objectEntryLocalService.deleteObjectEntry(
 				objectEntry1.getObjectEntryId()));
-
-		_objectEntryLocalService.deleteObjectEntry(objectEntry1);
-
 		AssertUtils.assertFailure(
 			NoSuchObjectEntryException.class,
 			"No ObjectEntry exists with the primary key " +
@@ -4019,6 +4098,57 @@ public class ObjectEntryLocalServiceTest {
 	}
 
 	@Test
+	public void testUpdateCommerceOrderSystemObjectDefinitionWithJavaDelegateObjectValidationRule()
+		throws Exception {
+
+		Consumer<Map<String, Object>> consumer = inputObjects -> {
+			Map<String, Object> entryDTO =
+				(Map<String, Object>)inputObjects.get("entryDTO");
+
+			Assert.assertTrue(entryDTO.containsKey("customFieldName"));
+		};
+
+		try (Closeable closeable = _registerTestObjectValidationRuleEngine(
+				consumer, _OBJECT_VALIDATION_RULE_KEY)) {
+
+			ExpandoTable expandoTable = ExpandoTestUtil.addTable(
+				PortalUtil.getClassNameId(CommerceOrder.class),
+				ExpandoTableConstants.DEFAULT_TABLE_NAME);
+
+			ExpandoTestUtil.addColumn(
+				expandoTable, "customFieldName", ExpandoColumnConstants.STRING);
+
+			Group group = GroupTestUtil.addGroup();
+
+			CommerceCurrency commerceCurrency =
+				CommerceCurrencyTestUtil.addCommerceCurrency(
+					group.getCompanyId());
+
+			CommerceChannel commerceChannel =
+				CommerceTestUtil.addCommerceChannel(
+					group.getGroupId(), commerceCurrency.getCode());
+
+			CommerceOrder commerceOrder = CommerceTestUtil.addB2CCommerceOrder(
+				TestPropsValues.getUserId(), commerceChannel.getGroupId(),
+				commerceCurrency);
+
+			ObjectDefinition objectDefinition =
+				_objectDefinitionLocalService.fetchSystemObjectDefinition(
+					TestPropsValues.getCompanyId(), "CommerceOrder");
+
+			ObjectValidationRule objectValidationRule =
+				_addObjectValidationRule(
+					_OBJECT_VALIDATION_RULE_KEY, objectDefinition,
+					StringPool.BLANK);
+
+			CommerceOrderLocalServiceUtil.updateCommerceOrder(commerceOrder);
+
+			_objectValidationRuleLocalService.deleteObjectValidationRule(
+				objectValidationRule);
+		}
+	}
+
+	@Test
 	public void testUpdateObjectEntry() throws Exception {
 		_assertCount(0);
 
@@ -4523,7 +4653,7 @@ public class ObjectEntryLocalServiceTest {
 	}
 
 	@Test
-	public void testUpdateSystemObjectEntryWithJavaDelegateObjectValidationRule()
+	public void testUpdateUserSystemObjectWithJavaDelegateObjectValidationRule()
 		throws Exception {
 
 		Consumer<Map<String, Object>> consumer = inputObjects -> {
@@ -4546,12 +4676,8 @@ public class ObjectEntryLocalServiceTest {
 				"textObjectFieldValue", entryDTO.get("textObjectFieldName"));
 		};
 
-		String key =
-			ObjectValidationRuleConstants.ENGINE_TYPE_JAVA_DELEGATE_PREFIX +
-				RandomTestUtil.randomString();
-
 		try (Closeable closeable = _registerTestObjectValidationRuleEngine(
-				consumer, key)) {
+				consumer, _OBJECT_VALIDATION_RULE_KEY)) {
 
 			ExpandoTable expandoTable = ExpandoTestUtil.addTable(
 				PortalUtil.getClassNameId(User.class),
@@ -4568,10 +4694,6 @@ public class ObjectEntryLocalServiceTest {
 					expandoColumn.getName(), "customFieldValue"
 				).build());
 
-			ObjectDefinition objectDefinition =
-				_objectDefinitionLocalService.fetchSystemObjectDefinition(
-					TestPropsValues.getCompanyId(), "User");
-
 			User user = UserTestUtil.addUser(
 				TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
 				RandomTestUtil.randomString(
@@ -4580,6 +4702,10 @@ public class ObjectEntryLocalServiceTest {
 				serviceContext.getLocale(), RandomTestUtil.randomString(),
 				RandomTestUtil.randomString(),
 				new long[] {serviceContext.getScopeGroupId()}, serviceContext);
+
+			ObjectDefinition objectDefinition =
+				_objectDefinitionLocalService.fetchSystemObjectDefinition(
+					TestPropsValues.getCompanyId(), "User");
 
 			ObjectField objectField = _addCustomObjectField(
 				new TextObjectFieldBuilder(
@@ -4602,15 +4728,9 @@ public class ObjectEntryLocalServiceTest {
 					serviceContext);
 
 			ObjectValidationRule objectValidationRule =
-				_objectValidationRuleLocalService.addObjectValidationRule(
-					StringPool.BLANK, TestPropsValues.getUserId(),
-					objectDefinition.getObjectDefinitionId(), true, key,
-					LocalizedMapUtil.getLocalizedMap(
-						RandomTestUtil.randomString()),
-					LocalizedMapUtil.getLocalizedMap(
-						RandomTestUtil.randomString()),
-					ObjectValidationRuleConstants.OUTPUT_TYPE_FULL_VALIDATION,
-					"", false, Collections.emptyList());
+				_addObjectValidationRule(
+					_OBJECT_VALIDATION_RULE_KEY, objectDefinition,
+					StringPool.BLANK);
 
 			UserTestUtil.updateUser(user);
 
@@ -4692,6 +4812,19 @@ public class ObjectEntryLocalServiceTest {
 			errorLabelMap,
 			LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 			outputType, script, false, objectValidationRuleSettings);
+	}
+
+	private ObjectValidationRule _addObjectValidationRule(
+			String engine, ObjectDefinition objectDefinition, String script)
+		throws PortalException {
+
+		return _objectValidationRuleLocalService.addObjectValidationRule(
+			StringPool.BLANK, TestPropsValues.getUserId(),
+			objectDefinition.getObjectDefinitionId(), true, engine,
+			LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
+			LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
+			ObjectValidationRuleConstants.OUTPUT_TYPE_FULL_VALIDATION, script,
+			false, Collections.emptyList());
 	}
 
 	private ObjectEntry _addOrUpdateObjectEntry(
@@ -4869,31 +5002,6 @@ public class ObjectEntryLocalServiceTest {
 			objectValidationRuleResult.getObjectFieldName());
 	}
 
-	private void _assertURLTitleMap(
-			Map<String, String> expectedURLTitleMap,
-			ObjectDefinition objectDefinition, ObjectEntry objectEntry)
-		throws Exception {
-
-		Map<String, String> actualURLTitleMap = new HashMap<>();
-
-		FriendlyURLEntry friendlyURLEntry =
-			_friendlyURLEntryLocalService.getMainFriendlyURLEntry(
-				_classNameLocalService.getClassNameId(
-					objectDefinition.getClassName()),
-				objectEntry.getObjectEntryId());
-
-		for (FriendlyURLEntryLocalization friendlyURLEntryLocalization :
-				_friendlyURLEntryLocalService.getFriendlyURLEntryLocalizations(
-					friendlyURLEntry.getFriendlyURLEntryId())) {
-
-			actualURLTitleMap.put(
-				friendlyURLEntryLocalization.getLanguageId(),
-				friendlyURLEntryLocalization.getUrlTitle());
-		}
-
-		AssertUtils.assertEquals(expectedURLTitleMap, actualURLTitleMap);
-	}
-
 	private void _clearValidatedObjectEntryIds() {
 		ThreadLocal<Set<Long>> threadLocal = ReflectionTestUtil.getFieldValue(
 			ObjectEntryThreadLocal.class, "_validatedObjectEntryIds");
@@ -4947,6 +5055,22 @@ public class ObjectEntryLocalServiceTest {
 
 	private BigDecimal _getBigDecimal(long value) {
 		return BigDecimalUtil.stripTrailingZeros(BigDecimal.valueOf(value));
+	}
+
+	private String _getMultiselectPicklistObjectFieldValue(
+		String prefixKey, int size) {
+
+		StringBundler sb = new StringBundler();
+
+		for (int i = 1; i <= size; i++) {
+			sb.append(prefixKey + i);
+
+			if (i < size) {
+				sb.append(StringPool.COMMA_AND_SPACE);
+			}
+		}
+
+		return sb.toString();
 	}
 
 	private String _getNoSuchAlgorithmExceptionMessage() {
@@ -5660,6 +5784,10 @@ public class ObjectEntryLocalServiceTest {
 			objectValidationRule);
 	}
 
+	private static final String _OBJECT_VALIDATION_RULE_KEY =
+		ObjectValidationRuleConstants.ENGINE_TYPE_JAVA_DELEGATE_PREFIX +
+			RandomTestUtil.randomString();
+
 	@Inject
 	private AssetEntryLocalService _assetEntryLocalService;
 
@@ -5737,6 +5865,9 @@ public class ObjectEntryLocalServiceTest {
 	private ObjectValidationRuleLocalService _objectValidationRuleLocalService;
 
 	@Inject
+	private Portal _portal;
+
+	@Inject
 	private ResourceActions _resourceActions;
 
 	@Inject
@@ -5744,6 +5875,9 @@ public class ObjectEntryLocalServiceTest {
 
 	@Inject
 	private RoleLocalService _roleLocalService;
+
+	@Inject
+	private SystemEventLocalService _systemEventLocalService;
 
 	@Inject
 	private UserLocalService _userLocalService;

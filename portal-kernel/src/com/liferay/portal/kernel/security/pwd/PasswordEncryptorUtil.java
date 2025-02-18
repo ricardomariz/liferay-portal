@@ -80,13 +80,24 @@ public class PasswordEncryptorUtil {
 		return _encrypt(algorithm, plainTextPassword, encryptedPassword, false);
 	}
 
+	public static String getEncryptedPasswordAlgorithmSettings(
+			String encryptedPassword)
+		throws PwdEncryptorException {
+
+		PasswordEncryptor passwordEncryptor = _getPasswordEncryptor(
+			_getEncryptedPasswordAlgorithm(encryptedPassword));
+
+		return passwordEncryptor.getEncryptedPasswordAlgorithmSettings(
+			encryptedPassword);
+	}
+
 	private static String _encrypt(
 			String algorithm, String plainTextPassword,
 			String encryptedPassword, boolean upgradeHashSecurity)
 		throws PwdEncryptorException {
 
 		if (Validator.isNull(plainTextPassword)) {
-			throw new PwdEncryptorException(
+			throw new PwdEncryptorException.PwdMustNotBeNull(
 				"Unable to _encrypt blank password");
 		}
 
@@ -126,7 +137,7 @@ public class PasswordEncryptorUtil {
 			}
 		}
 
-		PasswordEncryptor passwordEncryptor = _select(algorithm);
+		PasswordEncryptor passwordEncryptor = _getPasswordEncryptor(algorithm);
 
 		String newEncryptedPassword = passwordEncryptor.encrypt(
 			algorithm, plainTextPassword, encryptedPassword, false);
@@ -162,7 +173,8 @@ public class PasswordEncryptorUtil {
 	}
 
 	private static String _getEncryptedPasswordAlgorithm(
-		String encryptedPassword) {
+			String encryptedPassword)
+		throws PwdEncryptorException {
 
 		String legacyAlgorithm = GetterUtil.getString(
 			PropsUtil.get(PropsKeys.PASSWORDS_ENCRYPTION_ALGORITHM_LEGACY));
@@ -193,7 +205,14 @@ public class PasswordEncryptorUtil {
 				return legacyAlgorithm;
 			}
 
-			return _PASSWORDS_ENCRYPTION_ALGORITHM;
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Property \"" +
+						PropsKeys.PASSWORDS_ENCRYPTION_ALGORITHM_LEGACY +
+							"\" is not set");
+			}
+
+			throw new PwdEncryptorException.MustSetLegacyAlgorithmProperty();
 		}
 		else if (Validator.isNotNull(encryptedPassword) &&
 				 (encryptedPassword.charAt(0) == CharPool.OPEN_CURLY_BRACE)) {
@@ -215,7 +234,7 @@ public class PasswordEncryptorUtil {
 		return null;
 	}
 
-	private static PasswordEncryptor _select(String algorithm) {
+	private static PasswordEncryptor _getPasswordEncryptor(String algorithm) {
 		if (Validator.isNull(algorithm)) {
 			throw new IllegalArgumentException("Invalid algorithm");
 		}

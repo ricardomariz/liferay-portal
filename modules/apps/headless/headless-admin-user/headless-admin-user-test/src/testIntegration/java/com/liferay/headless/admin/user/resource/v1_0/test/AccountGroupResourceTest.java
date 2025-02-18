@@ -9,6 +9,7 @@ import com.liferay.account.constants.AccountConstants;
 import com.liferay.account.model.AccountEntry;
 import com.liferay.account.service.AccountEntryLocalService;
 import com.liferay.account.service.AccountGroupLocalService;
+import com.liferay.account.service.AccountGroupRelLocalService;
 import com.liferay.account.service.AccountGroupRelLocalServiceUtil;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.expando.kernel.model.ExpandoColumn;
@@ -17,28 +18,41 @@ import com.liferay.expando.kernel.model.ExpandoTable;
 import com.liferay.expando.kernel.service.ExpandoColumnLocalService;
 import com.liferay.expando.kernel.service.ExpandoTableLocalService;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountGroup;
+import com.liferay.headless.admin.user.client.dto.v1_0.Creator;
 import com.liferay.headless.admin.user.client.dto.v1_0.CustomField;
 import com.liferay.headless.admin.user.client.dto.v1_0.CustomValue;
 import com.liferay.headless.admin.user.client.pagination.Page;
 import com.liferay.headless.admin.user.client.pagination.Pagination;
 import com.liferay.headless.admin.user.client.problem.Problem;
+import com.liferay.headless.admin.user.client.resource.v1_0.AccountGroupResource;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.model.ResourceConstants;
+import com.liferay.portal.kernel.model.Role;
+import com.liferay.portal.kernel.model.role.RoleConstants;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
+import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.Inject;
+import com.liferay.portal.util.PropsValues;
 
 import java.text.DateFormat;
 
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -60,13 +74,15 @@ public class AccountGroupResourceTest extends BaseAccountGroupResourceTestCase {
 
 		_serviceContext = ServiceContextTestUtil.getServiceContext();
 
-		_accountEntry = _accountEntryLocalService.addAccountEntry(
-			_serviceContext.getUserId(),
-			AccountConstants.PARENT_ACCOUNT_ENTRY_ID_DEFAULT,
-			RandomTestUtil.randomString(), null, null,
-			RandomTestUtil.randomString() + "@liferay.com", null, null,
-			AccountConstants.ACCOUNT_ENTRY_TYPE_GUEST,
-			WorkflowConstants.STATUS_APPROVED, _serviceContext);
+		_accountEntry = _addAccountEntry();
+	}
+
+	@Override
+	@Test
+	public void testGetAccountGroup() throws Exception {
+		super.testGetAccountGroup();
+
+		_testGetAccountGroupWithNestedFields();
 	}
 
 	@Override
@@ -307,6 +323,16 @@ public class AccountGroupResourceTest extends BaseAccountGroupResourceTestCase {
 		return _postAccountGroup(randomAccountGroup());
 	}
 
+	private AccountEntry _addAccountEntry() throws Exception {
+		return _accountEntryLocalService.addAccountEntry(
+			_serviceContext.getUserId(),
+			AccountConstants.PARENT_ACCOUNT_ENTRY_ID_DEFAULT,
+			RandomTestUtil.randomString(), null, null,
+			RandomTestUtil.randomString() + "@liferay.com", null, null,
+			AccountConstants.ACCOUNT_ENTRY_TYPE_GUEST,
+			WorkflowConstants.STATUS_APPROVED, _serviceContext);
+	}
+
 	private AccountGroup _postAccountGroup(AccountGroup accountGroup)
 		throws Exception {
 
@@ -432,6 +458,73 @@ public class AccountGroupResourceTest extends BaseAccountGroupResourceTestCase {
 		assertContains(accountGroup2, (List<AccountGroup>)page.getItems());
 	}
 
+	private void _testGetAccountGroupWithNestedFields() throws Exception {
+		AccountGroup postAccountGroup = testGetAccountGroup_addAccountGroup();
+
+		AccountEntry accountEntry1 = _addAccountEntry();
+		AccountEntry accountEntry2 = _addAccountEntry();
+		AccountEntry accountEntry3 = _addAccountEntry();
+
+		_accountGroupRelLocalService.addAccountGroupRels(
+			postAccountGroup.getId(), AccountEntry.class.getName(),
+			new long[] {
+				accountEntry1.getAccountEntryId(),
+				accountEntry2.getAccountEntryId()
+			});
+
+		Role role = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
+
+		_resourcePermissionLocalService.setResourcePermissions(
+			TestPropsValues.getCompanyId(),
+			com.liferay.account.model.AccountGroup.class.getName(),
+			ResourceConstants.SCOPE_INDIVIDUAL,
+			String.valueOf(postAccountGroup.getId()), role.getRoleId(),
+			new String[] {ActionKeys.DELETE});
+
+		AccountGroupResource accountGroupResource =
+			AccountGroupResource.builder(
+			).authentication(
+				"test@liferay.com", PropsValues.DEFAULT_ADMIN_PASSWORD
+			).locale(
+				LocaleUtil.getDefault()
+			).parameters(
+				"nestedFields", "accountBriefs,creator,permissions"
+			).build();
+
+		AccountGroup getAccountGroup = accountGroupResource.getAccountGroup(
+			postAccountGroup.getId());
+
+		Assert.assertTrue(
+			ArrayUtil.exists(
+				getAccountGroup.getAccountBriefs(),
+				accountBrief ->
+					accountBrief.getId() == accountEntry1.getAccountEntryId()));
+		Assert.assertTrue(
+			ArrayUtil.exists(
+				getAccountGroup.getAccountBriefs(),
+				accountBrief ->
+					accountBrief.getId() == accountEntry2.getAccountEntryId()));
+		Assert.assertFalse(
+			ArrayUtil.exists(
+				getAccountGroup.getAccountBriefs(),
+				accountBrief ->
+					accountBrief.getId() == accountEntry3.getAccountEntryId()));
+
+		Assert.assertNotNull(getAccountGroup.getCreator());
+
+		Creator creator = getAccountGroup.getCreator();
+
+		Assert.assertTrue(creator.getId() == TestPropsValues.getUserId());
+
+		Assert.assertTrue(
+			ArrayUtil.exists(
+				getAccountGroup.getPermissions(),
+				permission ->
+					Objects.equals(permission.getRoleName(), role.getName()) &&
+					(permission.getActionIds().length == 1) &&
+					Objects.equals(permission.getActionIds()[0], "DELETE")));
+	}
+
 	private void _testPatchAccountGroupByExternalReferenceCodeWithoutName()
 		throws Exception {
 
@@ -538,6 +631,9 @@ public class AccountGroupResourceTest extends BaseAccountGroupResourceTestCase {
 	private AccountGroupLocalService _accountGroupLocalService;
 
 	@Inject
+	private AccountGroupRelLocalService _accountGroupRelLocalService;
+
+	@Inject
 	private ClassNameLocalService _classNameLocalService;
 
 	@Inject
@@ -545,6 +641,9 @@ public class AccountGroupResourceTest extends BaseAccountGroupResourceTestCase {
 
 	@Inject
 	private ExpandoTableLocalService _expandoTableLocalService;
+
+	@Inject
+	private ResourcePermissionLocalService _resourcePermissionLocalService;
 
 	private ServiceContext _serviceContext;
 

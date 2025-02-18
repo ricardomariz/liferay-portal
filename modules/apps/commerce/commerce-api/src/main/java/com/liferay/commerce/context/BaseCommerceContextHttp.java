@@ -17,11 +17,11 @@ import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.order.CommerceOrderHttpHelper;
 import com.liferay.commerce.product.constants.CommerceChannelAccountEntryRelConstants;
 import com.liferay.commerce.product.constants.CommerceChannelConstants;
+import com.liferay.commerce.product.discovery.CPConfigurationListDiscovery;
 import com.liferay.commerce.product.model.CPConfigurationList;
 import com.liferay.commerce.product.model.CommerceCatalog;
 import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.model.CommerceChannelAccountEntryRel;
-import com.liferay.commerce.product.service.CPConfigurationListLocalService;
 import com.liferay.commerce.product.service.CommerceCatalogLocalService;
 import com.liferay.commerce.product.service.CommerceChannelAccountEntryRelLocalService;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
@@ -64,7 +64,7 @@ public class BaseCommerceContextHttp implements CommerceContext {
 		CommerceCurrencyLocalService commerceCurrencyLocalService,
 		CommerceOrderHttpHelper commerceOrderHttpHelper,
 		ConfigurationProvider configurationProvider,
-		CPConfigurationListLocalService cpConfigurationListLocalService,
+		CPConfigurationListDiscovery cpConfigurationListDiscovery,
 		Portal portal) {
 
 		_httpServletRequest = httpServletRequest;
@@ -76,7 +76,7 @@ public class BaseCommerceContextHttp implements CommerceContext {
 		_commerceChannelLocalService = commerceChannelLocalService;
 		_commerceCurrencyLocalService = commerceCurrencyLocalService;
 		_commerceOrderHttpHelper = commerceOrderHttpHelper;
-		_cpConfigurationListLocalService = cpConfigurationListLocalService;
+		_cpConfigurationListDiscovery = cpConfigurationListDiscovery;
 		_portal = portal;
 
 		try {
@@ -286,10 +286,10 @@ public class BaseCommerceContextHttp implements CommerceContext {
 			return 0;
 		}
 
-		Map<Long, CPConfigurationList> cpConfigurationListMap =
-			_getCPConfigurationListMap();
+		Map<Long, CPConfigurationList> cpConfigurationLists =
+			_getCPConfigurationLists();
 
-		CPConfigurationList cpConfigurationList = cpConfigurationListMap.get(
+		CPConfigurationList cpConfigurationList = cpConfigurationLists.get(
 			groupId);
 
 		return cpConfigurationList.getCPConfigurationListId();
@@ -297,11 +297,11 @@ public class BaseCommerceContextHttp implements CommerceContext {
 
 	@Override
 	public long[] getCPConfigurationListIds() throws PortalException {
-		Map<Long, CPConfigurationList> cpConfigurationListMap =
-			_getCPConfigurationListMap();
+		Map<Long, CPConfigurationList> cpConfigurationLists =
+			_getCPConfigurationLists();
 
 		return TransformUtil.transformToLongArray(
-			cpConfigurationListMap.values(),
+			cpConfigurationLists.values(),
 			CPConfigurationList::getCPConfigurationListId);
 	}
 
@@ -350,14 +350,14 @@ public class BaseCommerceContextHttp implements CommerceContext {
 		return commerceCurrency;
 	}
 
-	private Map<Long, CPConfigurationList> _getCPConfigurationListMap()
+	private Map<Long, CPConfigurationList> _getCPConfigurationLists()
 		throws PortalException {
 
-		if (MapUtil.isNotEmpty(_cpConfigurationListMap)) {
-			return _cpConfigurationListMap;
+		if (MapUtil.isNotEmpty(_cpConfigurationLists)) {
+			return _cpConfigurationLists;
 		}
 
-		_cpConfigurationListMap = new HashMap<>();
+		_cpConfigurationLists = new HashMap<>();
 
 		long orderTypeId = 0;
 
@@ -370,20 +370,18 @@ public class BaseCommerceContextHttp implements CommerceContext {
 		for (long groupId :
 				TransformUtil.transformToLongArray(
 					_commerceCatalogLocalService.getCommerceCatalogs(
-						_portal.getCompanyId(_httpServletRequest), false),
+						_portal.getCompanyId(_httpServletRequest)),
 					CommerceCatalog::getGroupId)) {
 
-			List<CPConfigurationList> cpConfigurationLists =
-				_cpConfigurationListLocalService.getCPConfigurationLists(
+			_cpConfigurationLists.put(
+				groupId,
+				_cpConfigurationListDiscovery.getCPConfigurationList(
 					_portal.getCompanyId(_httpServletRequest), groupId,
 					CommerceUtil.getCommerceAccountId(this),
-					getCommerceAccountGroupIds(), getCommerceChannelId(),
-					orderTypeId);
-
-			_cpConfigurationListMap.put(groupId, cpConfigurationLists.get(0));
+					getCommerceChannelId(), orderTypeId));
 		}
 
-		return _cpConfigurationListMap;
+		return _cpConfigurationLists;
 	}
 
 	private boolean _isChannelAccountEntry(
@@ -426,9 +424,8 @@ public class BaseCommerceContextHttp implements CommerceContext {
 	private final CommerceCurrencyLocalService _commerceCurrencyLocalService;
 	private CommerceOrder _commerceOrder;
 	private final CommerceOrderHttpHelper _commerceOrderHttpHelper;
-	private final CPConfigurationListLocalService
-		_cpConfigurationListLocalService;
-	private Map<Long, CPConfigurationList> _cpConfigurationListMap;
+	private final CPConfigurationListDiscovery _cpConfigurationListDiscovery;
+	private Map<Long, CPConfigurationList> _cpConfigurationLists;
 	private final HttpServletRequest _httpServletRequest;
 	private final Portal _portal;
 

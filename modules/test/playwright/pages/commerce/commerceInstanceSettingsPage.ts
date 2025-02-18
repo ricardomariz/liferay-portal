@@ -10,7 +10,9 @@ import {ApplicationsMenuPage} from '../product-navigation-applications-menu/Appl
 export class CommerceInstanceSettingsPage {
 	readonly applicationsMenuPage: ApplicationsMenuPage;
 	readonly catalogLink: Locator;
+	readonly checkboxPlacedOrders: (checkboxName: string) => Locator;
 	readonly page: Page;
+	readonly productOptionMenuItem: Locator;
 	readonly showUnselectableOptionsCheckbox: Locator;
 	readonly submitConfigurationButton: Locator;
 
@@ -20,7 +22,12 @@ export class CommerceInstanceSettingsPage {
 			exact: true,
 			name: 'Catalog',
 		});
+		this.checkboxPlacedOrders = (checkboxName) =>
+			page.getByLabel(checkboxName, {exact: true});
 		this.page = page;
+		this.productOptionMenuItem = page.getByRole('menuitem', {
+			name: 'Product Options',
+		});
 		this.showUnselectableOptionsCheckbox = page.getByLabel(
 			'Show Unselectable Options'
 		);
@@ -52,6 +59,7 @@ export class CommerceInstanceSettingsPage {
 	async toggleShowUnselectableOptions(check: boolean) {
 		await this.goto();
 		await this.catalogLink.click();
+		await this.productOptionMenuItem.click();
 
 		if (check) {
 			await this.showUnselectableOptionsCheckbox.check();

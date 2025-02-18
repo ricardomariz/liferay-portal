@@ -39,6 +39,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
+import com.liferay.portal.search.test.rule.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.PropsValues;
@@ -102,9 +103,8 @@ public abstract class BaseRoleResourceTestCase {
 		com.liferay.portal.kernel.model.User testCompanyAdminUser =
 			UserTestUtil.getAdminUser(testCompany.getCompanyId());
 
-		RoleResource.Builder builder = RoleResource.builder();
-
-		roleResource = builder.authentication(
+		roleResource = RoleResource.builder(
+		).authentication(
 			testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
@@ -190,7 +190,7 @@ public abstract class BaseRoleResourceTestCase {
 	@Test
 	public void testGetRolesPage() throws Exception {
 		Page<Role> page = roleResource.getRolesPage(
-			null, null, Pagination.of(1, 10));
+			null, null, null, Pagination.of(1, 10));
 
 		long totalCount = page.getTotalCount();
 
@@ -198,7 +198,8 @@ public abstract class BaseRoleResourceTestCase {
 
 		Role role2 = testGetRolesPage_addRole(randomRole());
 
-		page = roleResource.getRolesPage(null, null, Pagination.of(1, 10));
+		page = roleResource.getRolesPage(
+			null, null, null, Pagination.of(1, 10));
 
 		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
@@ -221,8 +222,76 @@ public abstract class BaseRoleResourceTestCase {
 	}
 
 	@Test
+	public void testGetRolesPageWithFilterDateTimeEquals() throws Exception {
+		List<EntityField> entityFields = getEntityFields(
+			EntityField.Type.DATE_TIME);
+
+		if (entityFields.isEmpty()) {
+			return;
+		}
+
+		Role role1 = randomRole();
+
+		role1 = testGetRolesPage_addRole(role1);
+
+		for (EntityField entityField : entityFields) {
+			Page<Role> page = roleResource.getRolesPage(
+				null, null, getFilterString(entityField, "between", role1),
+				Pagination.of(1, 2));
+
+			assertEquals(
+				Collections.singletonList(role1), (List<Role>)page.getItems());
+		}
+	}
+
+	@Test
+	public void testGetRolesPageWithFilterDoubleEquals() throws Exception {
+		testGetRolesPageWithFilter("eq", EntityField.Type.DOUBLE);
+	}
+
+	@Test
+	public void testGetRolesPageWithFilterStringContains() throws Exception {
+		testGetRolesPageWithFilter("contains", EntityField.Type.STRING);
+	}
+
+	@Test
+	public void testGetRolesPageWithFilterStringEquals() throws Exception {
+		testGetRolesPageWithFilter("eq", EntityField.Type.STRING);
+	}
+
+	@Test
+	public void testGetRolesPageWithFilterStringStartsWith() throws Exception {
+		testGetRolesPageWithFilter("startswith", EntityField.Type.STRING);
+	}
+
+	protected void testGetRolesPageWithFilter(
+			String operator, EntityField.Type type)
+		throws Exception {
+
+		List<EntityField> entityFields = getEntityFields(type);
+
+		if (entityFields.isEmpty()) {
+			return;
+		}
+
+		Role role1 = testGetRolesPage_addRole(randomRole());
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		Role role2 = testGetRolesPage_addRole(randomRole());
+
+		for (EntityField entityField : entityFields) {
+			Page<Role> page = roleResource.getRolesPage(
+				null, null, getFilterString(entityField, operator, role1),
+				Pagination.of(1, 2));
+
+			assertEquals(
+				Collections.singletonList(role1), (List<Role>)page.getItems());
+		}
+	}
+
+	@Test
 	public void testGetRolesPageWithPagination() throws Exception {
-		Page<Role> rolePage = roleResource.getRolesPage(null, null, null);
+		Page<Role> rolePage = roleResource.getRolesPage(null, null, null, null);
 
 		int totalCount = GetterUtil.getInteger(rolePage.getTotalCount());
 
@@ -238,7 +307,7 @@ public abstract class BaseRoleResourceTestCase {
 
 		if (totalCount >= (pageSizeLimit - 2)) {
 			Page<Role> page1 = roleResource.getRolesPage(
-				null, null,
+				null, null, null,
 				Pagination.of(
 					(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
 					pageSizeLimit));
@@ -248,7 +317,7 @@ public abstract class BaseRoleResourceTestCase {
 			assertContains(role1, (List<Role>)page1.getItems());
 
 			Page<Role> page2 = roleResource.getRolesPage(
-				null, null,
+				null, null, null,
 				Pagination.of(
 					(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
 					pageSizeLimit));
@@ -256,7 +325,7 @@ public abstract class BaseRoleResourceTestCase {
 			assertContains(role2, (List<Role>)page2.getItems());
 
 			Page<Role> page3 = roleResource.getRolesPage(
-				null, null,
+				null, null, null,
 				Pagination.of(
 					(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
 					pageSizeLimit));
@@ -265,7 +334,7 @@ public abstract class BaseRoleResourceTestCase {
 		}
 		else {
 			Page<Role> page1 = roleResource.getRolesPage(
-				null, null, Pagination.of(1, totalCount + 2));
+				null, null, null, Pagination.of(1, totalCount + 2));
 
 			List<Role> roles1 = (List<Role>)page1.getItems();
 
@@ -273,7 +342,7 @@ public abstract class BaseRoleResourceTestCase {
 				roles1.toString(), totalCount + 2, roles1.size());
 
 			Page<Role> page2 = roleResource.getRolesPage(
-				null, null, Pagination.of(2, totalCount + 2));
+				null, null, null, Pagination.of(2, totalCount + 2));
 
 			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
 
@@ -282,7 +351,7 @@ public abstract class BaseRoleResourceTestCase {
 			Assert.assertEquals(roles2.toString(), 1, roles2.size());
 
 			Page<Role> page3 = roleResource.getRolesPage(
-				null, null, Pagination.of(1, (int)totalCount + 3));
+				null, null, null, Pagination.of(1, (int)totalCount + 3));
 
 			assertContains(role1, (List<Role>)page3.getItems());
 			assertContains(role2, (List<Role>)page3.getItems());
@@ -1222,6 +1291,9 @@ public abstract class BaseRoleResourceTestCase {
 			"This method needs to be implemented");
 	}
 
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
 	protected Role testGraphQLRole_addRole() throws Exception {
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
@@ -1365,6 +1437,14 @@ public abstract class BaseRoleResourceTestCase {
 
 			if (Objects.equals("name_i18n", additionalAssertFieldName)) {
 				if (role.getName_i18n() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("permissions", additionalAssertFieldName)) {
+				if (role.getPermissions() == null) {
 					valid = false;
 				}
 
@@ -1606,6 +1686,16 @@ public abstract class BaseRoleResourceTestCase {
 			if (Objects.equals("name_i18n", additionalAssertFieldName)) {
 				if (!equals(
 						(Map)role1.getName_i18n(), (Map)role2.getName_i18n())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("permissions", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						role1.getPermissions(), role2.getPermissions())) {
 
 					return false;
 				}
@@ -1967,6 +2057,11 @@ public abstract class BaseRoleResourceTestCase {
 		}
 
 		if (entityFieldName.equals("name_i18n")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("permissions")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}

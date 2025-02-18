@@ -5,6 +5,9 @@
 
 package com.liferay.portal.security.password.encryptor.internal;
 
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PwdEncryptorException;
 import com.liferay.portal.kernel.io.BigEndianCodec;
@@ -45,47 +48,69 @@ public class PBKDF2PasswordEncryptor implements PasswordEncryptor {
 			String encryptedPassword, boolean upgradeHashSecurity)
 		throws PwdEncryptorException {
 
+		if (upgradeHashSecurity) {
+			encryptedPassword = null;
+		}
+
+		PBKDF2EncryptionConfiguration pbkdf2EncryptionConfiguration =
+			new PBKDF2EncryptionConfiguration();
+
+		pbkdf2EncryptionConfiguration.configure(algorithm, encryptedPassword);
+
+		PKCS5S2ParametersGenerator pkcs5S2ParametersGenerator =
+			new PKCS5S2ParametersGenerator(
+				pbkdf2EncryptionConfiguration.getDigest());
+
+		pkcs5S2ParametersGenerator.init(
+			plainTextPassword.getBytes(),
+			pbkdf2EncryptionConfiguration.getSaltBytes(),
+			pbkdf2EncryptionConfiguration.getRounds());
+
+		KeyParameter keyParameter =
+			(KeyParameter)
+				pkcs5S2ParametersGenerator.generateDerivedMacParameters(
+					pbkdf2EncryptionConfiguration.getKeySize());
+
+		byte[] secretKeyBytes = keyParameter.getKey();
+
+		byte[] saltBytes = pbkdf2EncryptionConfiguration.getSaltBytes();
+
+		ByteBuffer byteBuffer = ByteBuffer.allocate(
+			(2 * 4) + saltBytes.length + secretKeyBytes.length);
+
+		byteBuffer.putInt(pbkdf2EncryptionConfiguration.getKeySize());
+		byteBuffer.putInt(pbkdf2EncryptionConfiguration.getRounds());
+		byteBuffer.put(saltBytes);
+		byteBuffer.put(secretKeyBytes);
+
+		return Base64.encode(byteBuffer.array());
+	}
+
+	@Override
+	public String getEncryptedPasswordAlgorithmSettings(
+		String encryptedPassword) {
+
 		try {
-			if (upgradeHashSecurity) {
-				encryptedPassword = null;
+			int index = encryptedPassword.indexOf(CharPool.CLOSE_CURLY_BRACE);
+
+			if (index < 0) {
+				return null;
 			}
 
 			PBKDF2EncryptionConfiguration pbkdf2EncryptionConfiguration =
 				new PBKDF2EncryptionConfiguration();
 
 			pbkdf2EncryptionConfiguration.configure(
-				algorithm, encryptedPassword);
+				StringPool.BLANK, encryptedPassword.substring(index + 1));
 
-			PKCS5S2ParametersGenerator pkcs5S2ParametersGenerator =
-				new PKCS5S2ParametersGenerator(
-					pbkdf2EncryptionConfiguration.getDigest());
-
-			pkcs5S2ParametersGenerator.init(
-				plainTextPassword.getBytes(),
-				pbkdf2EncryptionConfiguration.getSaltBytes(),
+			return StringBundler.concat(
+				encryptedPassword.substring(1, index), StringPool.FORWARD_SLASH,
+				pbkdf2EncryptionConfiguration.getKeySize(),
+				StringPool.FORWARD_SLASH,
 				pbkdf2EncryptionConfiguration.getRounds());
-
-			byte[] saltBytes = pbkdf2EncryptionConfiguration.getSaltBytes();
-
-			KeyParameter keyParameter =
-				(KeyParameter)
-					pkcs5S2ParametersGenerator.generateDerivedMacParameters(
-						pbkdf2EncryptionConfiguration.getKeySize());
-
-			byte[] secretKeyBytes = keyParameter.getKey();
-
-			ByteBuffer byteBuffer = ByteBuffer.allocate(
-				(2 * 4) + saltBytes.length + secretKeyBytes.length);
-
-			byteBuffer.putInt(pbkdf2EncryptionConfiguration.getKeySize());
-			byteBuffer.putInt(pbkdf2EncryptionConfiguration.getRounds());
-			byteBuffer.put(saltBytes);
-			byteBuffer.put(secretKeyBytes);
-
-			return Base64.encode(byteBuffer.array());
 		}
-		catch (Exception exception) {
-			throw new PwdEncryptorException(exception.getMessage(), exception);
+		catch (PwdEncryptorException pwdEncryptorException) {
+			return ReflectionUtil.throwException(pwdEncryptorException);
 		}
 	}
 
@@ -135,7 +160,7 @@ public class PBKDF2PasswordEncryptor implements PasswordEncryptor {
 					byteBuffer.get(_saltBytes);
 				}
 				catch (BufferUnderflowException bufferUnderflowException) {
-					throw new PwdEncryptorException(
+					throw new PwdEncryptorException.InvalidEncryptedPwd(
 						"Unable to extract salt from encrypted password",
 						bufferUnderflowException);
 				}

@@ -14,6 +14,8 @@
 			HashMapBuilder.<String, Object>put(
 				"editDataSetURL", fdsAdminDisplayContext.getEditDataSetURL()
 			).put(
+				"getSystemDataSetsURL", fdsAdminDisplayContext.getSystemDataSetsURL()
+			).put(
 				"importSystemDataSetURL", fdsAdminDisplayContext.getImportSystemDataSetURL()
 			).put(
 				"namespace", liferayPortletResponse.getNamespace()

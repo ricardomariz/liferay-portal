@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+export {default as CopyFragmentModal} from '././components/modals/CopyFragmentModal';
+export {default as InstallFragmentModal} from '././components/modals/InstallFragmentModal';
 export {
 	default as ColorPicker,
 	DEFAULT_TOKEN_LABEL,
@@ -13,7 +15,9 @@ export {default as Import} from './components/import/Import';
 export {default as ImportOptionsModal} from './components/import/ImportOptionsModal';
 export {default as ImportResults} from './components/import/ImportResults';
 export {default as LengthInput} from './components/length_input/LengthInput';
-export {default as openCreationModal} from './components/modals/openCreationModal';
+export {default as CreationModal} from './components/modals/CreationModal';
+export {default as MarketplaceModal} from './components/modals/MarketplaceModal';
+export {default as openModalComponent} from './components/modals/openModalComponent';
 export {default as PageTemplateModal} from './components/page_template_modal/PageTemplateModal';
 export {default as Resizer} from './components/resizer/Resizer';
 export {default as ScreenReaderAnnouncer} from './components/screen_reader_announcer/ScreenReaderAnnouncer';

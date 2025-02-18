@@ -21,6 +21,8 @@
 				HashMapBuilder.<String, Object>put(
 					"accountId", accountEntryId
 				).put(
+					"baseOrderDetailURL", baseOrderDetailURL
+				).put(
 					"cartViews", cartViews
 				).put(
 					"checkoutURL", checkoutURL
@@ -34,6 +36,8 @@
 					"groupId", commerceChannelGroupId
 				).put(
 					"guestOrderEnabled", guestOrderEnabled
+				).put(
+					"hasCommerceOpenOrderContentPortlet", hasCommerceOpenOrderContentPortlet
 				).put(
 					"id", commerceChannelId
 				).put(

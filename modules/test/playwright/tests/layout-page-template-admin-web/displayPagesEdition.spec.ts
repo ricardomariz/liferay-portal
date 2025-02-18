@@ -13,6 +13,7 @@ import {expect, mergeTests} from '@playwright/test';
 import {applicationsMenuPageTest} from '../../fixtures/applicationsMenuPageTest';
 import {dataApiHelpersTest} from '../../fixtures/dataApiHelpersTest';
 import {displayPageTemplatesPagesTest} from '../../fixtures/displayPageTemplatesPagesTest';
+import {featureFlagsTest} from '../../fixtures/featureFlagsTest';
 import {isolatedSiteTest} from '../../fixtures/isolatedSiteTest';
 import {loginTest} from '../../fixtures/loginTest';
 import {pageEditorPagesTest} from '../../fixtures/pageEditorPagesTest';
@@ -34,6 +35,9 @@ const test = mergeTests(
 	applicationsMenuPageTest,
 	dataApiHelpersTest,
 	displayPageTemplatesPagesTest,
+	featureFlagsTest({
+		'LPD-18221': {enabled: true},
+	}),
 	pageEditorPagesTest,
 	loginTest(),
 	pageManagementSiteTest,
@@ -114,7 +118,7 @@ test.describe('General', () => {
 		await pageEditorPage.addFragment(
 			'Basic Components',
 			'Image',
-			page.locator('.page-editor__collection-item.empty').last()
+			page.locator('.page-editor__collection-item.empty').first()
 		);
 
 		// Map editable to image field
@@ -775,7 +779,7 @@ test.describe('Object Display page', () => {
 			await pageEditorPage.addFragment(
 				'Basic Components',
 				'Heading',
-				page.locator('.page-editor__collection-item.empty').last()
+				page.locator('.page-editor__collection-item.empty').first()
 			);
 
 			// Map editable to field
@@ -1124,7 +1128,7 @@ test.describe('Object Display page', () => {
 			// Edit only the lemon size field
 
 			await page
-				.getByLabel('Lemon Size', {exact: true})
+				.getByRole('textbox', {name: 'Lemon Size'})
 				.fill('lemonSize2');
 
 			await page.getByRole('button', {name: 'Submit'}).click();

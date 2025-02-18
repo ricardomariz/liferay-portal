@@ -6,10 +6,12 @@
 import {ClayButtonWithIcon} from '@clayui/button';
 import {ClayDropDownWithItems} from '@clayui/drop-down';
 import {
+	MarketplaceModal,
 	SearchForm,
 	SearchResultsMessage,
 	isNullOrUndefined,
 } from '@liferay/layout-js-components-web';
+import classNames from 'classnames';
 import {useSessionState} from 'frontend-js-components-web';
 import {sub} from 'frontend-js-web';
 import React, {useEffect, useMemo, useState} from 'react';
@@ -144,8 +146,11 @@ export default function FragmentsSidebar() {
 		FRAGMENTS_DISPLAY_STYLES.LIST
 	);
 
+	const [isMarketplaceButtonVisited, setIsMarketplaceButtonVisited] =
+		useState(config.isMarketplaceButtonVisited);
 	const [searchValue, setSearchValue] = useState(null);
 	const [showReorderModal, setShowReorderModal] = useState(false);
+	const [showMarketPlaceModal, setShowMarketPlaceModal] = useState(false);
 
 	const tabs = useMemo(
 		() => [
@@ -275,7 +280,8 @@ export default function FragmentsSidebar() {
 								aria-label={Liferay.Language.get(
 									'components-options'
 								)}
-								className="ml-2"
+								className="components-options ml-2"
+								data-tooltip-align="top"
 								displayType="unstyled"
 								size="sm"
 								symbol="ellipsis-v"
@@ -285,6 +291,34 @@ export default function FragmentsSidebar() {
 							/>
 						}
 					/>
+
+					{Liferay.FeatureFlags['LPD-34938'] && (
+						<ClayButtonWithIcon
+							aria-haspopup="dialog"
+							aria-label={Liferay.Language.get(
+								'explore-marketplace'
+							)}
+							borderless
+							className={classNames('marketplace-button ml-2', {
+								notification: !isMarketplaceButtonVisited,
+							})}
+							data-tooltip-align="top"
+							displayType="secondary"
+							onClick={() => {
+								if (!isMarketplaceButtonVisited) {
+									Liferay.Util.Session.set(
+										`${config.portletNamespace}isMarketplaceButtonVisited`,
+										true
+									);
+									setIsMarketplaceButtonVisited(true);
+								}
+								setShowMarketPlaceModal(true);
+							}}
+							size="sm"
+							symbol="marketplace"
+							title={Liferay.Language.get('explore-marketplace')}
+						/>
+					)}
 				</div>
 
 				{searchValue ? (
@@ -305,6 +339,18 @@ export default function FragmentsSidebar() {
 			{showReorderModal && (
 				<ReorderSetsModal
 					onCloseModal={() => setShowReorderModal(false)}
+				/>
+			)}
+
+			{showMarketPlaceModal && (
+				<MarketplaceModal
+					body={Liferay.Language.get(
+						'we-are-excited-to-share-that-marketplace-is-now-part-of-page-builder'
+					)}
+					heading={Liferay.Language.get(
+						'marketplace-is-now-in-page-builder'
+					)}
+					onCloseModal={() => setShowMarketPlaceModal(false)}
 				/>
 			)}
 		</>

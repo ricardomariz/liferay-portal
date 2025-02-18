@@ -17,6 +17,7 @@ import deleteItem from '../actions/deleteItem';
 import duplicateItem from '../actions/duplicateItem';
 import editFragmentEntryLinkComment from '../actions/editFragmentEntryLinkComment';
 import pasteItems from '../actions/pasteItems';
+import removeFormStep from '../actions/removeFormStep';
 import {
 	ADD_FRAGMENT_ENTRY_LINKS,
 	ADD_FRAGMENT_ENTRY_LINK_COMMENT,
@@ -28,6 +29,7 @@ import {
 	DUPLICATE_ITEM,
 	EDIT_FRAGMENT_ENTRY_LINK_COMMENT,
 	PASTE_ITEM,
+	REMOVE_FORM_STEP,
 	UPDATE_COLLECTION_DISPLAY_COLLECTION,
 	UPDATE_EDITABLE_VALUES,
 	UPDATE_FORM_ITEM_CONFIG,
@@ -59,6 +61,7 @@ export default function fragmentEntryLinksReducer(
 		| typeof duplicateItem
 		| typeof pasteItems
 		| typeof editFragmentEntryLinkComment
+		| typeof removeFormStep
 		| typeof updateCollectionDisplayCollection
 		| typeof updateEditableValues
 		| typeof updateFormItemConfig
@@ -89,8 +92,7 @@ export default function fragmentEntryLinksReducer(
 			return fragmentEntryLinks;
 		}
 
-		case ADD_FRAGMENT_ENTRY_LINKS:
-		case ADD_STEPPER: {
+		case ADD_FRAGMENT_ENTRY_LINKS: {
 			const newFragmentEntryLinks: FragmentEntryLinkMap = {};
 
 			action.fragmentEntryLinks.forEach((fragmentEntryLink) => {
@@ -101,6 +103,13 @@ export default function fragmentEntryLinksReducer(
 			return {
 				...fragmentEntryLinks,
 				...newFragmentEntryLinks,
+			};
+		}
+
+		case ADD_STEPPER: {
+			return {
+				...fragmentEntryLinks,
+				...action.fragmentEntryLinks,
 			};
 		}
 
@@ -327,6 +336,13 @@ export default function fragmentEntryLinksReducer(
 				);
 			}
 
+			if (action.fragmentEntryLinks) {
+				return {
+					...newFragmentEntryLinks,
+					...action.fragmentEntryLinks,
+				};
+			}
+
 			return {
 				...newFragmentEntryLinks,
 			};
@@ -437,6 +453,17 @@ export default function fragmentEntryLinksReducer(
 				...fragmentEntryLinks,
 				...Object.fromEntries(newFragmentEntryLinks),
 			};
+		}
+
+		case REMOVE_FORM_STEP: {
+			if (action.fragmentEntryLinks) {
+				return {
+					...fragmentEntryLinks,
+					...action.fragmentEntryLinks,
+				};
+			}
+
+			return fragmentEntryLinks;
 		}
 
 		default:

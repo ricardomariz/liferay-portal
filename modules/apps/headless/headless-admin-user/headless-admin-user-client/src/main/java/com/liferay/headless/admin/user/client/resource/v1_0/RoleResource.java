@@ -35,21 +35,23 @@ public interface RoleResource {
 	}
 
 	public Page<Role> getRolesPage(
-			String search, Integer[] types, Pagination pagination)
+			String search, Integer[] types, String filterString,
+			Pagination pagination)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse getRolesPageHttpResponse(
-			String search, Integer[] types, Pagination pagination)
+			String search, Integer[] types, String filterString,
+			Pagination pagination)
 		throws Exception;
 
 	public void postRolesPageExportBatch(
-			String search, Integer[] types, String callbackURL,
-			String contentType, String fieldNames)
+			String search, Integer[] types, String filterString,
+			String callbackURL, String contentType, String fieldNames)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse postRolesPageExportBatchHttpResponse(
-			String search, Integer[] types, String callbackURL,
-			String contentType, String fieldNames)
+			String search, Integer[] types, String filterString,
+			String callbackURL, String contentType, String fieldNames)
 		throws Exception;
 
 	public Role postRole(Role role) throws Exception;
@@ -341,8 +343,8 @@ public interface RoleResource {
 		private Map<String, String> _headers = new LinkedHashMap<>();
 		private String _host = "localhost";
 		private Locale _locale;
-		private String _login = "";
-		private String _password = "";
+		private String _login;
+		private String _password;
 		private Map<String, String> _parameters = new LinkedHashMap<>();
 		private int _port = 8080;
 		private String _scheme = "http";
@@ -352,11 +354,12 @@ public interface RoleResource {
 	public static class RoleResourceImpl implements RoleResource {
 
 		public Page<Role> getRolesPage(
-				String search, Integer[] types, Pagination pagination)
+				String search, Integer[] types, String filterString,
+				Pagination pagination)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse = getRolesPageHttpResponse(
-				search, types, pagination);
+				search, types, filterString, pagination);
 
 			String content = httpResponse.getContent();
 
@@ -418,7 +421,8 @@ public interface RoleResource {
 		}
 
 		public HttpInvoker.HttpResponse getRolesPageHttpResponse(
-				String search, Integer[] types, Pagination pagination)
+				String search, Integer[] types, String filterString,
+				Pagination pagination)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -452,6 +456,10 @@ public interface RoleResource {
 				}
 			}
 
+			if (filterString != null) {
+				httpInvoker.parameter("filter", filterString);
+			}
+
 			if (pagination != null) {
 				httpInvoker.parameter(
 					"page", String.valueOf(pagination.getPage()));
@@ -464,20 +472,23 @@ public interface RoleResource {
 					_builder._port + _builder._contextPath +
 						"/o/headless-admin-user/v1.0/roles");
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
 
 		public void postRolesPageExportBatch(
-				String search, Integer[] types, String callbackURL,
-				String contentType, String fieldNames)
+				String search, Integer[] types, String filterString,
+				String callbackURL, String contentType, String fieldNames)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				postRolesPageExportBatchHttpResponse(
-					search, types, callbackURL, contentType, fieldNames);
+					search, types, filterString, callbackURL, contentType,
+					fieldNames);
 
 			String content = httpResponse.getContent();
 
@@ -528,8 +539,8 @@ public interface RoleResource {
 		}
 
 		public HttpInvoker.HttpResponse postRolesPageExportBatchHttpResponse(
-				String search, Integer[] types, String callbackURL,
-				String contentType, String fieldNames)
+				String search, Integer[] types, String filterString,
+				String callbackURL, String contentType, String fieldNames)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -565,6 +576,10 @@ public interface RoleResource {
 				}
 			}
 
+			if (filterString != null) {
+				httpInvoker.parameter("filter", filterString);
+			}
+
 			if (callbackURL != null) {
 				httpInvoker.parameter(
 					"callbackURL", String.valueOf(callbackURL));
@@ -584,8 +599,10 @@ public interface RoleResource {
 					_builder._port + _builder._contextPath +
 						"/o/headless-admin-user/v1.0/roles/export-batch");
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -683,8 +700,10 @@ public interface RoleResource {
 					_builder._port + _builder._contextPath +
 						"/o/headless-admin-user/v1.0/roles");
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -780,8 +799,10 @@ public interface RoleResource {
 					_builder._port + _builder._contextPath +
 						"/o/headless-admin-user/v1.0/roles/batch");
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -886,8 +907,10 @@ public interface RoleResource {
 
 			httpInvoker.path("externalReferenceCode", externalReferenceCode);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -991,8 +1014,10 @@ public interface RoleResource {
 
 			httpInvoker.path("externalReferenceCode", externalReferenceCode);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -1099,8 +1124,10 @@ public interface RoleResource {
 
 			httpInvoker.path("externalReferenceCode", externalReferenceCode);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -1207,8 +1234,10 @@ public interface RoleResource {
 
 			httpInvoker.path("externalReferenceCode", externalReferenceCode);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -1314,8 +1343,10 @@ public interface RoleResource {
 			httpInvoker.path("externalReferenceCode", externalReferenceCode);
 			httpInvoker.path("userAccountId", userAccountId);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -1423,8 +1454,10 @@ public interface RoleResource {
 			httpInvoker.path("externalReferenceCode", externalReferenceCode);
 			httpInvoker.path("userAccountId", userAccountId);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -1534,8 +1567,10 @@ public interface RoleResource {
 			httpInvoker.path("userAccountId", userAccountId);
 			httpInvoker.path("organizationId", organizationId);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -1647,8 +1682,10 @@ public interface RoleResource {
 			httpInvoker.path("userAccountId", userAccountId);
 			httpInvoker.path("organizationId", organizationId);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -1756,8 +1793,10 @@ public interface RoleResource {
 			httpInvoker.path("userAccountId", userAccountId);
 			httpInvoker.path("siteId", siteId);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -1867,8 +1906,10 @@ public interface RoleResource {
 			httpInvoker.path("userAccountId", userAccountId);
 			httpInvoker.path("siteId", siteId);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -1967,8 +2008,10 @@ public interface RoleResource {
 
 			httpInvoker.path("roleId", roleId);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -2064,8 +2107,10 @@ public interface RoleResource {
 					_builder._port + _builder._contextPath +
 						"/o/headless-admin-user/v1.0/roles/batch");
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -2163,8 +2208,10 @@ public interface RoleResource {
 
 			httpInvoker.path("roleId", roleId);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -2266,8 +2313,10 @@ public interface RoleResource {
 
 			httpInvoker.path("roleId", roleId);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -2369,8 +2418,10 @@ public interface RoleResource {
 
 			httpInvoker.path("roleId", roleId);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -2466,8 +2517,10 @@ public interface RoleResource {
 					_builder._port + _builder._contextPath +
 						"/o/headless-admin-user/v1.0/roles/batch");
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -2573,8 +2626,10 @@ public interface RoleResource {
 			httpInvoker.path("roleId", roleId);
 			httpInvoker.path("userAccountId", userAccountId);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -2682,8 +2737,10 @@ public interface RoleResource {
 			httpInvoker.path("roleId", roleId);
 			httpInvoker.path("userAccountId", userAccountId);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -2790,8 +2847,10 @@ public interface RoleResource {
 			httpInvoker.path("userAccountId", userAccountId);
 			httpInvoker.path("organizationId", organizationId);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -2900,8 +2959,10 @@ public interface RoleResource {
 			httpInvoker.path("userAccountId", userAccountId);
 			httpInvoker.path("organizationId", organizationId);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -3008,8 +3069,10 @@ public interface RoleResource {
 			httpInvoker.path("userAccountId", userAccountId);
 			httpInvoker.path("siteId", siteId);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}
@@ -3118,8 +3181,10 @@ public interface RoleResource {
 			httpInvoker.path("userAccountId", userAccountId);
 			httpInvoker.path("siteId", siteId);
 
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
 
 			return httpInvoker.invoke();
 		}

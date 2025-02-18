@@ -18,6 +18,7 @@ const test = mergeTests(
 	apiHelpersTest,
 	fdsSamplePageTest,
 	featureFlagsTest({
+		'LPD-42570': {enabled: true},
 		'LPS-178052': {enabled: true},
 	}),
 	isolatedSiteTest,
@@ -441,6 +442,26 @@ test('Check behavior of item actions', async ({fdsSamplePage, page}) => {
 	});
 });
 
+test('Check bulk actions', async ({fdsSamplePage, page}) => {
+	await test.step('Select one of the items in the table', async () => {
+		await fdsSamplePage.table.container
+			.locator('tbody .cell-select-item')
+			.first()
+			.getByRole('checkbox')
+			.setChecked(true);
+	});
+
+	await test.step('Open ellipsis actions menu', async () => {
+		await page.locator('.bulk-actions').getByLabel('Actions').click();
+	});
+
+	await test.step('Check the bulk actions are listed', async () => {
+		await expect(
+			page.locator('.dropdown-menu.show').getByRole('menuitem')
+		).toHaveText('Label');
+	});
+});
+
 test('Use client extensions', async ({fdsSamplePage, page}) => {
 	await test.step('Assert that the cell renderer is invoked and the apple emoji is visible', async () => {
 		const firstColorCell = fdsSamplePage.table.container
@@ -500,19 +521,19 @@ test(
 
 			await expect(idColumnHeader).toBeInViewport();
 
-			let cells = await page.locator('td').allInnerTexts();
-
-			await expect(page.locator('td').nth(1)).toHaveText(cells[1]);
-			await expect(page.locator('td').nth(11)).toHaveText(cells[11]);
-			await expect(page.locator('td').nth(21)).toHaveText(cells[21]);
-			await expect(page.locator('td').nth(31)).toHaveText(cells[31]);
-
 			await Promise.all([
 				idColumnHeader.click(),
 				page.waitForResponse(
 					(response: any) => response.status() === 200
 				),
 			]);
+
+			let cells = await page.locator('td').allInnerTexts();
+
+			await expect(page.locator('td').nth(1)).toHaveText(cells[1]);
+			await expect(page.locator('td').nth(11)).toHaveText(cells[11]);
+			await expect(page.locator('td').nth(21)).toHaveText(cells[21]);
+			await expect(page.locator('td').nth(31)).toHaveText(cells[31]);
 
 			const ascendingIDCells = [
 				cells[1],
@@ -603,6 +624,52 @@ test(
 		});
 	}
 );
+
+test('Select items count label in bulk actions', async ({page}) => {
+	const itemsSelectorCheckbox = page.locator('input[name="items-selector"]');
+
+	await test.step('Change delta to 60 items', async () => {
+		await page.getByLabel('Items Per Page').click();
+
+		await page.getByRole('option', {name: '60 Items'}).click();
+
+		await expect(
+			page.getByText('Showing 1 to 60 of 75 entries.')
+		).toBeVisible();
+	});
+
+	await test.step('Select all items in current page using the bulk actions checkbox', async () => {
+		await itemsSelectorCheckbox.setChecked(true);
+
+		await expect(page.getByText('60 of 75 Items Selected')).toBeVisible();
+	});
+
+	await test.step('Unselect all items in current page using the bulk actions checkbox', async () => {
+		await itemsSelectorCheckbox.setChecked(false);
+
+		await expect(itemsSelectorCheckbox).not.toBeChecked();
+	});
+
+	await test.step('Select all items', async () => {
+		await itemsSelectorCheckbox.setChecked(true);
+
+		await expect(page.getByText('60 of 75 Items Selected')).toBeVisible();
+
+		await page.getByLabel('Go to page, 2').click();
+
+		for (let i = 1; i <= 15; i++) {
+			await page
+				.locator(
+					`tbody tr:nth-child(${i}) > .cell-select-item input[type="checkbox"]`
+				)
+				.setChecked(true);
+		}
+
+		await expect(
+			page.getByText('All Selected (75 of 75 Items)')
+		).toBeVisible();
+	});
+});
 
 accountSettingsTest(
 	'Set time zone from theme display in a datetime renderer',

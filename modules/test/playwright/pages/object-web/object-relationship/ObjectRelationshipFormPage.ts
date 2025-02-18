@@ -14,6 +14,7 @@ export class ObjectRelationshipFormPage {
 	readonly nameInput: Locator;
 	readonly oneRecordOfInput: Locator;
 	readonly page: Page;
+	readonly parameterSelect: Locator;
 	readonly reverseOrderButton: Locator;
 	readonly saveButton: Locator;
 	readonly typeSelect: Locator;
@@ -41,6 +42,9 @@ export class ObjectRelationshipFormPage {
 			.locator(formContainerSelector)
 			.getByLabel('One Record OfMandatory');
 		this.page = page;
+		this.parameterSelect = page
+			.locator(formContainerSelector)
+			.getByLabel('Parameter');
 		this.reverseOrderButton = page
 			.locator(formContainerSelector)
 			.getByLabel('reverse-order');
@@ -49,11 +53,18 @@ export class ObjectRelationshipFormPage {
 			.getByRole('button', {name: 'Save'});
 		this.typeSelect = page
 			.locator(formContainerSelector)
-			.getByLabel('Type');
+			.getByLabel('Type')
+			.or(page.getByText('Many to Many'));
 	}
 
 	async selectManyRecordsOf(option: string) {
 		await this.manyRecordsOfSelect.click();
+
+		await this.page.getByRole('option', {name: option}).click();
+	}
+
+	async selectParameter(option: string) {
+		await this.parameterSelect.click();
 
 		await this.page.getByRole('option', {name: option}).click();
 	}

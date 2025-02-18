@@ -10,15 +10,20 @@ import getRandomString from '../../utils/getRandomString';
 import {waitForAlert} from '../../utils/waitForAlert';
 
 export class EditAccountPage {
+	readonly accountGroupsLink: Locator;
 	readonly accountIdInput: Locator;
 	readonly accountNameInput: Locator;
 	readonly addDomainLink: Locator;
 	readonly addDomainFrame: FrameLocator;
 	readonly addressesTab: Locator;
+	readonly assignUserMessage: Locator;
 	readonly backButton: Locator;
+	readonly categoryClearAllButton: Locator;
+	readonly categoryLabel: (name: string) => Locator;
 	readonly changeImageButton: Locator;
 	readonly channelDefaultsLink: Locator;
 	readonly contactLink: Locator;
+	readonly customFieldInput: (name: string) => Locator;
 	readonly defaultBillingAddress: (name: string) => Locator;
 	readonly defaultShippingAddress: (name: string) => Locator;
 	readonly descriptionInput: Locator;
@@ -29,20 +34,33 @@ export class EditAccountPage {
 	readonly frameDomainInput: Locator;
 	readonly frameSaveButton: Locator;
 	readonly imageInput: Locator;
+	readonly organizationsLink: Locator;
 	readonly page: Page;
+	readonly personAccountUserContainer: Locator;
+	readonly personAccountUserName: (name: string) => Locator;
+	readonly personAccountUserRemoveButton: Locator;
+	readonly personAccountUserSelectButton: Locator;
 	readonly removeBillingDefaultAddressButton: Locator;
 	readonly removeShippingDefaultAddressButton: Locator;
 	readonly rolesLink: Locator;
 	readonly saveButton: Locator;
+	readonly selectCategoriesButton: (vocabularyName: string) => Locator;
+	readonly selectTagsButton: Locator;
 	readonly setBillingDefaultAddressButton: Locator;
 	readonly setShippingDefaultAddressButton: Locator;
+	readonly tagInput: (name: string) => Locator;
+	readonly taxIDInput: Locator;
 	readonly typeInput: Locator;
 	readonly uploadImageSelectImageButton: Locator;
 	readonly uploadImageDoneButton: Locator;
 	readonly usersLink: Locator;
 	readonly validDomainsHeading: Locator;
+	readonly vocabularyLabel: (name: string) => Locator;
 
 	constructor(page: Page) {
+		this.accountGroupsLink = page.getByRole('link', {
+			name: 'Account Groups',
+		});
 		this.accountIdInput = page.getByLabel('Account ID');
 		this.accountNameInput = page.getByLabel('Account Name');
 		this.addDomainLink = page.locator(
@@ -52,13 +70,19 @@ export class EditAccountPage {
 		this.addressesTab = page.getByRole('link', {
 			name: 'Addresses',
 		});
+		this.assignUserMessage = page.getByText('Assign a user to this person');
 		this.backButton = page.getByRole('link', {exact: true, name: 'Back'});
+		this.categoryClearAllButton = page.getByLabel('Clear All');
+		this.categoryLabel = (name) =>
+			page.getByLabel('Public Categories').getByText(name);
 		this.changeImageButton = page.getByLabel('Change Image');
 		this.channelDefaultsLink = page.getByRole('link', {
 			exact: true,
 			name: 'Channel Defaults',
 		});
 		this.contactLink = page.getByRole('link', {name: 'Contact'});
+		this.customFieldInput = (name) =>
+			page.locator(`.field[name*="${name}"]`);
 		this.descriptionInput = page.getByLabel('Description');
 		this.detailsTab = page.getByRole('link', {
 			name: 'Details',
@@ -86,7 +110,20 @@ export class EditAccountPage {
 			name: 'Save',
 		});
 		this.imageInput = page.getByLabel('Image', {exact: true});
+		this.organizationsLink = page.getByRole('link', {
+			exact: true,
+			name: 'Organizations',
+		});
 		this.page = page;
+		this.personAccountUserContainer = page.locator(
+			'#_com_liferay_account_admin_web_internal_portlet_AccountEntriesAdminPortlet_personAccountUserContainer'
+		);
+		this.personAccountUserName = (name) =>
+			this.personAccountUserContainer.getByText(name);
+		this.personAccountUserRemoveButton =
+			this.personAccountUserContainer.getByRole('link', {name: 'Remove'});
+		this.personAccountUserSelectButton =
+			this.personAccountUserContainer.getByRole('link', {name: 'Select'});
 		this.removeBillingDefaultAddressButton = page
 			.locator('address')
 			.first()
@@ -99,6 +136,13 @@ export class EditAccountPage {
 			.getByRole('link', {name: 'Remove'});
 		this.rolesLink = page.getByRole('link', {exact: true, name: 'Roles'});
 		this.saveButton = page.getByRole('button', {name: 'Save'});
+		this.selectCategoriesButton = (vocabularyName: string) =>
+			page
+				.getByLabel(`Select ${vocabularyName}`)
+				.and(page.getByRole('button'));
+		this.selectTagsButton = page
+			.getByLabel('Select Tags')
+			.and(page.getByRole('button'));
 		this.setBillingDefaultAddressButton = page
 			.getByRole('link', {name: 'Set Default Address'})
 			.or(page.getByRole('link', {name: 'Change'}))
@@ -107,6 +151,8 @@ export class EditAccountPage {
 			.getByRole('link', {name: 'Set Default Address'})
 			.or(page.getByRole('link', {name: 'Change'}))
 			.locator('[data-type="shipping"]:scope');
+		this.tagInput = (name) => page.getByRole('row', {name});
+		this.taxIDInput = page.getByLabel('Tax ID');
 		this.typeInput = page.getByLabel('Type');
 		this.uploadImageSelectImageButton = page
 			.frameLocator('iframe[title="Upload Image"]')
@@ -118,6 +164,11 @@ export class EditAccountPage {
 		this.validDomainsHeading = page.getByRole('heading', {
 			name: 'Valid Domains',
 		});
+		this.vocabularyLabel = (name) =>
+			page
+				.getByLabel('Public Categories')
+				.getByText(name)
+				.filter({has: page.locator('label:scope')});
 	}
 
 	async createAccount(
@@ -128,6 +179,7 @@ export class EditAccountPage {
 			domains = [],
 			externalReferenceCode = '',
 			name = getRandomString(),
+			taxID = getRandomString(),
 			type = 'business',
 		}: {
 			avatar?: string;
@@ -135,11 +187,13 @@ export class EditAccountPage {
 			domains?: string[];
 			externalReferenceCode?: string;
 			name?: string;
+			taxID?: string;
 			type?: string;
 		}
 	) {
 		await this.accountNameInput.fill(name);
 		await this.descriptionInput.fill(description);
+		await this.taxIDInput.fill(taxID);
 		await this.typeInput.selectOption(type);
 
 		if (avatar) {

@@ -48,7 +48,7 @@ public class UpgradeKernelPackageTest extends UpgradeKernelPackage {
 		_db.runSQL(
 			"create table UpgradeKernelPackageTest (" +
 				"id LONG not null primary key, data VARCHAR(40) null, " +
-					"textData TEXT null)");
+					"textData VARCHAR(255) null)");
 	}
 
 	@AfterClass
@@ -138,15 +138,29 @@ public class UpgradeKernelPackageTest extends UpgradeKernelPackage {
 
 			// Test preventDuplicates
 
+			runSQL("delete from UpgradeKernelPackageTest");
+
 			_insertData(10, _PREFIX_POSTFIX_CLASS_NAME_OLD, "");
 			_insertData(11, _PREFIX_POSTFIX_CLASS_NAME_NEW, "");
+			_insertData(12, _PREFIX_POSTFIX_CLASS_NAME_NEW, "uniqueTextData");
 
-			upgradeTable(
-				"UpgradeKernelPackageTest", "data", _TEST_CLASS_NAMES,
-				WildcardMode.SURROUND, true);
+			_db.runSQL(
+				"create unique index IX_TEMP on UpgradeKernelPackageTest " +
+					"(data, textData)");
 
-			_assertData(10, "data", _PREFIX_POSTFIX_CLASS_NAME_NEW);
-			_assertData(11, "data", null);
+			try {
+				upgradeTable(
+					"UpgradeKernelPackageTest", "data", _TEST_CLASS_NAMES,
+					WildcardMode.SURROUND, true);
+
+				_assertData(10, "data", _PREFIX_POSTFIX_CLASS_NAME_NEW);
+				_assertData(11, "data", null);
+				_assertData(12, "data", _PREFIX_POSTFIX_CLASS_NAME_NEW);
+				_assertData(12, "textData", "uniqueTextData");
+			}
+			finally {
+				_db.runSQL("drop index IX_TEMP on UpgradeKernelPackageTest");
+			}
 		}
 		finally {
 			runSQL("delete from UpgradeKernelPackageTest");

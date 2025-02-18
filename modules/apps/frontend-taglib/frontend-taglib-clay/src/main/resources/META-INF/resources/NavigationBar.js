@@ -19,7 +19,7 @@ export default function NavigationBar({
 		<ClayNavigationBar
 			aria-current={activeItemAriaCurrent}
 			className={cssClass}
-			fluidSize={Liferay?.FeatureFlags?.['LPS-184404'] ? false : 'xl'}
+			fluidSize={false}
 			inverted={inverted}
 			triggerLabel={navigationItems.find(({active}) => active)?.label}
 		>

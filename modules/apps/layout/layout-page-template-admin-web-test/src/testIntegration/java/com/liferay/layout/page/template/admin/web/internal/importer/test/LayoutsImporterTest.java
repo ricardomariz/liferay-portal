@@ -42,6 +42,7 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateCollectionLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
+import com.liferay.layout.page.template.test.util.LayoutPageTemplateTestUtil;
 import com.liferay.layout.provider.LayoutStructureProvider;
 import com.liferay.layout.test.util.ContentLayoutTestUtil;
 import com.liferay.layout.util.structure.ColumnLayoutStructureItem;
@@ -409,7 +410,7 @@ public class LayoutsImporterTest {
 					organizationSite.getGroupId(),
 					LayoutPageTemplateConstants.
 						PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
-					RandomTestUtil.randomString(), StringPool.BLANK,
+					null, RandomTestUtil.randomString(), StringPool.BLANK,
 					LayoutPageTemplateCollectionTypeConstants.BASIC,
 					_serviceContext1);
 
@@ -717,7 +718,7 @@ public class LayoutsImporterTest {
 				null, TestPropsValues.getUserId(), _group1.getGroupId(),
 				LayoutPageTemplateConstants.
 					PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
-				"Child Display Page Collection", StringPool.BLANK,
+				null, "Child Display Page Collection", StringPool.BLANK,
 				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 				ServiceContextTestUtil.getServiceContext(_group1.getGroupId()));
 
@@ -738,7 +739,7 @@ public class LayoutsImporterTest {
 				null, TestPropsValues.getUserId(), _group1.getGroupId(),
 				LayoutPageTemplateConstants.
 					PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
-				"Page Template Set", StringPool.BLANK,
+				null, "Page Template Set", StringPool.BLANK,
 				LayoutPageTemplateEntryTypeConstants.BASIC,
 				ServiceContextTestUtil.getServiceContext(_group1.getGroupId()));
 
@@ -754,19 +755,21 @@ public class LayoutsImporterTest {
 	public void testValidateFileWithDuplicatedBasicLayoutPageTemplateEntry()
 		throws Exception {
 
+		LayoutPageTemplateCollection layoutPageTemplateCollection =
+			LayoutPageTemplateTestUtil.addLayoutPageTemplateCollection(
+				_group1.getGroupId());
+
 		_layoutPageTemplateEntryLocalService.addLayoutPageTemplateEntry(
-			null, TestPropsValues.getUserId(), _group1.getGroupId(),
-			LayoutPageTemplateConstants.
-				PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
+			null, _serviceContext1.getUserId(), _group1.getGroupId(),
+			layoutPageTemplateCollection.getLayoutPageTemplateCollectionId(),
 			"Page Template", LayoutPageTemplateEntryTypeConstants.BASIC, 0,
-			WorkflowConstants.STATUS_APPROVED,
-			ServiceContextTestUtil.getServiceContext(_group1.getGroupId()));
+			WorkflowConstants.STATUS_APPROVED, _serviceContext1);
 
 		Assert.assertFalse(
 			_layoutsImporter.validateFile(
 				_group1.getGroupId(),
-				LayoutPageTemplateConstants.
-					PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
+				layoutPageTemplateCollection.
+					getLayoutPageTemplateCollectionId(),
 				_getFile(_RESOURCES_PATH_PAGE_TEMPLATES)));
 	}
 
@@ -774,24 +777,31 @@ public class LayoutsImporterTest {
 	public void testValidateFileWithDuplicatedBasicLayoutPageTemplateEntryInADifferentLayoutPageTemplateCollection()
 		throws Exception {
 
-		_layoutPageTemplateEntryLocalService.addLayoutPageTemplateEntry(
-			null, TestPropsValues.getUserId(), _group1.getGroupId(),
-			LayoutPageTemplateConstants.
-				PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
-			"Page Template", LayoutPageTemplateEntryTypeConstants.BASIC, 0,
-			WorkflowConstants.STATUS_APPROVED,
-			ServiceContextTestUtil.getServiceContext(_group1.getGroupId()));
-
 		LayoutPageTemplateCollection layoutPageTemplateCollection =
 			_layoutPageTemplateCollectionLocalService.
 				addLayoutPageTemplateCollection(
 					null, TestPropsValues.getUserId(), _group1.getGroupId(),
 					LayoutPageTemplateConstants.
 						PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
-					RandomTestUtil.randomString(), StringPool.BLANK,
+					null, RandomTestUtil.randomString(), StringPool.BLANK,
 					LayoutPageTemplateEntryTypeConstants.BASIC,
-					ServiceContextTestUtil.getServiceContext(
-						_group1.getGroupId()));
+					_serviceContext1);
+
+		_layoutPageTemplateEntryLocalService.addLayoutPageTemplateEntry(
+			null, TestPropsValues.getUserId(), _group1.getGroupId(),
+			layoutPageTemplateCollection.getLayoutPageTemplateCollectionId(),
+			"Page Template", LayoutPageTemplateEntryTypeConstants.BASIC, 0,
+			WorkflowConstants.STATUS_APPROVED, _serviceContext1);
+
+		layoutPageTemplateCollection =
+			_layoutPageTemplateCollectionLocalService.
+				addLayoutPageTemplateCollection(
+					null, TestPropsValues.getUserId(), _group1.getGroupId(),
+					LayoutPageTemplateConstants.
+						PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
+					null, RandomTestUtil.randomString(), StringPool.BLANK,
+					LayoutPageTemplateEntryTypeConstants.BASIC,
+					_serviceContext1);
 
 		Assert.assertTrue(
 			_layoutsImporter.validateFile(
@@ -810,7 +820,7 @@ public class LayoutsImporterTest {
 				null, TestPropsValues.getUserId(), _group1.getGroupId(),
 				LayoutPageTemplateConstants.
 					PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
-				"Display Page Collection", StringPool.BLANK,
+				null, "Display Page Collection", StringPool.BLANK,
 				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 				ServiceContextTestUtil.getServiceContext(_group1.getGroupId()));
 
@@ -832,7 +842,7 @@ public class LayoutsImporterTest {
 					null, TestPropsValues.getUserId(), _group1.getGroupId(),
 					LayoutPageTemplateConstants.
 						PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
-					RandomTestUtil.randomString(), StringPool.BLANK,
+					null, RandomTestUtil.randomString(), StringPool.BLANK,
 					LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 					ServiceContextTestUtil.getServiceContext(
 						_group1.getGroupId()));
@@ -842,7 +852,7 @@ public class LayoutsImporterTest {
 				null, TestPropsValues.getUserId(), _group1.getGroupId(),
 				layoutPageTemplateCollection.
 					getLayoutPageTemplateCollectionId(),
-				"Display Page Collection", StringPool.BLANK,
+				null, "Display Page Collection", StringPool.BLANK,
 				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 				ServiceContextTestUtil.getServiceContext(_group1.getGroupId()));
 
@@ -864,7 +874,7 @@ public class LayoutsImporterTest {
 					null, TestPropsValues.getUserId(), _group1.getGroupId(),
 					LayoutPageTemplateConstants.
 						PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
-					RandomTestUtil.randomString(), StringPool.BLANK,
+					null, RandomTestUtil.randomString(), StringPool.BLANK,
 					LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 					ServiceContextTestUtil.getServiceContext(
 						_group1.getGroupId()));
@@ -874,7 +884,7 @@ public class LayoutsImporterTest {
 				null, TestPropsValues.getUserId(), _group1.getGroupId(),
 				layoutPageTemplateCollection.
 					getLayoutPageTemplateCollectionId(),
-				"Display Page Collection", StringPool.BLANK,
+				null, "Display Page Collection", StringPool.BLANK,
 				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 				ServiceContextTestUtil.getServiceContext(_group1.getGroupId()));
 
@@ -896,8 +906,7 @@ public class LayoutsImporterTest {
 				PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
 			"Basic Web Content Display Page Template",
 			LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE, 0,
-			WorkflowConstants.STATUS_APPROVED,
-			ServiceContextTestUtil.getServiceContext(_group1.getGroupId()));
+			WorkflowConstants.STATUS_APPROVED, _serviceContext1);
 
 		Assert.assertFalse(
 			_layoutsImporter.validateFile(
@@ -926,7 +935,7 @@ public class LayoutsImporterTest {
 					null, TestPropsValues.getUserId(), _group1.getGroupId(),
 					LayoutPageTemplateConstants.
 						PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
-					RandomTestUtil.randomString(), StringPool.BLANK,
+					null, RandomTestUtil.randomString(), StringPool.BLANK,
 					LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 					ServiceContextTestUtil.getServiceContext(
 						_group1.getGroupId()));
@@ -1150,7 +1159,7 @@ public class LayoutsImporterTest {
 					null, _serviceContext1.getUserId(), _group1.getGroupId(),
 					LayoutPageTemplateConstants.
 						PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
-					RandomTestUtil.randomString(), StringPool.BLANK,
+					null, RandomTestUtil.randomString(), StringPool.BLANK,
 					LayoutPageTemplateCollectionTypeConstants.BASIC,
 					_serviceContext1);
 
@@ -1508,52 +1517,37 @@ public class LayoutsImporterTest {
 			containerStyledLayoutStructureItem,
 			curContainerStyledLayoutStructureItem);
 
-		List<String> containerLayoutStructureItemChildrenItemIds =
-			containerStyledLayoutStructureItem.getChildrenItemIds();
-		List<String> curContainerLayoutStructureItemChildrenItemIds =
-			curContainerStyledLayoutStructureItem.getChildrenItemIds();
-
 		RowStyledLayoutStructureItem rowStyledLayoutStructureItem =
 			(RowStyledLayoutStructureItem)
 				layoutStructure.getLayoutStructureItem(
-					containerLayoutStructureItemChildrenItemIds.get(0));
+					containerStyledLayoutStructureItem.getChildrenItemId(0));
 		RowStyledLayoutStructureItem curRowStyledLayoutStructureItem =
 			(RowStyledLayoutStructureItem)
 				curLayoutStructure.getLayoutStructureItem(
-					curContainerLayoutStructureItemChildrenItemIds.get(0));
+					curContainerStyledLayoutStructureItem.getChildrenItemId(0));
 
 		_validateRowLayoutStructureItem(
 			rowStyledLayoutStructureItem, curRowStyledLayoutStructureItem);
 
-		List<String> rowLayoutStructureItemChildrenItemIds =
-			rowStyledLayoutStructureItem.getChildrenItemIds();
-		List<String> curRowLayoutStructureItemChildrenItemIds =
-			curRowStyledLayoutStructureItem.getChildrenItemIds();
-
 		ColumnLayoutStructureItem columnLayoutStructureItem =
 			(ColumnLayoutStructureItem)layoutStructure.getLayoutStructureItem(
-				rowLayoutStructureItemChildrenItemIds.get(0));
+				rowStyledLayoutStructureItem.getChildrenItemId(0));
 		ColumnLayoutStructureItem curColumnLayoutStructureItem =
 			(ColumnLayoutStructureItem)
 				curLayoutStructure.getLayoutStructureItem(
-					curRowLayoutStructureItemChildrenItemIds.get(0));
+					curRowStyledLayoutStructureItem.getChildrenItemId(0));
 
 		_validateColumnLayoutStructureItem(
 			columnLayoutStructureItem, curColumnLayoutStructureItem);
 
-		List<String> columnLayoutStructureItemChildrenItemIds =
-			columnLayoutStructureItem.getChildrenItemIds();
-		List<String> curColumnLayoutStructureItemChildrenItemIds =
-			curColumnLayoutStructureItem.getChildrenItemIds();
-
 		FragmentStyledLayoutStructureItem fragmentStyledLayoutStructureItem =
 			(FragmentStyledLayoutStructureItem)
 				layoutStructure.getLayoutStructureItem(
-					columnLayoutStructureItemChildrenItemIds.get(0));
+					columnLayoutStructureItem.getChildrenItemId(0));
 		FragmentStyledLayoutStructureItem curFragmentStyledLayoutStructureItem =
 			(FragmentStyledLayoutStructureItem)
 				curLayoutStructure.getLayoutStructureItem(
-					curColumnLayoutStructureItemChildrenItemIds.get(0));
+					curColumnLayoutStructureItem.getChildrenItemId(0));
 
 		_validateFragmentLayoutStructureItem(
 			fragmentStyledLayoutStructureItem,

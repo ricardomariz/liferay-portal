@@ -30,7 +30,7 @@ export function ProductCard({children, onClick, product}: ProductCardProps) {
 					<div className="align-items-center card-image-title-container d-flex mb-4">
 						<div className="image-container mr-2 rounded">
 							<img
-								className="marketplace-search-results-card-image"
+								className="marketplace-search-results-card-image object-fit-contain"
 								draggable={false}
 								src={marketplaceProduct.productImage}
 							/>
@@ -67,9 +67,11 @@ export function ProductCard({children, onClick, product}: ProductCardProps) {
 									{categories[0]?.name}
 								</span>
 
-								<span className="marketplace-search-results-card-tags">
-									{`+ ${categories?.length - 1}`}
-								</span>
+								{categories.length > 1 && (
+									<span className="marketplace-search-results-card-tags">
+										{`+ ${categories.length - 1}`}
+									</span>
+								)}
 							</>
 						)}
 					</div>

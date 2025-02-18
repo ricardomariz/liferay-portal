@@ -10,7 +10,6 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -96,28 +95,49 @@ public class GitHubDevSyncUtil {
 		List<String> gitHubDevRemoteURLs = getGitHubDevRemoteURLs(
 			gitWorkingDirectory);
 
-		List<GitRemote> gitHubDevGitRemotes = new ArrayList<>(
+		List<Callable<GitRemote>> callables = new ArrayList<>(
 			gitHubDevRemoteURLs.size());
 
-		for (String gitHubDevRemoteURL : gitHubDevRemoteURLs) {
-			String gitHubDevRemoteName =
-				"git-hub-dev-remote-" +
-					gitHubDevRemoteURLs.indexOf(gitHubDevRemoteURL);
+		for (final String gitHubDevRemoteURL : gitHubDevRemoteURLs) {
+			SafeCallable<GitRemote> callable = new SafeCallable<GitRemote>(
+				gitHubDevRemoteURL) {
 
-			GitRemote gitRemote = gitWorkingDirectory.getGitRemote(
-				gitHubDevRemoteName);
+				public GitRemote safeCall() {
+					String gitHubDevRemoteName =
+						"git-hub-dev-remote-" +
+							gitHubDevRemoteURLs.indexOf(gitHubDevRemoteURL);
 
-			if ((gitRemote == null) ||
-				!gitHubDevRemoteURL.equals(gitRemote.getRemoteURL())) {
+					GitRemote gitRemote = gitWorkingDirectory.getGitRemote(
+						gitHubDevRemoteName);
 
-				gitRemote = gitWorkingDirectory.addGitRemote(
-					true, gitHubDevRemoteName, gitHubDevRemoteURL);
-			}
+					if ((gitRemote == null) ||
+						!gitHubDevRemoteURL.equals(gitRemote.getRemoteURL())) {
 
-			gitHubDevGitRemotes.add(gitRemote);
+						gitRemote = gitWorkingDirectory.addGitRemote(
+							true, gitHubDevRemoteName, gitHubDevRemoteURL);
+					}
+
+					if (!gitRemote.isAvailable()) {
+						return null;
+					}
+
+					return gitRemote;
+				}
+
+			};
+
+			callables.add(callable);
 		}
 
-		return gitHubDevGitRemotes;
+		ParallelExecutor<GitRemote> parallelExecutor = new ParallelExecutor<>(
+			callables, true, _threadPoolExecutor, "getGitHubDevGitRemotes");
+
+		try {
+			return parallelExecutor.execute(60L * 5L);
+		}
+		catch (TimeoutException timeoutException) {
+			throw new RuntimeException(timeoutException);
+		}
 	}
 
 	public static List<GitRemote> getGitRemotesWithBranch(
@@ -750,41 +770,6 @@ public class GitHubDevSyncUtil {
 		}
 
 		gitWorkingDirectory.deleteRemoteGitBranches(remoteGitBranches);
-
-		StringBuilder sb = new StringBuilder();
-
-		sb.append(JenkinsResultsParserUtil.toDateString(new Date()));
-		sb.append("\n\n");
-
-		JenkinsSlave jenkinsSlave = new JenkinsSlave();
-
-		if (jenkinsSlave != null) {
-			sb.append("Build URL: ");
-
-			Build build = jenkinsSlave.getCurrentBuild();
-
-			sb.append(build.getBuildURL());
-
-			sb.append("\n");
-		}
-
-		sb.append("\n\n");
-
-		sb.append("Deleted ");
-		sb.append(String.valueOf(remoteGitBranches.size()));
-		sb.append(" GitHub dev branches:\n");
-
-		for (RemoteGitBranch remoteGitBranch : remoteGitBranches) {
-			sb.append("    ");
-			sb.append(remoteGitBranch.getRemoteURL());
-			sb.append(" ");
-			sb.append(remoteGitBranch.getName());
-			sb.append("\n");
-		}
-
-		NotificationUtil.sendEmail(
-			sb.toString(), "jenkins", "GitHub dev branches deleted",
-			"peter.yoo@liferay.com");
 	}
 
 	protected static String getCacheBranchName(

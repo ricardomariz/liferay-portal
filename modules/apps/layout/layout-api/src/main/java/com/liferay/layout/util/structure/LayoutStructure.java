@@ -279,6 +279,16 @@ public class LayoutStructure {
 	public LayoutStructureItem addFormStepContainerStyledLayoutStructureItem(
 		String itemId, String parentItemId, int position) {
 
+		LayoutStructureItem parentLayoutStructureItem =
+			_layoutStructureItems.get(parentItemId);
+
+		if (!(parentLayoutStructureItem instanceof
+				FormStyledLayoutStructureItem)) {
+
+			throw new UnsupportedOperationException(
+				"Form step container can only be added inside of a form");
+		}
+
 		FormStepContainerStyledLayoutStructureItem
 			formStepContainerStyledLayoutStructureItem =
 				new FormStepContainerStyledLayoutStructureItem(
@@ -299,6 +309,16 @@ public class LayoutStructure {
 
 	public LayoutStructureItem addFormStepLayoutStructureItem(
 		String itemId, String parentItemId, int position) {
+
+		LayoutStructureItem parentLayoutStructureItem =
+			_layoutStructureItems.get(parentItemId);
+
+		if (!(parentLayoutStructureItem instanceof
+				FormStepContainerStyledLayoutStructureItem)) {
+
+			throw new UnsupportedOperationException(
+				"Form step can only be added inside of a form step container");
+		}
 
 		FormStepLayoutStructureItem formStepLayoutStructureItem =
 			new FormStepLayoutStructureItem(itemId, parentItemId);
@@ -322,6 +342,8 @@ public class LayoutStructure {
 			new FormStyledLayoutStructureItem(itemId, parentItemId);
 
 		_updateLayoutStructure(formStyledLayoutStructureItem, position);
+
+		_formStyledLayoutStructureItems.add(formStyledLayoutStructureItem);
 
 		return formStyledLayoutStructureItem;
 	}
@@ -1256,13 +1278,8 @@ public class LayoutStructure {
 		FormStyledLayoutStructureItem formStyledLayoutStructureItem =
 			(FormStyledLayoutStructureItem)layoutStructureItem;
 
-		if (Objects.equals(
-				formStyledLayoutStructureItem.getFormType(), "multistep")) {
-
-			return true;
-		}
-
-		return false;
+		return Objects.equals(
+			formStyledLayoutStructureItem.getFormType(), "multistep");
 	}
 
 	private void _updateColumnSizes(

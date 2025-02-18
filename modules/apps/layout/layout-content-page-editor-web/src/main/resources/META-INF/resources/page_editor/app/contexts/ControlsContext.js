@@ -129,8 +129,10 @@ const reducer = (state, action) => {
 		layoutData,
 		multiSelect,
 		origin,
+		parentId,
 		type,
 	} = action;
+
 	let nextState = state;
 
 	if (type === HOVER_ITEM && itemId !== nextState.hoveredItemId) {
@@ -148,28 +150,38 @@ const reducer = (state, action) => {
 	) {
 		let rangeLimitIds = {};
 		let nextActiveItemIds = [itemId];
+		let nextItemType = itemType;
 
-		if (!Liferay.FeatureFlags['LPD-18221']) {
+		if (
+			!Liferay.FeatureFlags['LPD-18221'] ||
+			state.activeItemType === ITEM_TYPES.editable
+		) {
 			nextActiveItemIds = itemId ? [itemId] : [];
 		}
 		else if (!itemId) {
 			nextActiveItemIds = [];
 		}
 		else if (multiSelect === MULTI_SELECT_TYPES.simple) {
-			nextActiveItemIds = getActiveItemIds(
-				nextState.activeItemIds,
-				itemId
-			);
+			if (itemType === ITEM_TYPES.editable) {
+				if (state.activeItemIds.includes(parentId)) {
+					return state;
+				}
+
+				nextActiveItemIds = getActiveItemIds(
+					nextState.activeItemIds,
+					parentId
+				);
+
+				nextItemType = ITEM_TYPES.layoutDataItem;
+			}
+			else {
+				nextActiveItemIds = getActiveItemIds(
+					nextState.activeItemIds,
+					itemId
+				);
+			}
 		}
 		else if (multiSelect === MULTI_SELECT_TYPES.range) {
-
-			// Avoid selection in range when directly selecting an item that
-			// is not a layout data item, such as editables.
-
-			if (!layoutData.items[itemId]) {
-				return nextState;
-			}
-
 			let initialActiveItemIds = state.activeItemIds;
 
 			// The last active item id is taken when the first item in the
@@ -195,7 +207,7 @@ const reducer = (state, action) => {
 				);
 			}
 
-			rangeLimitIds = {end: itemId, start: startLimitId};
+			rangeLimitIds = {end: parentId || itemId, start: startLimitId};
 
 			if (
 				!rangeLimitIds.start ||
@@ -205,7 +217,7 @@ const reducer = (state, action) => {
 				// If the start and end of the range are the same id, only
 				// this item is selected
 
-				nextActiveItemIds = [itemId];
+				nextActiveItemIds = [parentId || itemId];
 			}
 			else {
 				const root = layoutData.items[layoutData.rootItems.main];
@@ -226,7 +238,7 @@ const reducer = (state, action) => {
 			...nextState,
 			activationOrigin: origin,
 			activeItemIds: nextActiveItemIds,
-			activeItemType: itemType,
+			activeItemType: nextItemType,
 			rangeLimitIds,
 		};
 	}
@@ -362,7 +374,11 @@ const useSelectItem = () => {
 	return useCallback(
 		(
 			itemId,
-			{itemType = ITEM_TYPES.layoutDataItem, origin = null} = {
+			{
+				parentId = null,
+				itemType = ITEM_TYPES.layoutDataItem,
+				origin = null,
+			} = {
 				itemType: ITEM_TYPES.layoutDataItem,
 			}
 		) => {
@@ -372,6 +388,7 @@ const useSelectItem = () => {
 				layoutData: layoutDataRef.current,
 				multiSelect: multiSelectTypeRef.current,
 				origin,
+				parentId,
 				type: SELECT_ITEM,
 			});
 		},

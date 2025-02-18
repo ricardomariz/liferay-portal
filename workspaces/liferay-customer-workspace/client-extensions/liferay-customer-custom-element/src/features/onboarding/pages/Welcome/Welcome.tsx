@@ -1,0 +1,56 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2000 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+import {IntroOnboarding} from '~/assets';
+import {Button} from '~/components';
+import FormLayout from '~/components/FormLayout';
+import {ONBOARDING_STEP_TYPES} from '~/features/onboarding/utils/constants';
+import i18n from '~/utils/I18n';
+
+import {useOnboarding} from '../../context';
+import {ActionPayload, actionTypes} from '../../context/reducer';
+import WelcomeSkeleton from './WelcomeSkeleton';
+
+const Welcome = () => {
+	const [, dispatch] = useOnboarding();
+
+	return (
+		<FormLayout
+			className="align-items-center d-flex flex-column pt-6 px-6"
+			footerProps={{
+				middleButton: (
+					<Button
+						displayType="primary"
+						onClick={() =>
+							dispatch({
+								payload:
+									ONBOARDING_STEP_TYPES.invites as unknown as ActionPayload,
+								type: actionTypes.CHANGE_STEP as keyof typeof actionTypes,
+							})
+						}
+					>
+						{i18n.translate('start-project-setup')}
+					</Button>
+				),
+			}}
+			headerProps={{
+				greetings: i18n.translate('ready-set-go'),
+				title: i18n.translate('let-s-set-up-your-project'),
+			}}
+		>
+			<IntroOnboarding className="mb-4 pb-1" height={237} width={331} />
+
+			<p className="mb-0 px-1 text-center text-neutral-8">
+				{i18n.translate(
+					'we-ll-start-by-adding-any-team-members-to-your-project-and-complete-your-product-activation'
+				)}
+			</p>
+		</FormLayout>
+	);
+};
+
+Welcome.Skeleton = WelcomeSkeleton;
+
+export default Welcome;

@@ -102,6 +102,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.SessionClicks;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
@@ -335,6 +336,10 @@ public class ContentPageEditorDisplayContext {
 					return null;
 				}
 			).put(
+				"deleteFormStepURL",
+				getFragmentEntryActionURL(
+					"/layout_content_page_editor/delete_form_step")
+			).put(
 				"deleteFragmentEntryLinkCommentURL",
 				getFragmentEntryActionURL(
 					"/layout_content_page_editor" +
@@ -541,6 +546,13 @@ public class ContentPageEditorDisplayContext {
 			).put(
 				"isConversionDraft", _isConversionDraft()
 			).put(
+				"isMarketplaceButtonVisited",
+				GetterUtil.getBoolean(
+					SessionClicks.get(
+						httpServletRequest,
+						getPortletNamespace() + "isMarketplaceButtonVisited",
+						StringPool.BLANK))
+			).put(
 				"isPrivateLayoutsEnabled",
 				() -> {
 					Group group = themeDisplay.getScopeGroup();
@@ -661,13 +673,8 @@ public class ContentPageEditorDisplayContext {
 					LayoutSet layoutSet = _layoutSetLocalService.fetchLayoutSet(
 						themeDisplay.getSiteGroupId(), false);
 
-					if (Objects.equals(
-							theme.getThemeId(), layoutSet.getThemeId())) {
-
-						return true;
-					}
-
-					return false;
+					return Objects.equals(
+						theme.getThemeId(), layoutSet.getThemeId());
 				}
 			).put(
 				"styleBookEntryId",

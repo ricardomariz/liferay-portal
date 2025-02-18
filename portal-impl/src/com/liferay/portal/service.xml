@@ -164,7 +164,7 @@
 		<finder name="Mx" return-type="Company">
 			<finder-column name="mx" />
 		</finder>
-		<finder name="LogoId" return-type="Company">
+		<finder name="LogoId" return-type="Collection">
 			<finder-column name="logoId" />
 		</finder>
 	</entity>
@@ -432,7 +432,7 @@
 		<finder name="CompanyId" return-type="Collection">
 			<finder-column name="companyId" />
 		</finder>
-		<finder name="LiveGroupId" return-type="Group">
+		<finder name="LiveGroupId" return-type="Collection">
 			<finder-column name="liveGroupId" />
 		</finder>
 		<finder name="C_C" return-type="Collection">
@@ -645,7 +645,7 @@
 		<finder name="ParentPlid" return-type="Collection" where="system = [$FALSE$]">
 			<finder-column name="parentPlid" />
 		</finder>
-		<finder name="IconImageId" return-type="Layout">
+		<finder name="IconImageId" return-type="Collection">
 			<finder-column name="iconImageId" />
 		</finder>
 		<finder name="LayoutPrototypeUuid" return-type="Collection" where="system = [$FALSE$]">
@@ -698,7 +698,7 @@
 			<finder-column name="privateLayout" />
 			<finder-column name="friendlyURL" />
 		</finder>
-		<finder name="G_P_SPLU" return-type="Layout">
+		<finder name="G_P_SPLU" return-type="Collection">
 			<finder-column name="groupId" />
 			<finder-column name="privateLayout" />
 			<finder-column name="sourcePrototypeLayoutUuid" />
@@ -953,11 +953,6 @@
 		<finder name="L_P_P" return-type="Collection">
 			<finder-column name="layoutSetBranchId" />
 			<finder-column name="parentLayoutRevisionId" />
-			<finder-column name="plid" />
-		</finder>
-		<finder name="L_H_P" return-type="LayoutRevision">
-			<finder-column name="layoutSetBranchId" />
-			<finder-column name="head" />
 			<finder-column name="plid" />
 		</finder>
 		<finder name="L_H_P_Collection" return-type="Collection">
@@ -2357,6 +2352,7 @@
 
 		<!-- Other fields -->
 
+		<column name="classExternalReferenceCode" type="String" />
 		<column name="classNameId" type="long" />
 		<column name="classPK" type="long" />
 		<column name="classUuid" type="String" />
@@ -2588,14 +2584,6 @@
 		<finder name="C_FID" return-type="User">
 			<finder-column name="companyId" />
 			<finder-column name="facebookId" />
-		</finder>
-		<finder name="C_GUID" return-type="User">
-			<finder-column name="companyId" />
-			<finder-column name="googleUserId" />
-		</finder>
-		<finder name="C_O" return-type="User">
-			<finder-column name="companyId" />
-			<finder-column name="openId" />
 		</finder>
 		<finder name="C_T" return-type="Collection">
 			<finder-column name="companyId" />
@@ -3247,9 +3235,7 @@
 		<exception>CountryNumber</exception>
 		<exception>CountryTitle</exception>
 		<exception>DuplicateCountry</exception>
-		<exception>DuplicateGoogleUserId</exception>
 		<exception>DuplicateGroup</exception>
-		<exception>DuplicateOpenId</exception>
 		<exception>DuplicateOrganization</exception>
 		<exception>DuplicatePasswordPolicy</exception>
 		<exception>DuplicateRegion</exception>

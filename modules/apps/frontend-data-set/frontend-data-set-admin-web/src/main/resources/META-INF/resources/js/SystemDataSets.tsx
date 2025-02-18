@@ -4,12 +4,18 @@
  */
 
 import {FrontendDataSet} from '@liferay/frontend-data-set-web';
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 
 import '../css/DataSets.scss';
 
 import ClayButton from '@clayui/button';
+import {ClayRadio} from '@clayui/form';
+import ClayIcon from '@clayui/icon';
+import ClayLabel from '@clayui/label';
+import ClayList from '@clayui/list';
 import ClayModal from '@clayui/modal';
+import ClaySticker from '@clayui/sticker';
+import classNames from 'classnames';
 import {fetch, navigate, openModal} from 'frontend-js-web';
 
 import {
@@ -21,20 +27,121 @@ import openDefaultFailureToast from './utils/openDefaultFailureToast';
 import openDefaultSuccessToast from './utils/openDefaultSuccessToast';
 import {IDataSet, ISystemDataSet} from './utils/types';
 
+interface IFrontendDataSetContext {
+	onSelect: Function;
+	selectItems: Function;
+	selectable: boolean;
+	selectedItemsKey: keyof ISystemDataSet;
+	selectedItemsValue: Array<any>;
+}
+
+const SystemDataSetsView = ({
+	frontendDataSetContext,
+	items,
+}: {
+	frontendDataSetContext: any;
+	items: Array<ISystemDataSet>;
+}) => {
+	const {
+		onSelect,
+		selectItems,
+		selectable,
+		selectedItemsKey,
+		selectedItemsValue,
+	} = useContext(frontendDataSetContext) as IFrontendDataSetContext;
+
+	return (
+		<ClayList>
+			{items.map((item) => {
+				return (
+					<ClayList.Item
+						className={classNames({
+							disabled: item.imported,
+							selectable,
+							selected: selectedItemsValue?.includes(
+								item[selectedItemsKey]
+							),
+						})}
+						flex
+						key={item.name}
+						onClick={() => {
+							if (selectable) {
+								selectItems(item[selectedItemsKey]);
+
+								onSelect({selectedItems: [item]});
+							}
+						}}
+					>
+						<ClayList.ItemField className="justify-content-center selection-control">
+							<ClayRadio
+								checked={
+									selectedItemsValue
+										? selectedItemsValue
+												.map((element) =>
+													String(element)
+												)
+												.includes(
+													String(
+														item[selectedItemsKey]
+													)
+												)
+										: false
+								}
+								onChange={() => {}}
+								value=""
+							/>
+						</ClayList.ItemField>
+
+						<ClayList.ItemField>
+							<ClaySticker displayType="dark">
+								<ClayIcon symbol={item.symbol} />
+							</ClaySticker>
+						</ClayList.ItemField>
+
+						<ClayList.ItemField
+							className="justify-content-center"
+							expand
+						>
+							<ClayList.ItemTitle>
+								{item.title}
+							</ClayList.ItemTitle>
+
+							<ClayList.ItemText>
+								{item.description}
+							</ClayList.ItemText>
+						</ClayList.ItemField>
+
+						{item.imported && (
+							<ClayList.ItemField>
+								<ClayLabel
+									className="created-label"
+									displayType="warning"
+								>
+									{Liferay.Language.get('created')}
+								</ClayLabel>
+							</ClayList.ItemField>
+						)}
+					</ClayList.Item>
+				);
+			})}
+		</ClayList>
+	);
+};
+
 const SelectSystemDataSetModalContent = ({
 	closeModal,
+	getSystemDataSetsURL,
 	importSystemDataSetURL,
 	loadData,
 	namespace,
-	systemDataSets,
 }: {
 	closeModal: Function;
+	getSystemDataSetsURL: string;
 	importSystemDataSetURL: string;
 	loadData: Function;
 	namespace: string;
-	systemDataSets: Array<ISystemDataSet>;
 }) => {
-	const [createButtonDisabled, setCreateButtonDisabled] = useState(false);
+	const [createButtonDisabled, setCreateButtonDisabled] = useState(true);
 	const [selectedSystemDataSet, setSelectedSystemDataSet] =
 		useState<ISystemDataSet | null>(null);
 
@@ -77,8 +184,8 @@ const SelectSystemDataSetModalContent = ({
 			<ClayModal.Body>
 				<FrontendDataSet
 					{...FDS_DEFAULT_PROPS}
+					apiURL={getSystemDataSetsURL}
 					id="SystemDataSets"
-					items={systemDataSets}
 					onSelect={({
 						selectedItems,
 					}: {
@@ -90,13 +197,7 @@ const SelectSystemDataSetModalContent = ({
 					selectionType="single"
 					views={[
 						{
-							contentRenderer: 'list',
-							name: 'list',
-							schema: {
-								description: 'description',
-								symbol: 'symbol',
-								title: 'title',
-							},
+							component: SystemDataSetsView,
 						},
 					]}
 				/>
@@ -114,7 +215,9 @@ const SelectSystemDataSetModalContent = ({
 						</ClayButton>
 
 						<ClayButton
-							disabled={createButtonDisabled}
+							disabled={
+								createButtonDisabled && !selectedSystemDataSet
+							}
 							onClick={onCreateButtonClick}
 						>
 							{Liferay.Language.get('create')}
@@ -128,11 +231,13 @@ const SelectSystemDataSetModalContent = ({
 
 const SystemDataSets = ({
 	editDataSetURL,
+	getSystemDataSetsURL,
 	importSystemDataSetURL,
 	namespace,
 	systemDataSets,
 }: {
 	editDataSetURL: string;
+	getSystemDataSetsURL: string;
 	importSystemDataSetURL: string;
 	namespace: string;
 	systemDataSets: Array<ISystemDataSet>;
@@ -218,12 +323,13 @@ const SystemDataSets = ({
 						}) => (
 							<SelectSystemDataSetModalContent
 								closeModal={closeModal}
+								getSystemDataSetsURL={getSystemDataSetsURL}
 								importSystemDataSetURL={importSystemDataSetURL}
 								loadData={loadData}
 								namespace={namespace}
-								systemDataSets={systemDataSets}
 							/>
 						),
+						size: 'lg',
 					});
 				},
 			},
@@ -287,7 +393,7 @@ const SystemDataSets = ({
 					image: '/states/empty_state.svg',
 					title: Liferay.Language.get('no-system-data-sets-created'),
 				}}
-				id="CustomizedSystemDataSets"
+				id="CreatedSystemDataSets"
 				itemsActions={[
 					{
 						data: {

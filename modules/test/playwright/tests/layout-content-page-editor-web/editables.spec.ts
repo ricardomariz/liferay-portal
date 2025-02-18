@@ -10,6 +10,8 @@ import {featureFlagsTest} from '../../fixtures/featureFlagsTest';
 import {isolatedSiteTest} from '../../fixtures/isolatedSiteTest';
 import {loginTest} from '../../fixtures/loginTest';
 import {pageEditorPagesTest} from '../../fixtures/pageEditorPagesTest';
+import {clickAndExpectToBeHidden} from '../../utils/clickAndExpectToBeHidden';
+import {clickAndExpectToBeVisible} from '../../utils/clickAndExpectToBeVisible';
 import getRandomString from '../../utils/getRandomString';
 import getBasicWebContentStructureId from '../../utils/structured-content/getBasicWebContentStructureId';
 import getFragmentDefinition from './utils/getFragmentDefinition';
@@ -26,75 +28,81 @@ const test = mergeTests(
 	pageEditorPagesTest
 );
 
-test('Saves edited contend when leaving page while editing', async ({
-	apiHelpers,
-	page,
-	pageEditorPage,
-	site,
-}) => {
+test(
+	'Saves edited contend when leaving page while editing',
+	{
+		tag: ['@LPD-40982', '@LPD-48256'],
+	},
+	async ({apiHelpers, page, pageEditorPage, site}) => {
 
-	// Create a page with a Paragraph fragment and go to view mode
+		// Create a page with a Paragraph fragment and go to view mode
 
-	const paragraphId = getRandomString();
-	const paragraphDefinition = getFragmentDefinition({
-		id: paragraphId,
-		key: 'BASIC_COMPONENT-paragraph',
-	});
+		const paragraphId = getRandomString();
+		const paragraphDefinition = getFragmentDefinition({
+			id: paragraphId,
+			key: 'BASIC_COMPONENT-paragraph',
+		});
 
-	const layout = await apiHelpers.headlessDelivery.createSitePage({
-		pageDefinition: getPageDefinition([paragraphDefinition]),
-		siteId: site.id,
-		title: getRandomString(),
-	});
+		const layout = await apiHelpers.headlessDelivery.createSitePage({
+			pageDefinition: getPageDefinition([paragraphDefinition]),
+			siteId: site.id,
+			title: getRandomString(),
+		});
 
-	await page.goto(`/web${site.friendlyUrlPath}${layout.friendlyUrlPath}`);
+		await page.goto(`/web${site.friendlyUrlPath}${layout.friendlyUrlPath}`);
 
-	// Go to edit mode
+		// Go to edit mode
 
-	await page
-		.getByLabel('Control Menu')
-		.getByText('Edit', {exact: true})
-		.click();
+		await page
+			.getByLabel('Control Menu')
+			.getByText('Edit', {exact: true})
+			.click();
 
-	await page.locator('.page-editor').waitFor();
+		await page.locator('.page-editor').waitFor();
 
-	// Write text in editable
+		// Write text in editable
 
-	await pageEditorPage.selectFragment(paragraphId);
+		await pageEditorPage.selectFragment(paragraphId);
 
-	await pageEditorPage.selectEditable(paragraphId, 'element-text');
+		await pageEditorPage.selectEditable(paragraphId, 'element-text');
 
-	const editable = pageEditorPage.getEditable({
-		editableId: 'element-text',
-		fragmentId: paragraphId,
-	});
+		const editable = pageEditorPage.getEditable({
+			editableId: 'element-text',
+			fragmentId: paragraphId,
+		});
 
-	await editable.click();
+		await editable.click();
 
-	await editable.locator('.cke_editable_inline').waitFor();
+		await editable.locator('.cke_editable_inline').waitFor();
 
-	await editable.locator('.cke_editable_inline').click();
+		await editable.locator('.cke_editable_inline').click();
 
-	// Clear current content and fill with new one
+		// Clear current content and fill with new one
 
-	await page.keyboard.press('Control+KeyA');
-	await page.keyboard.press('Backspace');
+		await page.keyboard.press('Control+KeyA');
 
-	await page.keyboard.type('Papa');
+		// Check toolbar appears
 
-	// Leave page while editing
+		await expect(page.locator('.ae-toolbar-styles')).toBeVisible();
 
-	await page.getByLabel('Control Menu').locator('.lfr-back-link').click();
+		await page.keyboard.press('Backspace');
 
-	// Go back to edit mode and check value was saved
+		await page.keyboard.type('Papa');
 
-	await page
-		.getByLabel('Control Menu')
-		.getByText('Edit', {exact: true})
-		.click();
+		// Leave page while editing
 
-	await expect(page.getByText('Papa')).toBeVisible();
-});
+		await page.getByLabel('Control Menu').locator('.lfr-back-link').click();
+
+		// Go back to edit mode and check value was saved
+
+		await page
+			.getByLabel('Control Menu')
+			.getByText('Edit', {exact: true})
+			.click();
+
+		await expect(page.getByText('Papa')).toBeVisible();
+	}
+);
 
 test(
 	'Value of editable field should be reset when the mapped content is missing',
@@ -168,5 +176,95 @@ test(
 		await expect(page.locator('.component-heading')).toHaveText(
 			'Heading Example'
 		);
+	}
+);
+
+test(
+	'It is not possible to select editables when multiselect is enabled',
+	{
+		tag: '@LPD-47348',
+	},
+	async ({apiHelpers, page, pageEditorPage, site}) => {
+
+		// Create a page with a Heading and a Card fragment
+
+		const headingId = getRandomString();
+		const headingDefinition = getFragmentDefinition({
+			id: headingId,
+			key: 'BASIC_COMPONENT-heading',
+		});
+
+		const cardId = getRandomString();
+		const cardDefinition = getFragmentDefinition({
+			id: cardId,
+			key: 'BASIC_COMPONENT-card',
+		});
+
+		const layout = await apiHelpers.headlessDelivery.createSitePage({
+			pageDefinition: getPageDefinition([
+				headingDefinition,
+				cardDefinition,
+			]),
+			siteId: site.id,
+			title: getRandomString(),
+		});
+
+		// Go to edit mode of page
+
+		await pageEditorPage.goto(layout, site.friendlyUrlPath);
+
+		// Go to Browser panel and expand Card
+
+		await pageEditorPage.goToSidebarTab('Browser');
+
+		await clickAndExpectToBeVisible({
+			target: page.locator('.page-editor__page-structure__tree-node', {
+				hasText: '02-title',
+			}),
+			trigger: page.locator('.page-editor__page-structure__tree-node', {
+				hasText: 'Card',
+			}),
+		});
+
+		// Select editable
+
+		await clickAndExpectToBeVisible({
+			target: page.locator('.breadcrumb-link', {
+				hasText: '02-title',
+			}),
+			trigger: page.locator('.page-editor__page-structure__tree-node', {
+				hasText: '02-title',
+			}),
+		});
+
+		// Enable multiselect
+
+		await page.keyboard.down('Control');
+
+		// Check editable is deselected if we select the heading
+
+		await clickAndExpectToBeHidden({
+			target: page.locator('.breadcrumb-link', {
+				hasText: '02-title',
+			}),
+			trigger: page.locator('.page-editor__page-structure__tree-node', {
+				hasText: 'Heading',
+			}),
+		});
+
+		await expect(page.getByText('2 Items Selected')).not.toBeVisible();
+
+		// Now check parent is selected if trying to multiselect the editable
+
+		await clickAndExpectToBeVisible({
+			target: page.locator('.page-editor__topper__title', {
+				hasText: 'Card',
+			}),
+			trigger: page.locator('.page-editor__page-structure__tree-node', {
+				hasText: '02-title',
+			}),
+		});
+
+		await expect(page.getByText('2 Items Selected')).toBeVisible();
 	}
 );

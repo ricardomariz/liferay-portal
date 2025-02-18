@@ -22,6 +22,23 @@
 			"name": "DataSet",
 			"objectFields": [
 				{
+					"DBType": "Boolean",
+					"businessType": "Boolean",
+					"defaultValue": true,
+					"externalReferenceCode": "ACTIVE",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Active"
+					},
+					"localized": false,
+					"name": "active",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "Boolean"
+				},
+				{
 					"DBType": "String",
 					"businessType": "Text",
 					"externalReferenceCode": "ADDITIONAL_API_URL_PARAMETERS",
@@ -401,6 +418,23 @@
 			"name": "DataSetAction",
 			"objectFields": [
 				{
+					"DBType": "Boolean",
+					"businessType": "Boolean",
+					"defaultValue": true,
+					"externalReferenceCode": "ACTIVE",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Active"
+					},
+					"localized": false,
+					"name": "active",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "Boolean"
+				},
+				{
 					"DBType": "String",
 					"businessType": "Text",
 					"externalReferenceCode": "CONFIRMATION_MESSAGE",
@@ -647,6 +681,23 @@
 			"name": "DataSetCardsSection",
 			"objectFields": [
 				{
+					"DBType": "Boolean",
+					"businessType": "Boolean",
+					"defaultValue": true,
+					"externalReferenceCode": "ACTIVE",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Active"
+					},
+					"localized": false,
+					"name": "active",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "Boolean"
+				},
+				{
 					"DBType": "String",
 					"businessType": "Text",
 					"externalReferenceCode": "FIELD_NAME",
@@ -714,6 +765,23 @@
 			"modifiable": true,
 			"name": "DataSetClientExtensionFilter",
 			"objectFields": [
+				{
+					"DBType": "Boolean",
+					"businessType": "Boolean",
+					"defaultValue": true,
+					"externalReferenceCode": "ACTIVE",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Active"
+					},
+					"localized": false,
+					"name": "active",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "Boolean"
+				},
 				{
 					"DBType": "String",
 					"businessType": "Text",
@@ -785,6 +853,23 @@
 			"modifiable": true,
 			"name": "DataSetDateFilter",
 			"objectFields": [
+				{
+					"DBType": "Boolean",
+					"businessType": "Boolean",
+					"defaultValue": true,
+					"externalReferenceCode": "ACTIVE",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Active"
+					},
+					"localized": false,
+					"name": "active",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "Boolean"
+				},
 				{
 					"DBType": "String",
 					"businessType": "Text",
@@ -888,6 +973,23 @@
 			"name": "DataSetListSection",
 			"objectFields": [
 				{
+					"DBType": "Boolean",
+					"businessType": "Boolean",
+					"defaultValue": true,
+					"externalReferenceCode": "ACTIVE",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Active"
+					},
+					"localized": false,
+					"name": "active",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "Boolean"
+				},
+				{
 					"DBType": "String",
 					"businessType": "Text",
 					"externalReferenceCode": "FIELD_NAME",
@@ -955,6 +1057,23 @@
 			"modifiable": true,
 			"name": "DataSetSelectionFilter",
 			"objectFields": [
+				{
+					"DBType": "Boolean",
+					"businessType": "Boolean",
+					"defaultValue": true,
+					"externalReferenceCode": "ACTIVE",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Active"
+					},
+					"localized": false,
+					"name": "active",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "Boolean"
+				},
 				{
 					"DBType": "String",
 					"businessType": "Text",
@@ -1173,6 +1292,23 @@
 				{
 					"DBType": "Boolean",
 					"businessType": "Boolean",
+					"defaultValue": true,
+					"externalReferenceCode": "ACTIVE",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Active"
+					},
+					"localized": false,
+					"name": "active",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "Boolean"
+				},
+				{
+					"DBType": "Boolean",
+					"businessType": "Boolean",
 					"externalReferenceCode": "DEFAULT",
 					"indexed": true,
 					"indexedAsKeyword": false,
@@ -1257,6 +1393,23 @@
 			"modifiable": true,
 			"name": "DataSetTableSection",
 			"objectFields": [
+				{
+					"DBType": "Boolean",
+					"businessType": "Boolean",
+					"defaultValue": true,
+					"externalReferenceCode": "ACTIVE",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Active"
+					},
+					"localized": false,
+					"name": "active",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "Boolean"
+				},
 				{
 					"DBType": "String",
 					"businessType": "Text",

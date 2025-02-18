@@ -1193,7 +1193,7 @@ jdbc.default.connectionProperties=oracle.jdbc.ReadTimeout=0;oracle.net.CONNECT_T
 							<isset property="java.jdk.home" />
 						</not>
 						<then>
-							<fail>Unable to get the property "java.jdk.home" for jdk version @{version} and type @{type}.</fail>
+							<property name="java.jdk.home" value="${env.JAVA_HOME}" />
 						</then>
 					</if>
 
@@ -1223,15 +1223,39 @@ jdbc.default.connectionProperties=oracle.jdbc.ReadTimeout=0;oracle.net.CONNECT_T
 			<var name="java.jdk.opts" unset="true" />
 
 			<propertycopy from="java.jdk.opts[@{version}][@{architecture}][@{type}]" property="java.jdk.opts" silent="true" />
-
-			<condition property="java.jdk.opts" value="${java.jdk.opts.default.runtime}">
+			<if>
 				<and>
 					<not>
 						<isset property="java.jdk.opts" />
 					</not>
 					<isset property="java.jdk.opts.default.runtime" />
 				</and>
-			</condition>
+				<then>
+					<property name="java.jdk.opts" value="${java.jdk.opts.default.runtime}" />
+				</then>
+				<elseif>
+					<and>
+						<not>
+							<isset property="java.jdk.opts" />
+						</not>
+						<isset property="env.JAVA_OPTS" />
+					</and>
+					<then>
+						<property name="java.jdk.opts" value="${env.JAVA_OPTS}" />
+					</then>
+				</elseif>
+				<elseif>
+					<and>
+						<not>
+							<isset property="java.jdk.opts" />
+						</not>
+						<isset property="env.ANT_OPTS" />
+					</and>
+					<then>
+						<property name="java.jdk.opts" value="${env.ANT_OPTS}" />
+					</then>
+				</elseif>
+			</if>
 
 			<var name="java.jdk.opts" value="${java.jdk.opts} -XX:+IgnoreUnrecognizedVMOptions" />
 		</sequential>
@@ -7574,6 +7598,8 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 		<text name="run.options" optional="true" />
 
 		<sequential>
+			<lstopwatch action="start" name="start.docker.container.@{name}" />
+
 			<local name="docker.network.run.option" />
 			<local name="docker.start.script" />
 
@@ -7671,6 +7697,8 @@ ${docker.start.error}</fail>
 			<echo>${docker.start.output}</echo>
 
 			<delete file="${docker.start.script}" />
+
+			<lstopwatch action="total" name="start.docker.container.@{name}" />
 		</sequential>
 	</macrodef>
 
@@ -13947,6 +13975,14 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 
 				<basename file="${test.build.bundle.zip.url}" property="bundle.file.name" />
 
+				<propertyregex
+					input="${test.build.bundle.zip.url}"
+					override="true"
+					property="test.build.bundle.zip.url"
+					regexp="https:\/\/storage.(cloud\.google\.com|googleapis\.com)/"
+					replace="gs://"
+				/>
+
 				<mirrors-get
 					dest="${java.io.tmpdir}/${bundle.file.name}"
 					src="${test.build.bundle.zip.url}"
@@ -14028,6 +14064,14 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 				<if>
 					<matches pattern="(file|https?)://" string="${test.build.portal.war.url}" />
 					<then>
+						<propertyregex
+							input="${test.build.portal.war.url}"
+							override="true"
+							property="test.build.portal.war.url"
+							regexp="https:\/\/storage.(cloud\.google\.com|googleapis\.com)/"
+							replace="gs://"
+						/>
+
 						<mirrors-get
 							dest="liferay-portal.war"
 							src="${test.build.portal.war.url}"
@@ -14133,6 +14177,14 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 				<if>
 					<matches pattern="(file|https?)://" string="${test.build.portal.osgi.zip.url}" />
 					<then>
+						<propertyregex
+							input="${test.build.portal.osgi.zip.url}"
+							override="true"
+							property="test.build.portal.osgi.zip.url"
+							regexp="https:\/\/storage.(cloud\.google\.com|googleapis\.com)/"
+							replace="gs://"
+						/>
+
 						<mirrors-get
 							dest="liferay-portal-osgi.zip"
 							src="${test.build.portal.osgi.zip.url}"
@@ -14156,6 +14208,14 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 				<if>
 					<matches pattern="(file|https?)://" string="${test.build.portal.tools.zip.url}" />
 					<then>
+						<propertyregex
+							input="${test.build.portal.tools.zip.url}"
+							override="true"
+							property="test.build.portal.tools.zip.url"
+							regexp="https:\/\/storage.(cloud\.google\.com|googleapis\.com)/"
+							replace="gs://"
+						/>
+
 						<mirrors-get
 							dest="liferay-portal-tools.zip"
 							src="${test.build.portal.tools.zip.url}"
@@ -14248,6 +14308,8 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 
 		<if>
 			<or>
+				<matches pattern="gs://" string="${test.build.bundle.zip.url}" />
+				<matches pattern="gs://" string="${test.build.portal.osgi.zip.url}" />
 				<matches pattern="https?://" string="${test.build.bundle.zip.url}" />
 				<matches pattern="https?://" string="${test.build.portal.osgi.zip.url}" />
 			</or>
@@ -14255,7 +14317,10 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 				<local name="bundle.zip.url" />
 
 				<if>
-					<matches pattern="https?://" string="${test.build.bundle.zip.url}" />
+					<or>
+						<matches pattern="gs://" string="${test.build.bundle.zip.url}" />
+						<matches pattern="https?://" string="${test.build.bundle.zip.url}" />
+					</or>
 					<then>
 						<property name="bundle.zip.url" value="${test.build.bundle.zip.url}" />
 					</then>
@@ -14291,6 +14356,18 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 							<antelope:stringutil property="bundle.zip.url" string="${bundle.base.url}${bundle.zip.name}">
 								<antelope:replace regex="-slim" replacement="" />
 							</antelope:stringutil>
+						</then>
+					</elseif>
+					<elseif>
+						<matches pattern="gs://" string="${test.build.portal.osgi.zip.url}" />
+						<then>
+							<propertyregex
+								input="${test.build.portal.osgi.zip.url}"
+								override="true"
+								property="bundle.zip.url"
+								regexp="osgi"
+								replace="tomcat"
+							/>
 						</then>
 					</elseif>
 				</if>
@@ -16717,6 +16794,8 @@ CATALINA_OPTS="$CATALINA_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.managemen
 	</target>
 
 	<target name="start-docker-containers">
+		<lstopwatch action="start" name="start.docker.containers" />
+
 		<get-database-property property.name="database.docker.image" />
 
 		<if>
@@ -16749,6 +16828,8 @@ CATALINA_OPTS="$CATALINA_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.managemen
 				<start-docker-browser />
 			</then>
 		</if>
+
+		<lstopwatch action="total" name="start.docker.containers" />
 	</target>
 
 	<target name="start-docker-database">

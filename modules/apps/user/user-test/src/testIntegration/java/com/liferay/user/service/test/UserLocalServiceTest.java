@@ -9,6 +9,7 @@ import com.liferay.announcements.kernel.service.AnnouncementsDeliveryLocalServic
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.petra.function.UnsafeRunnable;
 import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.audit.AuditMessage;
 import com.liferay.portal.kernel.bean.ClassLoaderBeanHandler;
@@ -310,6 +311,18 @@ public class UserLocalServiceTest {
 					user.getCompanyId(), user.getEmailAddress(), "password",
 					null, null, null));
 		}
+	}
+
+	@Test
+	public void testAuthenticateByEmailAddressWithOutdatedPasswordsEncryptionAlgorithm()
+		throws Exception {
+
+		_testAuthenticateByEmailAddressWithOutdatedPasswordsEncryptionAlgorithm(
+			"BCRYPT/15", "BCRYPT/10");
+		_testAuthenticateByEmailAddressWithOutdatedPasswordsEncryptionAlgorithm(
+			"PBKDF2WITHHMACSHA1/160/2600000", "PBKDF2WITHHMACSHA1/160/1300000");
+		_testAuthenticateByEmailAddressWithOutdatedPasswordsEncryptionAlgorithm(
+			"SHA-384", "PBKDF2WITHHMACSHA1/160/1300000");
 	}
 
 	@Test
@@ -1495,6 +1508,80 @@ public class UserLocalServiceTest {
 		Assert.assertEquals(ldapUser ? 1 : -1, user.getLdapServerId());
 		Assert.assertTrue(user.isPasswordReset());
 		Assert.assertNotNull(user.getPasswordPolicy());
+	}
+
+	private void
+			_testAuthenticateByEmailAddressWithOutdatedPasswordsEncryptionAlgorithm(
+				String newPasswordsEncryptionAlgorithm,
+				String oldPasswordsEncryptionAlgorithm)
+		throws Exception {
+
+		User user = UserTestUtil.addUser();
+
+		try (AutoCloseable autoCloseable =
+				ReflectionTestUtil.setFieldValueWithAutoCloseable(
+					PasswordEncryptorUtil.class,
+					"_PASSWORDS_ENCRYPTION_ALGORITHM",
+					oldPasswordsEncryptionAlgorithm)) {
+
+			user = _userLocalService.updatePassword(
+				user.getUserId(), "password", "password", false, true);
+
+			Assert.assertEquals(
+				oldPasswordsEncryptionAlgorithm,
+				PasswordEncryptorUtil.getEncryptedPasswordAlgorithmSettings(
+					user.getPassword()));
+		}
+
+		try (AutoCloseable autoCloseable1 =
+				PropsValuesTestUtil.swapWithSafeCloseable(
+					"PASSWORDS_ENCRYPTION_ALGORITHM_LEGACY",
+					newPasswordsEncryptionAlgorithm);
+			AutoCloseable autoCloseable2 =
+				ReflectionTestUtil.setFieldValueWithAutoCloseable(
+					PasswordEncryptorUtil.class,
+					"_PASSWORDS_ENCRYPTION_ALGORITHM",
+					newPasswordsEncryptionAlgorithm);
+			AutoCloseable autoCloseable3 =
+				ReflectionTestUtil.setFieldValueWithAutoCloseable(
+					UserLocalServiceImpl.class,
+					"_PASSWORDS_ENCRYPTION_ALGORITHM",
+					newPasswordsEncryptionAlgorithm)) {
+
+			Assert.assertEquals(
+				Authenticator.SUCCESS,
+				_userLocalService.authenticateByEmailAddress(
+					user.getCompanyId(), user.getDisplayEmailAddress(),
+					"password", null, null, null));
+
+			user = _userLocalService.getUser(user.getUserId());
+
+			Assert.assertEquals(
+				newPasswordsEncryptionAlgorithm,
+				PasswordEncryptorUtil.getEncryptedPasswordAlgorithmSettings(
+					user.getPassword()));
+
+			String password = user.getPassword();
+
+			user.setPassword(
+				password.substring(
+					password.indexOf(CharPool.CLOSE_CURLY_BRACE) + 1));
+
+			user = _userLocalService.updateUser(user);
+
+			Assert.assertEquals(
+				Authenticator.SUCCESS,
+				_userLocalService.authenticateByEmailAddress(
+					user.getCompanyId(), user.getDisplayEmailAddress(),
+					"password", null, null, null));
+
+			user = _userLocalService.getUser(user.getUserId());
+
+			Assert.assertEquals(
+				newPasswordsEncryptionAlgorithm,
+				PasswordEncryptorUtil.getEncryptedPasswordAlgorithmSettings(
+					user.getPassword()));
+		}
 	}
 
 	private void _testVerifyEmailAddress(boolean expired) throws Exception {

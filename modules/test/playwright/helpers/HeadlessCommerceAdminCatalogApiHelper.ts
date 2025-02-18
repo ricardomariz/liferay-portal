@@ -42,6 +42,10 @@ type TCategory = {
 	vocabulary?: string;
 };
 
+type TCurrency = {
+	active?: boolean;
+};
+
 export type TDiagram = {
 	attachmentBase64: TAttachmentBase64;
 };
@@ -65,15 +69,18 @@ export type TProduct = {
 	active?: boolean;
 	catalogId: number;
 	categories?: TCategory[];
+	createDate?: string;
 	description?: {
 		[key: string]: string;
 	};
 	diagram?: TDiagram;
+	expirationDate?: string;
 	externalReferenceCode?: string;
 	id?: number;
 	name?: {
 		[key: string]: string;
 	};
+	neverExpire?: boolean;
 	productAccountGroupFilter?: boolean;
 	productAccountGroups?: {
 		accountGroupId: number;
@@ -121,7 +128,7 @@ export type TProductConfiguration = {
 	minStockQuantity?: number;
 	multipleOrderQuantity?: number;
 	productShippingConfiguration?: any;
-	productTaxConfiguration?: any;
+	productTaxConfiguration?: TProductTaxConfiguration;
 	purchasable?: boolean;
 	visible?: boolean;
 };
@@ -137,6 +144,11 @@ export type TProductConfigurationList = {
 	parentProductConfigurationListId?: number;
 	priority?: number;
 	productConfigurations?: TProductConfiguration[];
+};
+
+export type TProductTaxConfiguration = {
+	id: number;
+	taxable: boolean;
 };
 
 type TProductVirtualSettings = {
@@ -290,6 +302,12 @@ export class HeadlessCommerceAdminCatalogApiHelper {
 		);
 	}
 
+	async getCurrenciesPage(search: string) {
+		return this.apiHelpers.get(
+			`${this.apiHelpers.baseUrl}${this.basePath}/currencies?search=${search}`
+		);
+	}
+
 	async getOptionCategory(optionCategoryId: string) {
 		return this.apiHelpers.get(
 			`${this.apiHelpers.baseUrl}${this.basePath}/optionCategories/${optionCategoryId}`
@@ -364,6 +382,15 @@ export class HeadlessCommerceAdminCatalogApiHelper {
 		);
 	}
 
+	async patchCurrency(currencyId: string, currency?: TCurrency) {
+		return this.apiHelpers.patch(
+			`${this.apiHelpers.baseUrl}${this.basePath}/currencies/${currencyId}`,
+			{
+				...(currency || {}),
+			}
+		);
+	}
+
 	async patchProduct(productId: string, product?: DataObject) {
 		return this.apiHelpers.patch(
 			`${this.apiHelpers.baseUrl}${this.basePath}/products/${productId}`,
@@ -372,6 +399,18 @@ export class HeadlessCommerceAdminCatalogApiHelper {
 					en_US: 'Product' + getRandomInt(),
 				},
 				...(product || {}),
+			}
+		);
+	}
+
+	async patchProductTaxConfiguration(
+		productId: number,
+		productTaxConfiguration: TProductTaxConfiguration
+	) {
+		return this.apiHelpers.patch(
+			`${this.apiHelpers.baseUrl}${this.basePath}/products/${productId}/taxConfiguration`,
+			{
+				...(productTaxConfiguration || {}),
 			}
 		);
 	}

@@ -68,6 +68,7 @@ import com.liferay.object.service.ObjectEntryService;
 import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.object.service.ObjectValidationRuleLocalService;
+import com.liferay.object.system.JaxRsApplicationDescriptor;
 import com.liferay.object.system.SystemObjectDefinitionManager;
 import com.liferay.object.system.SystemObjectDefinitionManagerRegistry;
 import com.liferay.object.test.util.ObjectDefinitionTestUtil;
@@ -216,7 +217,7 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
 /**
  * @author Luis Miguel Barcos
  */
-@FeatureFlags({"LPD-32050", "LPS-164801"})
+@FeatureFlags("LPS-164801")
 @RunWith(Arquillian.class)
 public class ObjectEntryResourceTest {
 
@@ -5166,6 +5167,16 @@ public class ObjectEntryResourceTest {
 				_OBJECT_FIELD_NAME_2, String.valueOf(_OBJECT_FIELD_VALUE_2)
 			).build());
 
+		JaxRsApplicationDescriptor jaxRsApplicationDescriptor =
+			_systemObjectDefinitionManager.getJaxRsApplicationDescriptor();
+
+		_userAccountJSONObject = HTTPTestUtil.invokeToJSONObject(
+			null,
+			StringBundler.concat(
+				jaxRsApplicationDescriptor.getRESTContextPath(), "/",
+				_userAccountJSONObject.get("id"), "?nestedFields=permissions"),
+			Http.Method.GET);
+
 		_objectRelationship1 = _addObjectRelationshipAndRelateObjectEntries(
 			_objectDefinition1, _userSystemObjectDefinition,
 			_objectEntry1.getPrimaryKey(), _userAccountJSONObject.getLong("id"),
@@ -5290,10 +5301,10 @@ public class ObjectEntryResourceTest {
 			new JSONArray[] {
 				_getPermissionsJSONArray(
 					new String[] {ActionKeys.UPDATE, ActionKeys.VIEW}, role2),
-				null,
+				(JSONArray)_userAccountJSONObject.get("permissions"),
 				_getPermissionsJSONArray(
 					new String[] {ActionKeys.UPDATE, ActionKeys.VIEW}, role2),
-				null
+				(JSONArray)_userAccountJSONObject.get("permissions")
 			},
 			Type.MANY_TO_MANY);
 
@@ -5321,7 +5332,7 @@ public class ObjectEntryResourceTest {
 				_getPermissionsJSONArray(
 					new String[] {ActionKeys.DELETE, ActionKeys.PERMISSIONS},
 					role1),
-				null
+				(JSONArray)_userAccountJSONObject.get("permissions")
 			},
 			Type.MANY_TO_MANY);
 	}
@@ -5950,7 +5961,8 @@ public class ObjectEntryResourceTest {
 		Role role = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
 
 		_addResourcePermission(
-			ObjectActionKeys.ADD_OBJECT_ENTRY, _objectDefinition1, role);
+			ObjectActionKeys.ADD_OBJECT_ENTRY,
+			_objectDefinition1.getResourceName(), role);
 
 		User user = _addUser("test1", "test1");
 
@@ -6645,6 +6657,47 @@ public class ObjectEntryResourceTest {
 			listTypeDefinition);
 	}
 
+	@FeatureFlags("LPD-21926")
+	@Test
+	public void testGetObjectEntryWithFriendlyURL() throws Exception {
+		_objectDefinition1.setEnableFriendlyURLCustomization(true);
+
+		_objectDefinition1 =
+			_objectDefinitionLocalService.updateObjectDefinition(
+				_objectDefinition1);
+
+		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
+			JSONUtil.put(
+				_OBJECT_FIELD_NAME_1, RandomTestUtil.randomInt()
+			).toString(),
+			_objectDefinition1.getRESTContextPath(), Http.Method.POST);
+
+		jsonObject = HTTPTestUtil.invokeToJSONObject(
+			null,
+			_objectDefinition1.getRESTContextPath() + StringPool.SLASH +
+				jsonObject.getString("id"),
+			Http.Method.GET);
+
+		Assert.assertEquals(
+			jsonObject.get("externalReferenceCode"),
+			jsonObject.getString("friendlyUrlPath"));
+
+		jsonObject = HTTPTestUtil.invokeToJSONObject(
+			JSONUtil.put(
+				"friendlyUrlPath", "Test URL"
+			).toString(),
+			_objectDefinition1.getRESTContextPath(), Http.Method.POST);
+
+		jsonObject = HTTPTestUtil.invokeToJSONObject(
+			null,
+			_objectDefinition1.getRESTContextPath() + StringPool.SLASH +
+				jsonObject.getString("id"),
+			Http.Method.GET);
+
+		Assert.assertEquals(
+			"test-url", jsonObject.getString("friendlyUrlPath"));
+	}
+
 	@Test
 	public void testGetObjectEntryWithKeywords() throws Exception {
 		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
@@ -7072,6 +7125,36 @@ public class ObjectEntryResourceTest {
 			_siteScopedObjectEntry1.getObjectEntryId());
 	}
 
+	@FeatureFlags("LPD-21926")
+	@Test
+	public void testPatchObjectEntryWithFriendlyURL() throws Exception {
+		_objectDefinition1.setEnableFriendlyURLCustomization(true);
+
+		_objectDefinition1 =
+			_objectDefinitionLocalService.updateObjectDefinition(
+				_objectDefinition1);
+
+		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
+			JSONUtil.put(
+				_OBJECT_FIELD_NAME_1, RandomTestUtil.randomString()
+			).toString(),
+			_objectDefinition1.getRESTContextPath(), Http.Method.POST);
+
+		jsonObject = HTTPTestUtil.invokeToJSONObject(
+			JSONUtil.put(
+				"friendlyUrlPath_i18n",
+				HashMapBuilder.put(
+					"en_US", "Test URL"
+				).build()
+			).toString(),
+			_objectDefinition1.getRESTContextPath() + StringPool.SLASH +
+				jsonObject.getString("id"),
+			Http.Method.PATCH);
+
+		Assert.assertEquals(
+			"test-url", jsonObject.getString("friendlyUrlPath"));
+	}
+
 	@Test
 	public void testPatchObjectEntryWithKeywords() throws Exception {
 		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
@@ -7497,9 +7580,169 @@ public class ObjectEntryResourceTest {
 	public void testPostCustomObjectEntryWithAttachmentObjectField()
 		throws Exception {
 
-		_testPostCustomObjectEntryWithAttachmentField(_objectDefinition1);
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(_objectDefinition1);
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			_siteScopedObjectDefinition1);
+	}
+
+	@FeatureFlags("LPD-39967")
+	@Test
+	public void testPostCustomObjectEntryWithAttachmentObjectFieldInDifferentCompany()
+		throws Exception {
+
+		com.liferay.object.rest.dto.v1_0.FileEntry fileEntry = _toFileEntry(
+			Base64::encode, RandomTestUtil.randomString(),
+			RandomTestUtil.randomString() + ".txt", null, null);
+
+		JSONObject objectEntryJSONObject = HTTPTestUtil.invokeToJSONObject(
+			JSONUtil.put(
+				_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE,
+				JSONFactoryUtil.createJSONObject(fileEntry.toString())
+			).toString(),
+			StringBundler.concat(
+				_objectDefinition1.getRESTContextPath(), "?nestedFields=",
+				_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE, ".folder"),
+			Http.Method.POST);
+
+		JSONObject portalInstanceJSONObject = HTTPTestUtil.invokeToJSONObject(
+			JSONUtil.put(
+				"domain", "able.com"
+			).put(
+				"portalInstanceId", "able.com"
+			).put(
+				"virtualHost", "www.able.com"
+			).toString(),
+			"headless-portal-instances/v1.0/portal-instances",
+			Http.Method.POST);
+
+		User adminUser = UserTestUtil.getAdminUser(
+			portalInstanceJSONObject.getLong("companyId"));
+
+		ObjectDefinition objectDefinition =
+			ObjectDefinitionTestUtil.publishObjectDefinition(
+				_objectDefinition1.getShortName(),
+				Arrays.asList(
+					ObjectFieldUtil.createObjectField(
+						ObjectFieldConstants.BUSINESS_TYPE_ATTACHMENT,
+						ObjectFieldConstants.DB_TYPE_LONG, true, false, null,
+						_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE,
+						_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE,
+						Arrays.asList(
+							new ObjectFieldSettingBuilder(
+							).name(
+								ObjectFieldSettingConstants.
+									NAME_ACCEPTED_FILE_EXTENSIONS
+							).value(
+								"txt"
+							).build(),
+							new ObjectFieldSettingBuilder(
+							).name(
+								ObjectFieldSettingConstants.NAME_FILE_SOURCE
+							).value(
+								ObjectFieldSettingConstants.VALUE_DOCS_AND_MEDIA
+							).build(),
+							new ObjectFieldSettingBuilder(
+							).name(
+								ObjectFieldSettingConstants.NAME_MAX_FILE_SIZE
+							).value(
+								String.valueOf(_MAX_FILE_SIZE_VALUE)
+							).build()),
+						false),
+					ObjectFieldUtil.createObjectField(
+						ObjectFieldConstants.BUSINESS_TYPE_ATTACHMENT,
+						ObjectFieldConstants.DB_TYPE_LONG, true, false, null,
+						_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_1,
+						_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_1,
+						Arrays.asList(
+							new ObjectFieldSettingBuilder(
+							).name(
+								ObjectFieldSettingConstants.
+									NAME_ACCEPTED_FILE_EXTENSIONS
+							).value(
+								"txt"
+							).build(),
+							new ObjectFieldSettingBuilder(
+							).name(
+								ObjectFieldSettingConstants.NAME_FILE_SOURCE
+							).value(
+								ObjectFieldSettingConstants.VALUE_USER_COMPUTER
+							).build(),
+							new ObjectFieldSettingBuilder(
+							).name(
+								ObjectFieldSettingConstants.NAME_MAX_FILE_SIZE
+							).value(
+								String.valueOf(_MAX_FILE_SIZE_VALUE)
+							).build()),
+						false),
+					ObjectFieldUtil.createObjectField(
+						ObjectFieldConstants.BUSINESS_TYPE_ATTACHMENT,
+						ObjectFieldConstants.DB_TYPE_LONG, true, false, null,
+						_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_2,
+						_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_2,
+						Arrays.asList(
+							new ObjectFieldSettingBuilder(
+							).name(
+								ObjectFieldSettingConstants.
+									NAME_ACCEPTED_FILE_EXTENSIONS
+							).value(
+								"txt"
+							).build(),
+							new ObjectFieldSettingBuilder(
+							).name(
+								ObjectFieldSettingConstants.NAME_FILE_SOURCE
+							).value(
+								ObjectFieldSettingConstants.VALUE_USER_COMPUTER
+							).build(),
+							new ObjectFieldSettingBuilder(
+							).name(
+								ObjectFieldSettingConstants.NAME_MAX_FILE_SIZE
+							).value(
+								String.valueOf(_MAX_FILE_SIZE_VALUE)
+							).build(),
+							new ObjectFieldSettingBuilder(
+							).name(
+								ObjectFieldSettingConstants.
+									NAME_SHOW_FILES_IN_DOCS_AND_MEDIA
+							).value(
+								Boolean.TRUE.toString()
+							).build(),
+							new ObjectFieldSettingBuilder(
+							).name(
+								ObjectFieldSettingConstants.
+									NAME_STORAGE_DL_FOLDER_PATH
+							).value(
+								StringPool.SLASH +
+									_objectDefinition1.getShortName()
+							).build()),
+						false)),
+				ObjectDefinitionConstants.SCOPE_COMPANY, adminUser.getUserId());
+
+		try {
+			HTTPTestUtil.customize(
+			).withBaseURL(
+				"http://www.able.com:8080"
+			).withCredentials(
+				"test@able.com", PropsValues.DEFAULT_ADMIN_PASSWORD
+			).apply(
+				() -> {
+					JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
+						JSONUtil.put(
+							_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE,
+							objectEntryJSONObject.getJSONObject(
+								_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE)
+						).toString(),
+						objectDefinition.getRESTContextPath(),
+						Http.Method.POST);
+
+					Assert.assertEquals(
+						"NOT_FOUND", jsonObject.getString("status"));
+				}
+			);
+		}
+		finally {
+			_objectDefinitionLocalService.deleteObjectDefinition(
+				objectDefinition);
+		}
 	}
 
 	@Test
@@ -9118,6 +9361,7 @@ public class ObjectEntryResourceTest {
 			false);
 	}
 
+	@FeatureFlags("LPD-32050")
 	@Test
 	public void testPutCustomObjectEntryWithLocalizedAttachmentObjectField()
 		throws Exception {
@@ -10768,9 +11012,15 @@ public class ObjectEntryResourceTest {
 		Role role = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
 
 		_addResourcePermission(
-			ObjectActionKeys.ADD_OBJECT_ENTRY, _objectDefinition2, role);
+			ObjectActionKeys.ADD_OBJECT_ENTRY,
+			_objectDefinition2.getResourceName(), role);
 		_addResourcePermission(
-			ObjectActionKeys.ADD_OBJECT_ENTRY, _objectDefinition3, role);
+			ObjectActionKeys.ADD_OBJECT_ENTRY,
+			_objectDefinition3.getResourceName(), role);
+		_addResourcePermission(
+			ActionKeys.VIEW, _objectDefinition2.getClassName(), role);
+		_addResourcePermission(
+			ActionKeys.VIEW, _objectDefinition3.getClassName(), role);
 
 		User user1 = _addUser("test1", "test1");
 		User user2 = _addUser("test2", "test2");
@@ -11801,9 +12051,13 @@ public class ObjectEntryResourceTest {
 		Role role = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
 
 		_addResourcePermission(
-			ObjectActionKeys.ADD_OBJECT_ENTRY, _objectDefinition2, role);
+			ObjectActionKeys.ADD_OBJECT_ENTRY,
+			_objectDefinition2.getResourceName(), role);
 		_addResourcePermission(
-			ObjectActionKeys.ADD_OBJECT_ENTRY, _objectDefinition3, role);
+			ObjectActionKeys.ADD_OBJECT_ENTRY,
+			_objectDefinition3.getResourceName(), role);
+		_addResourcePermission(
+			ActionKeys.VIEW, _objectDefinition1.getClassName(), role);
 
 		User user1 = _addUser("test1", "test1");
 		User user2 = _addUser("test2", "test2");
@@ -12251,7 +12505,8 @@ public class ObjectEntryResourceTest {
 		Role role = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
 
 		_addResourcePermission(
-			ObjectActionKeys.ADD_OBJECT_ENTRY, _objectDefinition1, role);
+			ObjectActionKeys.ADD_OBJECT_ENTRY,
+			_objectDefinition1.getResourceName(), role);
 
 		User user1 = _addUser("test1", "test1");
 		User user2 = _addUser("test2", "test2");
@@ -12511,12 +12766,11 @@ public class ObjectEntryResourceTest {
 			_objectEntry1.getPrimaryKey(), _objectEntry2.getPrimaryKey(), type);
 	}
 
-	private void _addResourcePermission(
-			String actionId, ObjectDefinition objectDefinition, Role role)
+	private void _addResourcePermission(String actionId, String name, Role role)
 		throws Exception {
 
 		_resourcePermissionLocalService.addResourcePermission(
-			TestPropsValues.getCompanyId(), objectDefinition.getResourceName(),
+			TestPropsValues.getCompanyId(), name,
 			ResourceConstants.SCOPE_COMPANY,
 			String.valueOf(TestPropsValues.getCompanyId()), role.getRoleId(),
 			actionId);
@@ -13893,7 +14147,8 @@ public class ObjectEntryResourceTest {
 					user.getUserId(), role.getRoleId());
 
 				_addResourcePermission(
-					ObjectActionKeys.ADD_OBJECT_ENTRY, objectDefinition, role);
+					ObjectActionKeys.ADD_OBJECT_ENTRY,
+					objectDefinition.getResourceName(), role);
 
 				_resourcePermissionLocalService.setResourcePermissions(
 					TestPropsValues.getCompanyId(), DLConstants.RESOURCE_NAME,
@@ -14196,7 +14451,7 @@ public class ObjectEntryResourceTest {
 				endpoint2 + externalReferenceCode1, httpMethod));
 	}
 
-	private void _testPostCustomObjectEntryWithAttachmentField(
+	private void _testPostCustomObjectEntryWithAttachmentObjectField(
 			ObjectDefinition objectDefinition)
 		throws Exception {
 
@@ -14213,7 +14468,7 @@ public class ObjectEntryResourceTest {
 		Company company = _companyLocalService.getCompany(
 			TestPropsValues.getCompanyId());
 
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE,
 				_getFileEntryJSONObject(null, fileEntry, objectDefinition)),
@@ -14238,7 +14493,7 @@ public class ObjectEntryResourceTest {
 			String hostDownFileURL = StringBundler.concat(
 				"http://", company.getVirtualHostname(), ":8081");
 
-			_testPostCustomObjectEntryWithAttachmentField(
+			_testPostCustomObjectEntryWithAttachmentObjectField(
 				fileEntry -> JSONUtil.put(
 					"status", "BAD_REQUEST"
 				).put(
@@ -14262,7 +14517,7 @@ public class ObjectEntryResourceTest {
 					"DefaultObjectEntryManagerImpl",
 				LoggerTestUtil.ERROR)) {
 
-			_testPostCustomObjectEntryWithAttachmentField(
+			_testPostCustomObjectEntryWithAttachmentObjectField(
 				fileEntry -> JSONUtil.put(
 					"status", "BAD_REQUEST"
 				).put(
@@ -14281,7 +14536,7 @@ public class ObjectEntryResourceTest {
 			"http://", company.getVirtualHostname(), ":8080/",
 			RandomTestUtil.randomString());
 
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				"status", "BAD_REQUEST"
 			).put(
@@ -14300,7 +14555,7 @@ public class ObjectEntryResourceTest {
 		String unsupportedProtocolURL = StringBundler.concat(
 			"file://", company.getVirtualHostname(), ":8080");
 
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				"status", "BAD_REQUEST"
 			).put(
@@ -14319,7 +14574,7 @@ public class ObjectEntryResourceTest {
 		DLFolder dlFolder1 = DLTestUtil.addDLFolder(
 			TestPropsValues.getGroupId());
 
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE,
 				_getFileEntryJSONObject(
@@ -14333,7 +14588,7 @@ public class ObjectEntryResourceTest {
 
 		DLFolder dlFolder2 = DLTestUtil.addDLFolder(_group.getGroupId());
 
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE,
 				_getFileEntryJSONObject(
@@ -14345,7 +14600,7 @@ public class ObjectEntryResourceTest {
 			null, objectDefinition,
 			_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE);
 
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE,
 				_getFileEntryJSONObject(null, fileEntry, objectDefinition)),
@@ -14355,7 +14610,7 @@ public class ObjectEntryResourceTest {
 				TestPropsValues.getGroupId()),
 			null, objectDefinition,
 			_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE);
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE,
 				_getFileEntryJSONObject(null, fileEntry, objectDefinition)),
@@ -14365,7 +14620,7 @@ public class ObjectEntryResourceTest {
 				_group.getGroupId()),
 			null, objectDefinition,
 			_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE);
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE,
 				_getFileEntryJSONObject(null, fileEntry, objectDefinition)),
@@ -14377,7 +14632,7 @@ public class ObjectEntryResourceTest {
 
 		// File from user computer
 
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_1,
 				_getFileEntryJSONObject(
@@ -14388,7 +14643,7 @@ public class ObjectEntryResourceTest {
 				RandomTestUtil.randomString() + ".txt", null, null),
 			null, objectDefinition,
 			_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_1);
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_1,
 				_getFileEntryJSONObject(
@@ -14400,7 +14655,7 @@ public class ObjectEntryResourceTest {
 				RandomTestUtil.randomString(), RandomTestUtil.randomLong()),
 			null, objectDefinition,
 			_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_1);
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_2,
 				_getFileEntryJSONObject(
@@ -14411,7 +14666,7 @@ public class ObjectEntryResourceTest {
 				RandomTestUtil.randomString() + ".txt", null, null),
 			null, objectDefinition,
 			_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_2);
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_2,
 				_getFileEntryJSONObject(
@@ -14426,7 +14681,7 @@ public class ObjectEntryResourceTest {
 
 		// File validation
 
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				"status", "BAD_REQUEST"
 			).put(
@@ -14443,7 +14698,7 @@ public class ObjectEntryResourceTest {
 				RandomTestUtil.randomString() + ".txt", null, null),
 			null, objectDefinition,
 			_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_1);
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				"status", "BAD_REQUEST"
 			).put(
@@ -14454,7 +14709,7 @@ public class ObjectEntryResourceTest {
 				null),
 			null, objectDefinition,
 			_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_1);
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				"status", "BAD_REQUEST"
 			).put(
@@ -14465,7 +14720,7 @@ public class ObjectEntryResourceTest {
 				RandomTestUtil.randomString() + ".err", null, null),
 			null, objectDefinition,
 			_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_1);
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				"status", "BAD_REQUEST"
 			).put(
@@ -14496,9 +14751,10 @@ public class ObjectEntryResourceTest {
 					user.getUserId(), role.getRoleId());
 
 				_addResourcePermission(
-					ObjectActionKeys.ADD_OBJECT_ENTRY, objectDefinition, role);
+					ObjectActionKeys.ADD_OBJECT_ENTRY,
+					objectDefinition.getResourceName(), role);
 
-				_testPostCustomObjectEntryWithAttachmentField(
+				_testPostCustomObjectEntryWithAttachmentObjectField(
 					fileEntry -> JSONUtil.put(
 						"status", "FORBIDDEN"
 					).put(
@@ -14524,7 +14780,7 @@ public class ObjectEntryResourceTest {
 					String.valueOf(dlFolder.getFolderId()), role.getRoleId(),
 					new String[] {ActionKeys.ADD_DOCUMENT});
 
-				_testPostCustomObjectEntryWithAttachmentField(
+				_testPostCustomObjectEntryWithAttachmentObjectField(
 					fileEntry -> JSONUtil.put(
 						_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE,
 						_getFileEntryJSONObject(
@@ -14541,7 +14797,7 @@ public class ObjectEntryResourceTest {
 
 		String randomExternalReferenceCode = RandomTestUtil.randomString();
 
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put("status", "NOT_FOUND"),
 			_toFileEntry(
 				Base64::encode, RandomTestUtil.randomString(),
@@ -14556,7 +14812,7 @@ public class ObjectEntryResourceTest {
 			Base64::encode, RandomTestUtil.randomString(),
 			RandomTestUtil.randomString() + ".txt", null, null);
 
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_1,
 				_getFileEntryJSONObject(
@@ -14564,7 +14820,7 @@ public class ObjectEntryResourceTest {
 					objectDefinition)),
 			testFileEntry, null, objectDefinition,
 			_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_1);
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> {
 				fileEntry.setName(
 					StringUtil.replace(
@@ -14583,7 +14839,7 @@ public class ObjectEntryResourceTest {
 			Base64::encode, RandomTestUtil.randomString(),
 			RandomTestUtil.randomString() + ".txt", null, null);
 
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_2,
 				_getFileEntryJSONObject(
@@ -14591,7 +14847,7 @@ public class ObjectEntryResourceTest {
 					objectDefinition)),
 			testFileEntry, null, objectDefinition,
 			_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_2);
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> {
 				fileEntry.setName(
 					StringUtil.replace(
@@ -14630,7 +14886,7 @@ public class ObjectEntryResourceTest {
 		String externalReferenceCode1 =
 			existingDLFileEntry.getExternalReferenceCode();
 
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE,
 				() -> {
@@ -14660,7 +14916,7 @@ public class ObjectEntryResourceTest {
 		String externalReferenceCode2 =
 			existingDLFileEntry.getExternalReferenceCode();
 
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_2,
 				() -> {
@@ -14696,7 +14952,7 @@ public class ObjectEntryResourceTest {
 		String externalReferenceCode3 =
 			testFileEntry.getExternalReferenceCode();
 
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE,
 				() -> {
@@ -14733,7 +14989,7 @@ public class ObjectEntryResourceTest {
 		String externalReferenceCode4 =
 			testFileEntry.getExternalReferenceCode();
 
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_2,
 				() -> {
@@ -14762,7 +15018,7 @@ public class ObjectEntryResourceTest {
 
 		// File with nested fields
 
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> {
 				Folder folder = new Folder() {
 					{
@@ -14790,7 +15046,7 @@ public class ObjectEntryResourceTest {
 				dlFolder1.getExternalReferenceCode(), dlFolder1.getGroupId()),
 			"fileBase64,folder", objectDefinition,
 			_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE);
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_1,
 				() -> {
@@ -14806,7 +15062,7 @@ public class ObjectEntryResourceTest {
 				RandomTestUtil.randomString() + ".txt", null, null),
 			"fileBase64,folder", objectDefinition,
 			_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_1);
-		_testPostCustomObjectEntryWithAttachmentField(
+		_testPostCustomObjectEntryWithAttachmentObjectField(
 			fileEntry -> JSONUtil.put(
 				_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_2,
 				() -> {
@@ -14824,7 +15080,7 @@ public class ObjectEntryResourceTest {
 			_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_2);
 	}
 
-	private void _testPostCustomObjectEntryWithAttachmentField(
+	private void _testPostCustomObjectEntryWithAttachmentObjectField(
 			UnsafeFunction
 				<com.liferay.object.rest.dto.v1_0.FileEntry, JSONObject,
 				 Exception> expectedJSONObjectUnsafeFunction,

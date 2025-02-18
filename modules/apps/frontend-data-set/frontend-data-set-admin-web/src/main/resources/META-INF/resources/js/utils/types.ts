@@ -185,6 +185,7 @@ export interface ISystemDataSet {
 	additionalAPIURLParameters: string;
 	defaultItemsPerPage: number;
 	description: string;
+	imported: boolean;
 	name: string;
 	restApplication: string;
 	restEndpoint: string;

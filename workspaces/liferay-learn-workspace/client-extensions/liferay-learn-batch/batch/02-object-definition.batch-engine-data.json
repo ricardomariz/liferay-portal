@@ -830,6 +830,24 @@
 					"unique": false
 				},
 				{
+					"DBType": "Double",
+					"businessType": "Decimal",
+					"externalReferenceCode": "SCORE",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Score"
+					},
+					"localized": false,
+					"name": "score",
+					"readOnly": "false",
+					"required": true,
+					"state": false,
+					"type": "Double",
+					"unique": false
+				},
+				{
 					"DBType": "String",
 					"businessType": "Text",
 					"externalReferenceCode": "TEST_NAME",
@@ -867,12 +885,12 @@
 			"enableCategorization": false,
 			"enableLocalization": false,
 			"enableObjectEntryDraft": false,
-			"externalReferenceCode": "P2S3_EXAM_RESULT_SYNCHRONIZATION",
+			"externalReferenceCode": "P2S3_EXAM_RESULTS_SYNCHRONIZATION",
 			"label": {
-				"en_US": "P2S3 Exam Result Synchronization"
+				"en_US": "P2S3 Exam Results Synchronization"
 			},
 			"modifiable": true,
-			"name": "P2S3ExamResultSynchronization",
+			"name": "P2S3ExamResultsSynchronization",
 			"objectActions": [
 				{
 					"active": true,
@@ -880,7 +898,7 @@
 						"en_US": "Synchronize"
 					},
 					"name": "synchronize",
-					"objectActionExecutorKey": "function#liferay-learn-etc-spring-boot-object-action-exam-result-synchronization",
+					"objectActionExecutorKey": "function#liferay-learn-etc-spring-boot-object-action-exam-results-synchronization",
 					"objectActionTriggerKey": "onAfterAdd",
 					"parameters": {
 					}
@@ -1077,6 +1095,287 @@
 				"label_i18n": "Approved"
 			},
 			"titleObjectFieldName": "name"
+		},
+		{
+			"active": true,
+			"defaultLanguageId": "en_US",
+			"enableCategorization": true,
+			"enableLocalization": true,
+			"enableObjectEntryHistory": false,
+			"externalReferenceCode": "P2S3_FAQ_QUESTION",
+			"label": {
+				"en_US": "P2S3 FAQ Question"
+			},
+			"modifiable": true,
+			"name": "P2S3FAQQuestion",
+			"objectFields": [
+				{
+					"DBType": "Clob",
+					"businessType": "RichText",
+					"externalReferenceCode": "ANSWER",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "Answer"
+					},
+					"localized": true,
+					"name": "answer",
+					"readOnly": "false",
+					"required": false,
+					"state": false,
+					"type": "Clob",
+					"unique": false
+				},
+				{
+					"DBType": "Integer",
+					"businessType": "Integer",
+					"externalReferenceCode": "POSITION",
+					"indexed": false,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Position"
+					},
+					"localized": false,
+					"name": "position",
+					"readOnly": "false",
+					"required": true,
+					"state": false,
+					"type": "Integer",
+					"unique": false
+				},
+				{
+					"DBType": "Clob",
+					"businessType": "LongText",
+					"externalReferenceCode": "TITLE",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "Title"
+					},
+					"localized": true,
+					"name": "title",
+					"readOnly": "false",
+					"required": false,
+					"state": false,
+					"type": "Clob",
+					"unique": false
+				}
+			],
+			"objectFolderExternalReferenceCode": "P2S3_LEARNING_MANAGEMENT_SYSTEM",
+			"objectLayouts": [
+				{
+					"defaultObjectLayout": true,
+					"name": {
+						"en_US": "FAQ Question"
+					},
+					"objectDefinitionExternalReferenceCode": "P2S3_FAQ_QUESTION",
+					"objectLayoutTabs": [
+						{
+							"name": {
+								"en_US": "Question"
+							},
+							"objectLayoutBoxes": [
+								{
+									"collapsable": false,
+									"name": {
+										"en_US": "Main"
+									},
+									"objectLayoutRows": [
+										{
+											"objectLayoutColumns": [
+												{
+													"objectFieldName": "title",
+													"priority": 0,
+													"size": 12
+												}
+											],
+											"priority": 0
+										},
+										{
+											"objectLayoutColumns": [
+												{
+													"objectFieldName": "answer",
+													"priority": 0,
+													"size": 12
+												}
+											],
+											"priority": 0
+										},
+										{
+											"objectLayoutColumns": [
+												{
+													"objectFieldName": "position",
+													"priority": 0,
+													"size": 4
+												}
+											],
+											"priority": 0
+										}
+									],
+									"priority": 0,
+									"type": "regular"
+								}
+							],
+							"priority": 0
+						}
+					]
+				}
+			],
+			"pluralLabel": {
+				"en_US": "P2S3 FAQ Questions"
+			},
+			"portlet": true,
+			"restContextPath": "/o/c/p2s3faqquestions",
+			"scope": "site",
+			"status": {
+				"code": 0,
+				"label": "approved",
+				"label_i18n": "Approved"
+			},
+			"titleObjectFieldName": "title"
+		},
+		{
+			"active": true,
+			"defaultLanguageId": "en_US",
+			"enableComments": false,
+			"enableLocalization": true,
+			"enableObjectEntryDraft": false,
+			"externalReferenceCode": "P2S3_FAQ_TOPIC",
+			"label": {
+				"en_US": "P2S3 FAQ Topic"
+			},
+			"modifiable": true,
+			"name": "P2S3FAQTopic",
+			"objectFields": [
+				{
+					"DBType": "Integer",
+					"businessType": "Integer",
+					"externalReferenceCode": "POSITION",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Position"
+					},
+					"localized": false,
+					"name": "position",
+					"readOnly": "false",
+					"required": false,
+					"state": false,
+					"type": "Integer",
+					"unique": false
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "TITLE",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "Title"
+					},
+					"localized": true,
+					"name": "title",
+					"objectFieldSettings": [
+						{
+							"name": "uniqueValues",
+							"value": true
+						}
+					],
+					"readOnly": "false",
+					"required": false,
+					"state": false,
+					"type": "String",
+					"unique": true
+				}
+			],
+			"objectFolderExternalReferenceCode": "P2S3_LEARNING_MANAGEMENT_SYSTEM",
+			"objectLayouts": [
+				{
+					"defaultObjectLayout": true,
+					"name": {
+						"en_US": "P2S3 FAQ Topic"
+					},
+					"objectDefinitionExternalReferenceCode": "P2S3_FAQ_TOPIC",
+					"objectLayoutTabs": [
+						{
+							"name": {
+								"en_US": "Topic"
+							},
+							"objectLayoutBoxes": [
+								{
+									"collapsable": false,
+									"name": {
+										"en_US": "Main"
+									},
+									"objectLayoutRows": [
+										{
+											"objectLayoutColumns": [
+												{
+													"objectFieldName": "title",
+													"priority": 0,
+													"size": 12
+												}
+											],
+											"priority": 0
+										},
+										{
+											"objectLayoutColumns": [
+												{
+													"objectFieldName": "position",
+													"priority": 0,
+													"size": 4
+												}
+											],
+											"priority": 0
+										}
+									],
+									"priority": 0,
+									"type": "regular"
+								}
+							],
+							"priority": 0
+						},
+						{
+							"name": {
+								"en_US": "Questions"
+							},
+							"objectRelationshipExternalReferenceCode": "P2S3_TOPIC_TO_P2S3_QUESTIONS",
+							"priority": 0
+						}
+					]
+				}
+			],
+			"objectRelationships": [
+				{
+					"deletionType": "disassociate",
+					"externalReferenceCode": "P2S3_TOPIC_TO_P2S3_QUESTIONS",
+					"label": {
+						"en_US": "Topic"
+					},
+					"name": "p2s3TopicToP2S3Questions",
+					"objectDefinitionExternalReferenceCode1": "P2S3_FAQ_TOPIC",
+					"objectDefinitionExternalReferenceCode2": "P2S3_FAQ_QUESTION",
+					"type": "oneToMany"
+				}
+			],
+			"panelCategoryKey": "site_administration.content",
+			"parameterRequired": false,
+			"pluralLabel": {
+				"en_US": "P2S3 FAQ Topics"
+			},
+			"portlet": true,
+			"restContextPath": "/o/c/p2s3faqtopics",
+			"scope": "site",
+			"status": {
+				"code": 0,
+				"label": "approved",
+				"label_i18n": "Approved"
+			},
+			"system": false,
+			"titleObjectFieldName": "title"
 		},
 		{
 			"active": true,

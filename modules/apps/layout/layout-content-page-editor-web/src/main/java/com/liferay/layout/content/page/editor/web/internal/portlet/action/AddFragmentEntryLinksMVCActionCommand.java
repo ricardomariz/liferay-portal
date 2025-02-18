@@ -90,7 +90,7 @@ public class AddFragmentEntryLinksMVCActionCommand
 
 			errorMessage = _language.get(
 				themeDisplay.getLocale(),
-				"form-components-can-only-be-placed-inside-a-mapped-form-" +
+				"this-form-component-can-only-be-placed-inside-a-mapped-form-" +
 					"container");
 		}
 		else if (exception.getCause() instanceof
@@ -179,8 +179,7 @@ public class AddFragmentEntryLinksMVCActionCommand
 					segmentsExperienceId);
 
 			_formItemManager.checkFormContainerParentItemRequired(
-				fragmentEntryLinks, layoutStructure, themeDisplay.getLocale(),
-				parentItemId);
+				fragmentEntryLinks, layoutStructure, parentItemId);
 
 			for (FragmentEntryLink fragmentEntryLink : fragmentEntryLinks) {
 				for (FragmentEntryLinkListener fragmentEntryLinkListener :

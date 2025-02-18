@@ -220,7 +220,7 @@ public class PortalUpgradeProcessRegistryImpl
 
 		upgradeVersionTreeMap.put(
 			new Version(17, 0, 0),
-			UpgradeProcessFactory.dropColumns("Company", "system"));
+			UpgradeProcessFactory.dropColumns("Company", "system_"));
 
 		upgradeVersionTreeMap.put(
 			new Version(18, 0, 0),
@@ -554,6 +554,20 @@ public class PortalUpgradeProcessRegistryImpl
 				}
 
 			});
+
+		upgradeVersionTreeMap.put(
+			new Version(31, 14, 1),
+			UpgradeProcessFactory.dropColumns("Company", "system_"));
+
+		upgradeVersionTreeMap.put(
+			new Version(31, 14, 2),
+			UpgradeProcessFactory.alterColumnType(
+				"AssetVocabulary", "visibilityType", "INTEGER"));
+
+		upgradeVersionTreeMap.put(
+			new Version(31, 15, 0),
+			UpgradeProcessFactory.addColumns(
+				"SystemEvent", "classExternalReferenceCode VARCHAR(75) null"));
 	}
 
 }

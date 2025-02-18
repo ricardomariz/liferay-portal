@@ -12,7 +12,10 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 /**
  * @author Pei-Jung Lan
  */
-@ExtendedObjectClassDefinition(category = "security-tools")
+@ExtendedObjectClassDefinition(
+	category = "security-tools",
+	scope = ExtendedObjectClassDefinition.Scope.COMPANY
+)
 @Meta.OCD(
 	id = "com.liferay.captcha.configuration.CaptchaConfiguration",
 	localization = "content/Language", name = "captcha-configuration-name"
@@ -51,11 +54,6 @@ public interface CaptchaConfiguration {
 	@Meta.AD(
 		deflt = "com.liferay.captcha.simplecaptcha.SimpleCaptchaImpl",
 		description = "captcha-engine-help", name = "captcha-engine",
-		optionLabels = {"SimpleCaptcha", "reCAPTCHA"},
-		optionValues = {
-			"com.liferay.captcha.simplecaptcha.SimpleCaptchaImpl",
-			"com.liferay.captcha.recaptcha.ReCaptchaImpl"
-		},
 		required = false
 	)
 	public String captchaEngine();

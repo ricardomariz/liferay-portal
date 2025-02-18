@@ -12,9 +12,8 @@ import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.AnnotationUtil;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Kevin Lee
@@ -28,30 +27,51 @@ public class OSGiCommandsCheck extends BaseCheck {
 
 	@Override
 	protected void doVisitToken(DetailAST detailAST) {
+		DetailAST parentDetailAST = detailAST.getParent();
+
+		if (parentDetailAST != null) {
+			return;
+		}
+
+		DetailAST implementsClauseDetailAST = detailAST.findFirstToken(
+			TokenTypes.IMPLEMENTS_CLAUSE);
+
+		if (implementsClauseDetailAST == null) {
+			return;
+		}
+
+		List<String> implementedClassNames = getNames(
+			implementsClauseDetailAST, false);
+
+		if (!implementedClassNames.contains("OSGiCommands")) {
+			return;
+		}
+
+		DetailAST objBlockDetailAST = detailAST.findFirstToken(
+			TokenTypes.OBJBLOCK);
+
+		if (objBlockDetailAST == null) {
+			return;
+		}
+
 		List<String> importNames = getImportNames(detailAST);
 
-		if (!importNames.contains(
+		if (importNames.contains(
 				"org.osgi.service.component.annotations.Component")) {
 
-			return;
+			_checkMissingUnimplementedMethod(detailAST, objBlockDetailAST);
 		}
 
-		_checkClassDeclaration(detailAST);
-
-		if (!importNames.contains(
+		if (importNames.contains(
 				"org.osgi.service.component.annotations.Reference")) {
 
-			return;
-		}
-
-		for (DetailAST variableDefinitionDetailAST :
-				getAllChildTokens(detailAST, true, TokenTypes.VARIABLE_DEF)) {
-
-			_checkVariableDeclaration(variableDefinitionDetailAST);
+			_checkVariableDeclaration(objBlockDetailAST);
 		}
 	}
 
-	private void _checkClassDeclaration(DetailAST detailAST) {
+	private void _checkMissingUnimplementedMethod(
+		DetailAST detailAST, DetailAST objBlockDetailAST) {
+
 		DetailAST annotationDetailAST = AnnotationUtil.getAnnotation(
 			detailAST, "Component");
 
@@ -75,8 +95,52 @@ public class OSGiCommandsCheck extends BaseCheck {
 			return;
 		}
 
-		boolean osgiCommandsClass = false;
-		Set<String> osgiCommandFunctions = new HashSet<>();
+		List<String> osgiCommandFunctions = _getOSGiCommandFunctions(
+			annotationArrayInitDetailAST);
+
+		if (osgiCommandFunctions.isEmpty()) {
+			return;
+		}
+
+		List<DetailAST> methodDefinitionDetailASTList = getAllChildTokens(
+			objBlockDetailAST, false, TokenTypes.METHOD_DEF);
+
+		for (DetailAST methodDefinitionDetailAST :
+				methodDefinitionDetailASTList) {
+
+			osgiCommandFunctions.remove(getName(methodDefinitionDetailAST));
+		}
+
+		for (String osgiCommandFunction : osgiCommandFunctions) {
+			log(detailAST, _MSG_COMMAND_FUNCTION_MISSING, osgiCommandFunction);
+		}
+	}
+
+	private void _checkVariableDeclaration(DetailAST objBlockDetailAST) {
+		List<DetailAST> variableDefinitionDetailASTList = getAllChildTokens(
+			objBlockDetailAST, false, TokenTypes.VARIABLE_DEF);
+
+		for (DetailAST variableDefinitionDetailAST :
+				variableDefinitionDetailASTList) {
+
+			if (!AnnotationUtil.containsAnnotation(
+					variableDefinitionDetailAST, "Reference")) {
+
+				continue;
+			}
+
+			String typeName = getTypeName(variableDefinitionDetailAST, false);
+
+			if (typeName.endsWith("OSGiCommands")) {
+				log(variableDefinitionDetailAST, _MSG_OSGI_REFERENCE_AVOID);
+			}
+		}
+	}
+
+	private List<String> _getOSGiCommandFunctions(
+		DetailAST annotationArrayInitDetailAST) {
+
+		List<String> osgiCommandFunctions = new ArrayList<>();
 
 		for (DetailAST expressionDetailAST :
 				getAllChildTokens(
@@ -93,49 +157,17 @@ public class OSGiCommandsCheck extends BaseCheck {
 				CharPool.EQUAL);
 
 			if (property[0].equals("osgi.command.function")) {
-				osgiCommandsClass = true;
 				osgiCommandFunctions.add(property[1]);
 			}
 		}
 
-		if (!osgiCommandsClass) {
-			return;
-		}
-
-		String className = getName(detailAST);
-
-		if (!className.endsWith("OSGiCommands")) {
-			log(detailAST, _MSG_BAD_CLASS_NAME);
-		}
-
-		for (DetailAST methodDefinitionDetailAST :
-				getAllChildTokens(detailAST, true, TokenTypes.METHOD_DEF)) {
-
-			osgiCommandFunctions.remove(getName(methodDefinitionDetailAST));
-		}
-
-		for (String osgiCommandFunction : osgiCommandFunctions) {
-			log(detailAST, _MSG_MISSING_COMMAND_FUNCTION, osgiCommandFunction);
-		}
+		return osgiCommandFunctions;
 	}
 
-	private void _checkVariableDeclaration(DetailAST detailAST) {
-		if (!AnnotationUtil.containsAnnotation(detailAST, "Reference")) {
-			return;
-		}
+	private static final String _MSG_COMMAND_FUNCTION_MISSING =
+		"command.function.missing";
 
-		String typeName = getTypeName(detailAST, false);
-
-		if (typeName.endsWith("OSGiCommands")) {
-			log(detailAST, _MSG_BAD_OSGI_REFERENCE);
-		}
-	}
-
-	private static final String _MSG_BAD_CLASS_NAME = "bad.class.name";
-
-	private static final String _MSG_BAD_OSGI_REFERENCE = "bad.osgi.reference";
-
-	private static final String _MSG_MISSING_COMMAND_FUNCTION =
-		"missing.command.function";
+	private static final String _MSG_OSGI_REFERENCE_AVOID =
+		"osgi.reference.avoid";
 
 }

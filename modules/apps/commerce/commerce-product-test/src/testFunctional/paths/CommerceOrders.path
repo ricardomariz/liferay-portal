@@ -57,7 +57,7 @@
 </tr>
 <tr>
 	<td>ORDER_DETAILS_PRODUCT_NAME</td>
-	<td>//td[contains (.,'${key_productName}')]</td>
+	<td>//td[contains(@class,'cell-name') and contains(.,'${key_productName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -82,7 +82,7 @@
 </tr>
 <tr>
 	<td>ORDER_DETAILS_PRODUCT_SKU</td>
-	<td>//td[contains(.,'${key_productSku}')]</td>
+	<td>//td[contains(@class,'cell-sku') and contains(.,'${key_productSku}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -152,12 +152,12 @@
 </tr>
 <tr>
 	<td>ORDER_ELLIPSIS_BY_STATUS</td>
-	<td>//strong[contains(text(), '${key_orderStatus}')]//../../../../div//*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
+	<td>//strong[contains(text(), '${key_orderStatus}')]//../../../../td//*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ORDER_QUANTITY_IN_SHIPMENT_BY_WAREHOUSE</td>
-	<td>//div[contains(text(),'${key_warehouseName}')]//following-sibling::div//following-sibling::div//input[contains(@class, 'form-control')]</td>
+	<td>//td[contains(text(),'${key_warehouseName}')]//following-sibling::td//following-sibling::td//input[contains(@class, 'form-control')]</td>
 	 <td></td>
 </tr>
 <tr>
@@ -177,7 +177,7 @@
 </tr>
 <tr>
 	<td>SHIPMENT_ITEM_ERC_COLUMN</td>
-	<td>//tbody//div[contains(text(),'${key_ercColumnValue}')]/..//div[3]</td>
+	<td>//tbody//td[contains(text(),'${key_ercColumnValue}')]/..//td[3]</td>
 	<td></td>
 </tr>
 <tr>
@@ -237,7 +237,7 @@
 </tr>
 <tr>
 	<td>PLACED_ORDERS_LIST_DATE</td>
-	<td>//div[contains(@class,'table-list-title')]/a[contains(.,'${key_orderId}')]/following::div[5]</td>
+	<td>//div[contains(@class,'table-list-title')]/a[contains(.,'${key_orderId}')]/following::td[5]</td>
 	<td></td>
 </tr>
 <tr>
@@ -267,7 +267,7 @@
 </tr>
 <tr>
 	<td>ASSERT_FIRST_SHIPMENT_STATUS</td>
-	<td>//td/following-sibling::div//span[@class="label label-warning"]//span</td>
+	<td>//td/following-sibling::td//span[@class="label label-warning"]//span</td>
 	<td></td>
 </tr>
 <tr>

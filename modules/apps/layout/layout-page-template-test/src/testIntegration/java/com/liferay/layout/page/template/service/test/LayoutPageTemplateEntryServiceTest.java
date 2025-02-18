@@ -18,7 +18,7 @@ import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServ
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryService;
 import com.liferay.layout.page.template.service.persistence.LayoutPageTemplateEntryPersistence;
 import com.liferay.layout.page.template.service.persistence.impl.constants.LayoutPersistenceConstants;
-import com.liferay.layout.page.template.service.test.util.LayoutPageTemplateTestUtil;
+import com.liferay.layout.page.template.test.util.LayoutPageTemplateTestUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -615,7 +615,7 @@ public class LayoutPageTemplateEntryServiceTest {
 					null, TestPropsValues.getUserId(), _group.getGroupId(),
 					LayoutPageTemplateConstants.
 						PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
-					"Layout Page Template Collection", null,
+					null, "Layout Page Template Collection", null,
 					LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 					serviceContext);
 
@@ -625,7 +625,7 @@ public class LayoutPageTemplateEntryServiceTest {
 					null, TestPropsValues.getUserId(), _group.getGroupId(),
 					layoutPageTemplateCollection.
 						getLayoutPageTemplateCollectionId(),
-					"Parent Layout Page Template Collection", null,
+					null, "Parent Layout Page Template Collection", null,
 					LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 					serviceContext);
 
@@ -635,7 +635,7 @@ public class LayoutPageTemplateEntryServiceTest {
 					null, TestPropsValues.getUserId(), _group.getGroupId(),
 					parentLayoutPageTemplateCollection.
 						getLayoutPageTemplateCollectionId(),
-					"Parent Parent Layout Page Template Collection", null,
+					null, "Parent Parent Layout Page Template Collection", null,
 					LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 					serviceContext);
 
@@ -709,7 +709,7 @@ public class LayoutPageTemplateEntryServiceTest {
 					null, TestPropsValues.getUserId(), _group.getGroupId(),
 					LayoutPageTemplateConstants.
 						PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
-					RandomTestUtil.randomString(), null,
+					null, RandomTestUtil.randomString(), null,
 					LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 					serviceContext);
 
@@ -719,7 +719,7 @@ public class LayoutPageTemplateEntryServiceTest {
 					null, TestPropsValues.getUserId(), _group.getGroupId(),
 					layoutPageTemplateCollection.
 						getLayoutPageTemplateCollectionId(),
-					RandomTestUtil.randomString(), null,
+					null, RandomTestUtil.randomString(), null,
 					LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 					serviceContext);
 
@@ -830,7 +830,7 @@ public class LayoutPageTemplateEntryServiceTest {
 					null, TestPropsValues.getUserId(), _group.getGroupId(),
 					LayoutPageTemplateConstants.
 						PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
-					"Layout Page Template Collection", null,
+					null, "Layout Page Template Collection", null,
 					LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 					serviceContext);
 
@@ -840,7 +840,7 @@ public class LayoutPageTemplateEntryServiceTest {
 					null, TestPropsValues.getUserId(), _group.getGroupId(),
 					layoutPageTemplateCollection.
 						getLayoutPageTemplateCollectionId(),
-					"Parent Layout Page Template Collection", null,
+					null, "Parent Layout Page Template Collection", null,
 					LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 					serviceContext);
 
@@ -850,7 +850,7 @@ public class LayoutPageTemplateEntryServiceTest {
 					null, TestPropsValues.getUserId(), _group.getGroupId(),
 					parentLayoutPageTemplateCollection.
 						getLayoutPageTemplateCollectionId(),
-					"Parent Parent Layout Page Template Collection", null,
+					null, "Parent Parent Layout Page Template Collection", null,
 					LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 					serviceContext);
 
@@ -962,7 +962,7 @@ public class LayoutPageTemplateEntryServiceTest {
 					null, TestPropsValues.getUserId(), _group.getGroupId(),
 					LayoutPageTemplateConstants.
 						PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
-					"Layout Page Template Collection", null,
+					null, "Layout Page Template Collection", null,
 					LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 					serviceContext);
 
@@ -972,7 +972,7 @@ public class LayoutPageTemplateEntryServiceTest {
 					null, TestPropsValues.getUserId(), _group.getGroupId(),
 					layoutPageTemplateCollection.
 						getLayoutPageTemplateCollectionId(),
-					"Parent Layout Page Template Collection", null,
+					null, "Parent Layout Page Template Collection", null,
 					LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 					serviceContext);
 
@@ -982,7 +982,7 @@ public class LayoutPageTemplateEntryServiceTest {
 					null, TestPropsValues.getUserId(), _group.getGroupId(),
 					parentLayoutPageTemplateCollection.
 						getLayoutPageTemplateCollectionId(),
-					"Parent Parent Layout Page Template Collection", null,
+					null, "Parent Parent Layout Page Template Collection", null,
 					LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 					serviceContext);
 

@@ -8,13 +8,16 @@ package com.liferay.headless.admin.site.resource.v1_0.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.exportimport.kernel.service.StagingLocalService;
 import com.liferay.headless.admin.site.client.dto.v1_0.PageTemplateSet;
+import com.liferay.headless.admin.site.client.pagination.Page;
 import com.liferay.headless.admin.site.client.problem.Problem;
 import com.liferay.layout.page.template.service.LayoutPageTemplateCollectionLocalService;
 import com.liferay.petra.function.UnsafeRunnable;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -103,6 +106,82 @@ public class PageTemplateSetResourceTest
 			testGetSiteSiteByExternalReferenceCodePageTemplateSetPermissionsPage();
 	}
 
+	@Override
+	@Test
+	public void testGetSiteSiteByExternalReferenceCodePageTemplateSetsPage()
+		throws Exception {
+
+		super.testGetSiteSiteByExternalReferenceCodePageTemplateSetsPage();
+
+		String search = RandomTestUtil.randomString();
+
+		Page<PageTemplateSet> page =
+			pageTemplateSetResource.
+				getSiteSiteByExternalReferenceCodePageTemplateSetsPage(
+					testGroup.getExternalReferenceCode(), search, null, null,
+					null, null);
+
+		long searchTotalCount = page.getTotalCount();
+
+		page =
+			pageTemplateSetResource.
+				getSiteSiteByExternalReferenceCodePageTemplateSetsPage(
+					testGroup.getExternalReferenceCode(), null, null, null,
+					null, null);
+
+		long totalCount = page.getTotalCount();
+
+		pageTemplateSetResource.
+			postSiteSiteByExternalReferenceCodePageTemplateSet(
+				testGroup.getExternalReferenceCode(), randomPageTemplateSet());
+
+		page =
+			pageTemplateSetResource.
+				getSiteSiteByExternalReferenceCodePageTemplateSetsPage(
+					testGroup.getExternalReferenceCode(), search, null, null,
+					null, null);
+
+		Assert.assertEquals(searchTotalCount, page.getTotalCount());
+
+		PageTemplateSet pageTemplateSet = randomPageTemplateSet();
+
+		pageTemplateSet.setName(
+			RandomTestUtil.randomString() + search +
+				RandomTestUtil.randomString());
+
+		pageTemplateSetResource.
+			postSiteSiteByExternalReferenceCodePageTemplateSet(
+				testGroup.getExternalReferenceCode(), pageTemplateSet);
+
+		page =
+			pageTemplateSetResource.
+				getSiteSiteByExternalReferenceCodePageTemplateSetsPage(
+					testGroup.getExternalReferenceCode(), search, null, null,
+					null, null);
+
+		Assert.assertEquals(searchTotalCount + 1, page.getTotalCount());
+
+		pageTemplateSetResource.
+			postSiteSiteByExternalReferenceCodePageTemplateSet(
+				testGroup.getExternalReferenceCode(), randomPageTemplateSet());
+
+		page =
+			pageTemplateSetResource.
+				getSiteSiteByExternalReferenceCodePageTemplateSetsPage(
+					testGroup.getExternalReferenceCode(), search, null, null,
+					null, null);
+
+		Assert.assertEquals(searchTotalCount + 1, page.getTotalCount());
+
+		page =
+			pageTemplateSetResource.
+				getSiteSiteByExternalReferenceCodePageTemplateSetsPage(
+					testGroup.getExternalReferenceCode(), null, null, null,
+					null, null);
+
+		Assert.assertEquals(totalCount + 3, page.getTotalCount());
+	}
+
 	@Ignore
 	@Override
 	@Test
@@ -169,6 +248,31 @@ public class PageTemplateSetResourceTest
 						testGroup.getExternalReferenceCode(),
 						pageTemplateSet.getExternalReferenceCode(),
 						pageTemplateSet));
+	}
+
+	@Override
+	@Test
+	public void testPostSiteSiteByExternalReferenceCodePageTemplateSet()
+		throws Exception {
+
+		PageTemplateSet randomPageTemplateSet = randomPageTemplateSet();
+
+		randomPageTemplateSet.setKey(StringPool.BLANK);
+
+		PageTemplateSet postPageTemplateSet =
+			_testPostSiteSiteByExternalReferenceCodePageTemplateSet(
+				randomPageTemplateSet);
+
+		Assert.assertTrue(Validator.isNotNull(postPageTemplateSet.getKey()));
+
+		randomPageTemplateSet = randomPageTemplateSet();
+
+		postPageTemplateSet =
+			_testPostSiteSiteByExternalReferenceCodePageTemplateSet(
+				randomPageTemplateSet);
+
+		Assert.assertEquals(
+			randomPageTemplateSet.getKey(), postPageTemplateSet.getKey());
 	}
 
 	@Override
@@ -294,6 +398,21 @@ public class PageTemplateSetResourceTest
 
 		assertEquals(pageTemplateSet, getPageTemplateSet);
 		assertValid(getPageTemplateSet);
+	}
+
+	private PageTemplateSet
+			_testPostSiteSiteByExternalReferenceCodePageTemplateSet(
+				PageTemplateSet pageTemplateSet)
+		throws Exception {
+
+		PageTemplateSet postPageTemplateSet =
+			testPostSiteSiteByExternalReferenceCodePageTemplateSet_addPageTemplateSet(
+				pageTemplateSet);
+
+		assertEquals(pageTemplateSet, postPageTemplateSet);
+		assertValid(postPageTemplateSet);
+
+		return postPageTemplateSet;
 	}
 
 	@Inject

@@ -65,6 +65,8 @@ import {JSONWebServicesSegmentsEntryApiHelper} from './json-web-services/JSONWeb
 import {JSONWebServicesSiteNavigationMenuApiHelper} from './json-web-services/JSONWebServicesSiteNavigationMenuApiHelper';
 import {JSONWebServicesUserApiHelper} from './json-web-services/JSONWebServicesUserApiHelper';
 
+type ContentType = 'application/json' | 'application/x-www-form-urlencoded';
+
 type TDataApiHelpersData = {
 	id: any;
 	type: string;
@@ -89,9 +91,12 @@ async function getCSRFTokenHeader(page: Page) {
 	};
 }
 
-export async function getHeader(page: Page) {
+export async function getHeader(
+	page: Page,
+	contentType: ContentType = 'application/json'
+) {
 	return {
-		'Content-Type': 'application/json',
+		'Content-Type': contentType,
 		...(await getCSRFTokenHeader(page)),
 	};
 }
@@ -517,6 +522,9 @@ export class DataApiHelpers extends ApiHelpers {
 				await this.headlessCommerceAdminCatalog.deleteRelatedProduct(
 					item.id
 				);
+			}
+			else if (item.type === 'role') {
+				await this.headlessAdminUser.deleteRole(item.id);
 			}
 			else if (item.type === 'roleUserAccountAssociation') {
 				const [roleId, userId] = item.id.split('_');

@@ -13,6 +13,7 @@ import {waitForAlert} from '../../utils/waitForAlert';
 import {InstanceSettingsPage} from '../configuration-admin-web/InstanceSettingsPage';
 
 export class ChangeTrackingPage {
+	readonly bulkDeleteButton: Locator;
 	readonly frontendDataSetEntries: Locator;
 	readonly instanceSettingsPage: InstanceSettingsPage;
 	readonly page: Page;
@@ -20,6 +21,11 @@ export class ChangeTrackingPage {
 	readonly tabsContainer: Locator;
 
 	constructor(page: Page) {
+		this.bulkDeleteButton = page
+			.locator('[data-testid="visualization-mode-table"]')
+			.locator('.bulk-actions')
+			.getByRole('button')
+			.nth(1);
 		this.frontendDataSetEntries = page.locator(
 			'[data-testid="visualization-mode-table"]'
 		);
@@ -124,6 +130,30 @@ export class ChangeTrackingPage {
 		await this.editComment(comment, editedComment);
 
 		await this.deleteComment(editedComment);
+	}
+
+	async assertStatus(status: string, title: string) {
+		await this.goToPublicationHistory();
+
+		await this.page
+			.locator('.fds tbody tr')
+			.filter({
+				has: this.page.getByText(title),
+			})
+			.filter({
+				has: this.page.getByText(status, {exact: true}),
+			})
+			.waitFor();
+
+		await this.page
+			.locator('.fds tbody tr')
+			.filter({
+				has: this.page.getByText(title),
+			})
+			.filter({
+				has: this.page.getByText(status, {exact: true}),
+			})
+			.isVisible();
 	}
 
 	async deleteComment(comment) {
@@ -259,6 +289,16 @@ export class ChangeTrackingPage {
 			.waitFor();
 	}
 
+	async switchLanguage(language: string) {
+		await this.page.getByLabel('show-available-locales').click();
+
+		await this.page
+			.getByRole('menuitem', {
+				name: `${language} Translated`,
+			})
+			.click();
+	}
+
 	async workOnProduction() {
 		const apiHelpers = new ApiHelpers(this.page);
 
@@ -363,6 +403,43 @@ export class ChangeTrackingPage {
 			await expect(publicationsEnabled).toBeChecked();
 
 			await expect(checkBox).not.toBeChecked();
+		}
+	}
+
+	async viewChanges({changed, site, title, type}) {
+		if (changed) {
+			await this.page
+				.locator('.fds tbody tr')
+				.filter({
+					has: this.page.getByText(title),
+				})
+				.filter({
+					has: this.page.getByRole('cell', {name: changed}),
+				})
+				.isVisible();
+		}
+
+		if (site) {
+			await this.page
+				.locator('.fds tbody tr')
+				.filter({
+					has: this.page.getByText(title),
+				})
+				.filter({
+					has: this.page.getByRole('cell', {name: site}),
+				})
+				.isVisible();
+		}
+		if (type) {
+			await this.page
+				.locator('.fds tbody tr')
+				.filter({
+					has: this.page.getByText(title),
+				})
+				.filter({
+					has: this.page.getByRole('cell', {name: type}),
+				})
+				.isVisible();
 		}
 	}
 

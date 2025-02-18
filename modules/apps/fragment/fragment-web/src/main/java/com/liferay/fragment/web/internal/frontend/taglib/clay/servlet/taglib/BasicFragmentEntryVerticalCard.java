@@ -7,15 +7,14 @@ package com.liferay.fragment.web.internal.frontend.taglib.clay.servlet.taglib;
 
 import com.liferay.fragment.constants.FragmentActionKeys;
 import com.liferay.fragment.model.FragmentEntry;
-import com.liferay.fragment.processor.FragmentEntryProcessorRegistry;
 import com.liferay.fragment.service.FragmentEntryLinkLocalServiceUtil;
-import com.liferay.fragment.validator.FragmentEntryValidator;
 import com.liferay.fragment.web.internal.security.permission.resource.FragmentPermission;
 import com.liferay.fragment.web.internal.servlet.taglib.util.BasicFragmentEntryActionDropdownItemsProvider;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder;
 import com.liferay.portal.kernel.dao.search.RowChecker;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -74,7 +73,9 @@ public class BasicFragmentEntryVerticalCard
 				themeDisplay.getPermissionChecker(),
 				themeDisplay.getScopeGroupId(),
 				FragmentActionKeys.MANAGE_FRAGMENT_ENTRIES) ||
-			fragmentEntry.isTypeReact()) {
+			fragmentEntry.isTypeReact() ||
+			(FeatureFlagManagerUtil.isEnabled("LPD-34938") &&
+			 fragmentEntry.isMarketplace())) {
 
 			return null;
 		}
@@ -90,6 +91,17 @@ public class BasicFragmentEntryVerticalCard
 		).setParameter(
 			"fragmentEntryId", fragmentEntry.getFragmentEntryId()
 		).buildString();
+	}
+
+	@Override
+	public String getIcon() {
+		if (FeatureFlagManagerUtil.isEnabled("LPD-34938") &&
+			fragmentEntry.isMarketplace()) {
+
+			return "marketplace";
+		}
+
+		return super.getIcon();
 	}
 
 	@Override
@@ -115,13 +127,6 @@ public class BasicFragmentEntryVerticalCard
 		return LabelItemListBuilder.add(
 			labelItem -> labelItem.setStatus(fragmentEntry.getStatus())
 		).add(
-			this::_hasWarnings,
-			labelItem -> {
-				labelItem.setDisplayType("warning");
-				labelItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "warnings"));
-			}
-		).add(
 			fragmentEntry::isCacheable,
 			labelItem -> {
 				labelItem.setDisplayType("info");
@@ -129,6 +134,28 @@ public class BasicFragmentEntryVerticalCard
 					LanguageUtil.get(_httpServletRequest, "cached"));
 			}
 		).build();
+	}
+
+	@Override
+	public String getStickerCssClass() {
+		if (FeatureFlagManagerUtil.isEnabled("LPD-34938") &&
+			fragmentEntry.isMarketplace()) {
+
+			return "fragment-marketplace-sticker";
+		}
+
+		return super.getStickerCssClass();
+	}
+
+	@Override
+	public String getStickerIcon() {
+		if (FeatureFlagManagerUtil.isEnabled("LPD-34938") &&
+			fragmentEntry.isMarketplace()) {
+
+			return "marketplace";
+		}
+
+		return super.getStickerIcon();
 	}
 
 	@Override
@@ -147,36 +174,6 @@ public class BasicFragmentEntryVerticalCard
 		}
 
 		return super.isSelectable();
-	}
-
-	private boolean _hasWarnings() {
-		try {
-			FragmentEntryValidator fragmentEntryValidator =
-				(FragmentEntryValidator)_httpServletRequest.getAttribute(
-					FragmentEntryValidator.class.getName());
-
-			fragmentEntryValidator.validateConfiguration(
-				fragmentEntry.getConfiguration());
-			fragmentEntryValidator.validateTypeOptions(
-				fragmentEntry.getType(), fragmentEntry.getTypeOptions());
-
-			FragmentEntryProcessorRegistry fragmentEntryProcessorRegistry =
-				(FragmentEntryProcessorRegistry)
-					_httpServletRequest.getAttribute(
-						FragmentEntryProcessorRegistry.class.getName());
-
-			fragmentEntryProcessorRegistry.validateFragmentEntryHTML(
-				fragmentEntry.getHtml(), fragmentEntry.getConfiguration());
-		}
-		catch (Exception exception) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(exception);
-			}
-
-			return true;
-		}
-
-		return false;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

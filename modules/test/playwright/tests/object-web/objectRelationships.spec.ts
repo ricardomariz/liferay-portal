@@ -17,6 +17,7 @@ import {loginTest} from '../../fixtures/loginTest';
 import {objectPagesTest} from '../../fixtures/objectPagesTest';
 import {ObjectRelationshipFormPage} from '../../pages/object-web/object-relationship/ObjectRelationshipFormPage';
 import {getRandomInt} from '../../utils/getRandomInt';
+import {waitForAlert} from '../../utils/waitForAlert';
 
 export const test = mergeTests(
 	dataApiHelpersTest,
@@ -114,7 +115,6 @@ test.describe('Manage object relationships through Model Builder', () => {
 		apiHelpers,
 		modelBuilderDiagramPage,
 		page,
-		viewObjectDefinitionsPage,
 	}) => {
 		const objectFolder =
 			await apiHelpers.objectAdmin.postRandomObjectFolder();
@@ -143,13 +143,9 @@ test.describe('Manage object relationships through Model Builder', () => {
 			type: 'objectDefinition',
 		});
 
-		await viewObjectDefinitionsPage.goto();
-
-		await viewObjectDefinitionsPage.openObjectFolder(
-			objectFolder.label['en_US']
-		);
-
-		await viewObjectDefinitionsPage.viewInModelBuilderButton.click();
+		await modelBuilderDiagramPage.goto({
+			objectFolderName: objectFolder.name,
+		});
 
 		await modelBuilderDiagramPage.connectObjectDefinitionsNodeHandles(
 			objectDefinition1.id,
@@ -1077,5 +1073,88 @@ test.describe('Manage object relationships through Model Builder', () => {
 				unique: false,
 			}
 		);
+	});
+});
+
+test.describe('Manage object relationships through Objects Admin UI', () => {
+	test('can create object relationship with parameter', async ({
+		addNewObjectRelationshipModalPage,
+		apiHelpers,
+		objectRelationshipsPage,
+		page,
+	}) => {
+		const objectDefinition =
+			await apiHelpers.objectAdmin.postRandomObjectDefinition({
+				objectFolderExternalReferenceCode: 'Default',
+				status: {code: 0},
+			});
+
+		apiHelpers.data.push({
+			id: objectDefinition.id,
+			type: 'objectDefinition',
+		});
+
+		const objectRelationshipData: Partial<ObjectRelationship> = {
+			label: {
+				en_US: 'objectRelationshipLabel' + getRandomInt(),
+			},
+			name: 'objectRelationshipName' + Math.floor(Math.random() * 99),
+			objectDefinitionExternalReferenceCode2:
+				objectDefinition.externalReferenceCode,
+			type: ObjectRelationship.TypeEnum.OneToMany,
+		};
+
+		const objectRelationshipApiClient = await apiHelpers.buildRestClient(
+			ObjectRelationshipApi
+		);
+
+		const {body: objectRelationship1} =
+			await objectRelationshipApiClient.postObjectDefinitionByExternalReferenceCodeObjectRelationship(
+				'L_ACCOUNT',
+				objectRelationshipData
+			);
+
+		apiHelpers.data.push({
+			id: objectRelationship1.id,
+			type: 'objectRelationship',
+		});
+
+		await objectRelationshipsPage.goto('Postal Address');
+
+		await objectRelationshipsPage.addObjectRelationshipButton.click();
+
+		const objectRelationship2 =
+			await addNewObjectRelationshipModalPage.handleForm({
+				manyRecordsOf: objectDefinition.name,
+				objectRelationshipLabel:
+					'objectRelationshipWithParameter' + getRandomInt(),
+				parameter: objectRelationship1.label['en_US'],
+				type: 'One to Many',
+			});
+
+		apiHelpers.data.push({
+			id: objectRelationship2.id,
+			type: 'objectRelationship',
+		});
+
+		await waitForAlert(
+			page,
+			'Success:Relationship was created successfully.'
+		);
+
+		await expect(
+			page.getByText(objectRelationship2.label['en_US'])
+		).toBeVisible();
+
+		await page
+			.getByRole('link', {
+				exact: true,
+				name: objectRelationship2.label['en_US'],
+			})
+			.click();
+
+		await expect(
+			page.frameLocator('iframe').getByLabel('ParameterMandatory')
+		).toHaveText(objectRelationship1.label['en_US']);
 	});
 });

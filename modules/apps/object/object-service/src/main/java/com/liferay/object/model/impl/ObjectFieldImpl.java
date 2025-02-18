@@ -29,11 +29,7 @@ public class ObjectFieldImpl extends ObjectFieldBaseImpl {
 
 	@Override
 	public boolean compareBusinessType(String businessType) {
-		if (Objects.equals(getBusinessType(), businessType)) {
-			return true;
-		}
-
-		return false;
+		return Objects.equals(getBusinessType(), businessType);
 	}
 
 	@Override
@@ -112,9 +108,11 @@ public class ObjectFieldImpl extends ObjectFieldBaseImpl {
 
 		ObjectDefinition objectDefinition = getObjectDefinition();
 
-		if (objectDefinition.isUnmodifiableSystemObject() &&
-			!Objects.equals(
-				objectDefinition.getExtensionDBTableName(), getDBTableName())) {
+		if ((objectDefinition.isUnmodifiableSystemObject() &&
+			 !Objects.equals(
+				 objectDefinition.getExtensionDBTableName(),
+				 getDBTableName())) ||
+			ObjectFieldUtil.isMetadata(getName())) {
 
 			return false;
 		}

@@ -6,12 +6,9 @@
 package com.liferay.portal.workflow.kaleo.service.impl;
 
 import com.liferay.exportimport.kernel.staging.Staging;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
-import com.liferay.portal.kernel.dao.orm.DynamicQuery;
-import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
-import com.liferay.portal.kernel.dao.orm.Property;
-import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.ResourceConstants;
@@ -27,7 +24,6 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.search.aggregation.AggregationResult;
@@ -48,6 +44,7 @@ import com.liferay.portal.search.localization.SearchLocalizationHelper;
 import com.liferay.portal.search.query.BooleanQuery;
 import com.liferay.portal.search.query.Queries;
 import com.liferay.portal.search.query.QueryHelper;
+import com.liferay.portal.search.query.StringQuery;
 import com.liferay.portal.search.query.TermsQuery;
 import com.liferay.portal.search.sort.SortOrder;
 import com.liferay.portal.search.sort.Sorts;
@@ -405,24 +402,14 @@ public class KaleoDefinitionVersionLocalServiceImpl
 
 		SearchHits searchHits = searchSearchResponse.getSearchHits();
 
-		kaleoDefinitionVersionIds.clear();
+		return TransformUtil.transform(
+			searchHits.getSearchHits(),
+			searchHit -> {
+				Document document = searchHit.getDocument();
 
-		for (SearchHit searchHit : searchHits.getSearchHits()) {
-			Document document = searchHit.getDocument();
-
-			kaleoDefinitionVersionIds.add(
-				document.getLong(Field.ENTRY_CLASS_PK));
-		}
-
-		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
-			KaleoDefinitionVersion.class, getClassLoader());
-
-		Property property = PropertyFactoryUtil.forName(
-			"kaleoDefinitionVersionId");
-
-		dynamicQuery.add(property.in(kaleoDefinitionVersionIds));
-
-		return dynamicQuery(dynamicQuery);
+				return kaleoDefinitionVersionPersistence.fetchByPrimaryKey(
+					document.getLong(Field.ENTRY_CLASS_PK));
+			});
 	}
 
 	@Override
@@ -475,32 +462,36 @@ public class KaleoDefinitionVersionLocalServiceImpl
 		if (Validator.isNotNull(keywords)) {
 			BooleanQuery keywordsBooleanQuery = _queries.booleanQuery();
 
-			keywords =
-				StringPool.STAR + StringUtil.toLowerCase(keywords) +
-					StringPool.STAR;
-
 			keywordsBooleanQuery.addShouldQueryClauses(
-				_queries.wildcard(Field.DESCRIPTION, keywords),
-				_queries.wildcard(Field.NAME, keywords));
+				_queries.match(Field.DESCRIPTION, keywords),
+				_queries.match(Field.NAME, keywords));
 
 			String[] localizedFieldNames =
 				_searchLocalizationHelper.getLocalizedFieldNames(
 					new String[] {Field.TITLE}, new SearchContext());
 
 			for (String localizedFieldName : localizedFieldNames) {
+				StringQuery stringQuery = _queries.string(
+					keywords + StringPool.STAR);
+
+				stringQuery.setDefaultField(localizedFieldName);
+
 				keywordsBooleanQuery.addShouldQueryClauses(
-					_queries.wildcard(localizedFieldName, keywords));
+					stringQuery, _queries.match(localizedFieldName, keywords));
 			}
 
 			booleanQuery.addMustQueryClauses(keywordsBooleanQuery);
 		}
 
-		if (status != WorkflowConstants.STATUS_ANY) {
-			booleanQuery.addMustQueryClauses(
-				_queries.term(Field.STATUS, status));
+		if (status == WorkflowConstants.STATUS_APPROVED) {
+			booleanQuery.addMustQueryClauses(_queries.term("active", 1));
+		}
+		else if (status == WorkflowConstants.STATUS_DRAFT) {
+			booleanQuery.addMustQueryClauses(_queries.term("active", 0));
 		}
 
 		searchSearchRequest.setQuery(booleanQuery);
+		searchSearchRequest.setSize(0);
 
 		SearchSearchResponse searchSearchResponse =
 			_searchRequestExecutor.executeSearchRequest(searchSearchRequest);

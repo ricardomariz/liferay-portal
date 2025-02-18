@@ -22,7 +22,7 @@ const ConnectionsTable = () => {
 		isValidating,
 		mutate,
 	} = useSWR<APIResponse<{connectionSource: string; creator: Creator}>>(
-		`/o/c/oauth2dxpauthorizations?filter=${SearchBuilder.eq('r_accountToOAuth2DxpAuthorization_accountEntryId', selectedAccount.id)}`
+		`/o/c/oauth2dxpauthorizations?filter=${SearchBuilder.eq('r_accountToOAuth2DxpAuthorization_accountEntryId', selectedAccount.id)}&sort=dateCreated:desc`
 	);
 
 	const items = response?.items || [];
@@ -40,8 +40,14 @@ const ConnectionsTable = () => {
 			>
 				<div className="dxp-connections-table-no-connection">
 					<p>
-						No connection was found, to learn how to create the
-						connection please check this <a>help page</a>
+						No connection was found, to learn how to create the connection please check this
+
+						<a
+							className="ml-1"
+							href="https://learn.liferay.com/w/dxp/liferay-development/marketplace/connecting-liferay-dxp-to-marketplace"
+						>
+							help page
+						</a>
 					</p>
 				</div>
 				<ClayButton

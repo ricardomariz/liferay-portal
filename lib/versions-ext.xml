@@ -224,7 +224,7 @@
 			</library>
 			<library>
 				<file-name>lib/development/commons-collections4.jar</file-name>
-				<version>4.2</version>
+				<version>4.4</version>
 				<project-name>Apache Commons Collections</project-name>
 				<project-url>http://commons.apache.org/proper/commons-collections</project-url>
 				<licenses>
@@ -236,7 +236,7 @@
 			</library>
 			<library>
 				<file-name>lib/development/commons-compress.jar</file-name>
-				<version>1.21</version>
+				<version>1.26.0</version>
 				<project-name>Commons Compress</project-name>
 				<project-url>http://commons.apache.org/compress</project-url>
 				<licenses>
@@ -287,18 +287,6 @@
 				<version>02856255a6cc7f</version>
 				<project-name>Dumbster</project-name>
 				<project-url>https://github.com/rjo1970/dumbster</project-url>
-				<licenses>
-					<license>
-						<license-name>Apache License 2.0</license-name>
-						<license-url>http://www.apache.org/licenses/LICENSE-2.0</license-url>
-					</license>
-				</licenses>
-			</library>
-			<library>
-				<file-name>lib/development/error-prone-ant.jar</file-name>
-				<version>1.0.8</version>
-				<project-name>Error-Prone</project-name>
-				<project-url>https://code.google.com/p/error-prone</project-url>
 				<licenses>
 					<license>
 						<license-name>Apache License 2.0</license-name>
@@ -1183,18 +1171,6 @@
 				<comments>
 					Removed org.json.* because it json-java.jar. See LPS-78517.
 				</comments>
-			</library>
-			<library>
-				<file-name>lib/portal/javassist.jar</file-name>
-				<version>3.29.0 GA</version>
-				<project-name>Javassist</project-name>
-				<project-url>http://www.csg.is.titech.ac.jp/~chiba/javassist</project-url>
-				<licenses>
-					<license>
-						<license-name>LGPL 2.1</license-name>
-						<license-url>http://www.gnu.org/licenses/lgpl-2.1.html</license-url>
-					</license>
-				</licenses>
 			</library>
 			<library>
 				<file-name>lib/portal/jaxb-api.jar</file-name>

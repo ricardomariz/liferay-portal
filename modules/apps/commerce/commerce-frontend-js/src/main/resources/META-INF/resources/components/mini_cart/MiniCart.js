@@ -51,6 +51,7 @@ function MiniCart({
 	displayDiscountLevels,
 	displayTotalItemsQuantity,
 	guestOrderEnabled,
+	hasCommerceOpenOrderContentPortlet,
 	itemsQuantity,
 	labels,
 	onAddToCart,
@@ -129,8 +130,10 @@ function MiniCart({
 						...currentURLs,
 						orderDetailURL: !orderDetailURL
 							? regenerateOrderDetailURL(
-									updatedCart.orderUUID,
-									currentURLs.siteDefaultURL
+									currentURLs.baseOrderDetailURL,
+									hasCommerceOpenOrderContentPortlet,
+									updatedCart.id,
+									updatedCart.orderUUID
 								)
 							: new URL(orderDetailURL),
 					};
@@ -155,7 +158,7 @@ function MiniCart({
 				showErrorNotification(error);
 			}
 		},
-		[onAddToCart]
+		[hasCommerceOpenOrderContentPortlet, onAddToCart]
 	);
 
 	const updateReplacedSKUList = useCallback(
@@ -276,6 +279,7 @@ MiniCart.defaultProps = {
 
 MiniCart.propTypes = {
 	cartActionURLs: PropTypes.shape({
+		baseOrderDetailURL: PropTypes.string,
 		checkoutURL: PropTypes.string,
 		orderDetailURL: PropTypes.string,
 		productURLSeparator: PropTypes.string,

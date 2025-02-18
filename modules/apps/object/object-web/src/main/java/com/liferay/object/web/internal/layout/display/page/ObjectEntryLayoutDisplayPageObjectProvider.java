@@ -5,13 +5,16 @@
 
 package com.liferay.object.web.internal.layout.display.page;
 
+import com.liferay.friendly.url.info.item.provider.InfoItemFriendlyURLProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.util.Locale;
@@ -23,8 +26,10 @@ public class ObjectEntryLayoutDisplayPageObjectProvider
 	implements LayoutDisplayPageObjectProvider<ObjectEntry> {
 
 	public ObjectEntryLayoutDisplayPageObjectProvider(
+		InfoItemFriendlyURLProvider<ObjectEntry> infoItemFriendlyURLProvider,
 		ObjectDefinition objectDefinition, ObjectEntry objectEntry) {
 
+		_infoItemFriendlyURLProvider = infoItemFriendlyURLProvider;
 		_objectDefinition = objectDefinition;
 		_objectEntry = objectEntry;
 	}
@@ -85,7 +90,7 @@ public class ObjectEntryLayoutDisplayPageObjectProvider
 		}
 
 		try {
-			return _objectEntry.getTitleValue();
+			return _objectEntry.getTitleValue(LocaleUtil.toLanguageId(locale));
 		}
 		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
@@ -98,16 +103,15 @@ public class ObjectEntryLayoutDisplayPageObjectProvider
 
 	@Override
 	public String getURLTitle(Locale locale) {
-		if (!_objectDefinition.isDefaultStorageType()) {
-			return _objectEntry.getExternalReferenceCode();
-		}
-
-		return String.valueOf(_objectEntry.getObjectEntryId());
+		return _infoItemFriendlyURLProvider.getFriendlyURL(
+			_objectEntry, LanguageUtil.getLanguageId(locale));
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ObjectEntryLayoutDisplayPageObjectProvider.class);
 
+	private final InfoItemFriendlyURLProvider<ObjectEntry>
+		_infoItemFriendlyURLProvider;
 	private final ObjectDefinition _objectDefinition;
 	private final ObjectEntry _objectEntry;
 

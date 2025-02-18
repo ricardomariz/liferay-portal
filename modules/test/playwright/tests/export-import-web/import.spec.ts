@@ -12,8 +12,6 @@ import fs from 'fs/promises';
 import * as path from 'path';
 import {getComparator} from 'playwright-core/lib/utils';
 
-import {apiHelpersTest} from '../../fixtures/apiHelpersTest';
-import {applicationsMenuPageTest} from '../../fixtures/applicationsMenuPageTest';
 import {dataApiHelpersTest} from '../../fixtures/dataApiHelpersTest';
 import {depotAdminPageTest} from '../../fixtures/depotAdminPageTest';
 import {documentLibraryPagesTest} from '../../fixtures/documentLibraryPages.fixtures';
@@ -22,36 +20,30 @@ import {isolatedSiteTest} from '../../fixtures/isolatedSiteTest';
 import {loginTest} from '../../fixtures/loginTest';
 import {pageEditorPagesTest} from '../../fixtures/pageEditorPagesTest';
 import {pageTemplatesPagesTest} from '../../fixtures/pageTemplatesPagesTest';
-import {pagesAdminPagesTest} from '../../fixtures/pagesAdminPagesTest';
-import {productMenuPageTest} from '../../fixtures/productMenuPageTest';
 import {wikiPagesTest} from '../../fixtures/wikiPagesTest';
-import {depotsPagesTest} from '../../tests/depot-web/fixtures/depotsPagesTest';
 import getRandomString from '../../utils/getRandomString';
 import {getTempDir} from '../../utils/temp';
 import {readFileFromZip} from '../../utils/zip';
+import {companyExportImportPageTest} from './fixtures/companyExportImportPagesTest';
 import {exportImportPagesTest} from './fixtures/exportImportPagesTest';
 import {stagingPageTest} from './fixtures/stagingPageTest';
 
 export const test = mergeTests(
-	apiHelpersTest,
-	applicationsMenuPageTest,
+	companyExportImportPageTest,
 	dataApiHelpersTest,
+	depotAdminPageTest,
 	documentLibraryPagesTest,
 	featureFlagsTest({
 		'LPD-35013': {enabled: true},
 		'LPD-35914': {enabled: true, system: true},
 	}),
-	productMenuPageTest,
 	exportImportPagesTest,
-	stagingPageTest,
-	depotsPagesTest,
-	depotAdminPageTest,
-	pagesAdminPagesTest,
+	isolatedSiteTest,
+	loginTest(),
 	pageEditorPagesTest,
 	pageTemplatesPagesTest,
-	wikiPagesTest,
-	loginTest(),
-	isolatedSiteTest
+	stagingPageTest,
+	wikiPagesTest
 );
 
 async function getSiteHomePageScreenshot(
@@ -295,9 +287,7 @@ test('can import a lar file selecting some items to import', async ({
 
 test('can export and import custom object entries at instance level', async ({
 	apiHelpers,
-	applicationsMenuPage,
-	exportImportPage,
-	page,
+	companyExportImportPage,
 }) => {
 	const objectActionApiClient =
 		await apiHelpers.buildRestClient(ObjectDefinitionApi);
@@ -340,20 +330,8 @@ test('can export and import custom object entries at instance level', async ({
 		'c/tests'
 	);
 
-	await applicationsMenuPage.goToExport();
-
-	await page.getByTestId('creationMenuNewButton').nth(1).click();
-
-	await page.getByLabel('Tests 1 Items').click();
-
-	const exportName = 'CustomObject-' + getRandomString();
-
-	await exportImportPage.title.fill(exportName);
-
-	await exportImportPage.exportButton.click();
-
 	const exportFilePath =
-		await exportImportPage.downloadExportProcess(exportName);
+		await companyExportImportPage.export('Tests 1 Items');
 
 	const content = await readFileFromZip('C_Test.json', exportFilePath);
 
@@ -370,22 +348,7 @@ test('can export and import custom object entries at instance level', async ({
 		)
 	).toEqual({status: 'NOT_FOUND'});
 
-	await applicationsMenuPage.goToImport();
-
-	await page.getByRole('link', {name: 'Import'}).click();
-
-	await page.locator('input[type="file"]').setInputFiles(exportFilePath);
-
-	await page.getByRole('button', {name: 'Continue'}).click();
-
-	await page.getByRole('button', {name: 'Import'}).click();
-
-	await expect(
-		exportImportPage.page
-			.getByText(exportName)
-			.locator('../../..')
-			.getByText('Successful')
-	).toBeVisible();
+	await companyExportImportPage.import(exportFilePath);
 
 	expect(
 		await apiHelpers.get(
@@ -399,64 +362,9 @@ test('can export and import custom object entries at instance level', async ({
 	);
 });
 
-test('cannot export site scoped custom object entries at instance level', async ({
+test('can import custom object entries at instance level with or without permissions based on selection', async ({
 	apiHelpers,
-	applicationsMenuPage,
-	page,
-}) => {
-	const objectActionApiClient =
-		await apiHelpers.buildRestClient(ObjectDefinitionApi);
-
-	const {body: objectDefinition} =
-		await objectActionApiClient.postObjectDefinition({
-			active: true,
-			externalReferenceCode: 'test',
-			label: {
-				en_US: 'Test',
-			},
-			name: 'Test',
-			objectFields: [
-				{
-					DBType: ObjectField.DBTypeEnum.String,
-					businessType: ObjectField.BusinessTypeEnum.Text,
-					indexed: true,
-					indexedAsKeyword: true,
-					label: {
-						en_US: 'Name',
-					},
-					name: 'name',
-					required: true,
-				},
-			],
-			pluralLabel: {
-				en_US: 'Tests',
-			},
-			portlet: true,
-			scope: 'site',
-			status: {
-				code: 0,
-			},
-		});
-
-	apiHelpers.data.push({id: objectDefinition.id, type: 'objectDefinition'});
-
-	await apiHelpers.objectEntry.postObjectEntry(
-		{externalReferenceCode: '', name: 'test'},
-		'c/tests/scopes/Guest'
-	);
-
-	await applicationsMenuPage.goToExport();
-
-	await page.getByTestId('creationMenuNewButton').nth(1).click();
-
-	await expect(page.getByLabel('Tests 1 Items')).toBeHidden();
-});
-
-test('can export custom object entries at instance level with permissions based on selection', async ({
-	apiHelpers,
-	applicationsMenuPage,
-	exportImportPage,
-	page,
+	companyExportImportPage,
 }) => {
 	const objectActionApiClient =
 		await apiHelpers.buildRestClient(ObjectDefinitionApi);
@@ -494,32 +402,80 @@ test('can export custom object entries at instance level with permissions based 
 
 	apiHelpers.data.push({id: objectDefinition.id, type: 'objectDefinition'});
 
-	await apiHelpers.objectEntry.postObjectEntry(
-		{externalReferenceCode: '', name: 'test'},
+	let objectEntry = await apiHelpers.objectEntry.postObjectEntry(
+		{
+			externalReferenceCode: '',
+			name: 'test',
+			permissions: [
+				{
+					actionIds: ['VIEW'],
+					roleName: 'Guest',
+				},
+			],
+		},
 		'c/tests'
 	);
 
-	await applicationsMenuPage.goToExport();
+	// Export with permissions
 
-	await page.getByTestId('creationMenuNewButton').nth(1).click();
+	const exportFilePath = await companyExportImportPage.export(
+		'Tests 1 Items',
+		true
+	);
 
-	await page.getByLabel('Tests 1 Items').click();
+	// Import with permissions
 
-	const exportName = 'CustomObject-WithPermissions-' + getRandomString();
+	await apiHelpers.delete(`${apiHelpers.baseUrl}c/tests/${objectEntry.id}`);
 
-	await exportImportPage.title.fill(exportName);
+	expect(
+		await apiHelpers.objectEntry.getObjectEntryByExternalReferenceCode(
+			'c/tests',
+			objectEntry.externalReferenceCode
+		)
+	).toEqual({status: 'NOT_FOUND'});
 
-	await page.getByLabel('Export Permissions').click();
+	await companyExportImportPage.import(exportFilePath, true);
 
-	await exportImportPage.exportButton.click();
+	objectEntry = await apiHelpers.get(
+		`${apiHelpers.baseUrl}c/tests/by-external-reference-code/${objectEntry.externalReferenceCode}/?nestedFields=permissions`
+	);
 
-	const exportFilePath =
-		await exportImportPage.downloadExportProcess(exportName);
+	expect(objectEntry).toEqual(
+		expect.objectContaining({
+			permissions: [
+				{
+					actionIds: ['VIEW'],
+					roleName: 'Guest',
+				},
+			],
+		})
+	);
 
-	const content = await readFileFromZip('C_Test.json', exportFilePath);
+	// Import without permissions
 
-	const json = JSON.parse(content);
+	await apiHelpers.delete(`${apiHelpers.baseUrl}c/tests/${objectEntry.id}`);
 
-	expect(json.length).toBe(1);
-	expect(json[0]).toHaveProperty('permissions');
+	expect(
+		await apiHelpers.objectEntry.getObjectEntryByExternalReferenceCode(
+			'c/tests',
+			objectEntry.externalReferenceCode
+		)
+	).toEqual({status: 'NOT_FOUND'});
+
+	await companyExportImportPage.import(exportFilePath);
+
+	objectEntry = await apiHelpers.get(
+		`${apiHelpers.baseUrl}c/tests/by-external-reference-code/${objectEntry.externalReferenceCode}/?nestedFields=permissions`
+	);
+
+	expect(objectEntry).not.toEqual(
+		expect.objectContaining({
+			permissions: [
+				{
+					actionIds: ['VIEW'],
+					roleName: 'Guest',
+				},
+			],
+		})
+	);
 });

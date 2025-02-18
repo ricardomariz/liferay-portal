@@ -5,7 +5,10 @@
 
 package com.liferay.captcha.provider;
 
+import com.liferay.captcha.configuration.CaptchaConfiguration;
 import com.liferay.portal.kernel.captcha.Captcha;
+
+import java.util.Map;
 
 /**
  * @author Lily Chi
@@ -13,5 +16,9 @@ import com.liferay.portal.kernel.captcha.Captcha;
 public interface CaptchaProvider {
 
 	public Captcha getCaptcha();
+
+	public CaptchaConfiguration getCaptchaConfiguration();
+
+	public Map<String, Captcha> getCaptchas();
 
 }

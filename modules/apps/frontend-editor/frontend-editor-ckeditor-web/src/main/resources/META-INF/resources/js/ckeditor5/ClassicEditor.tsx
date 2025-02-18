@@ -13,6 +13,7 @@ import {
 	Essentials,
 	Font,
 	GeneralHtmlSupport,
+	Heading,
 	HorizontalLine,
 	Indent,
 	Italic,
@@ -23,6 +24,7 @@ import {
 	RemoveFormat,
 	SourceEditing,
 	Strikethrough,
+	Style,
 	Table,
 	TableCaption,
 	TableProperties,
@@ -30,6 +32,8 @@ import {
 	Underline,
 } from 'ckeditor5';
 import React from 'react';
+
+import '../../css/ckeditor5/editor.scss';
 
 const ClassicEditor = ({config}: {config?: EditorConfig}) => {
 	const defaultConfig: EditorConfig = {
@@ -40,6 +44,7 @@ const ClassicEditor = ({config}: {config?: EditorConfig}) => {
 			Essentials,
 			Font,
 			GeneralHtmlSupport,
+			Heading,
 			HorizontalLine,
 			Indent,
 			Italic,
@@ -50,6 +55,7 @@ const ClassicEditor = ({config}: {config?: EditorConfig}) => {
 			RemoveFormat,
 			SourceEditing,
 			Strikethrough,
+			Style,
 			Table,
 			TableCaption,
 			TableProperties,

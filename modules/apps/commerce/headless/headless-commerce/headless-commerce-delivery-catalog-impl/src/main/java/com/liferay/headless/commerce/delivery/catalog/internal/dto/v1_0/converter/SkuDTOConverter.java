@@ -72,8 +72,6 @@ import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
-import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
-import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.util.TransformUtil;
 
 import java.math.BigDecimal;
@@ -145,16 +143,23 @@ public class SkuDTOConverter implements DTOConverter<CPInstance, Sku> {
 		return new Sku() {
 			{
 				setAvailability(
-					() -> _getAvailability(
-						accountEntry.getAccountEntryId(),
-						cpInstance.getGroupId(),
-						commerceContext.getCommerceChannelGroupId(),
-						skuDTOConverterContext.getCompanyId(),
-						commerceContext.getCPConfigurationListId(
-							cpInstance.getGroupId()),
-						cpInstance, cpInstance.getSku(),
-						skuDTOConverterContext.getUnitOfMeasureKey(),
-						skuDTOConverterContext.getLocale()));
+					() -> {
+						long accountEntryId = 0;
+
+						if (accountEntry != null) {
+							accountEntryId = accountEntry.getAccountEntryId();
+						}
+
+						return _getAvailability(
+							accountEntryId, cpInstance.getGroupId(),
+							commerceContext.getCommerceChannelGroupId(),
+							skuDTOConverterContext.getCompanyId(),
+							commerceContext.getCPConfigurationListId(
+								cpInstance.getGroupId()),
+							cpInstance, cpInstance.getSku(),
+							skuDTOConverterContext.getUnitOfMeasureKey(),
+							skuDTOConverterContext.getLocale());
+					});
 				setBackOrderAllowed(
 					() -> {
 						CPDefinitionInventory cpDefinitionInventory =
@@ -669,11 +674,10 @@ public class SkuDTOConverter implements DTOConverter<CPInstance, Sku> {
 						}
 
 						return _productConfigurationDTOConverter.toDTO(
-							new DefaultDTOConverterContext(
-								_dtoConverterRegistry,
+							new ProductConfigurationDTOConverterContext(
+								commerceContext,
 								replacementCPDefinition.getCPDefinitionId(),
-								skuDTOConverterContext.getLocale(), null,
-								null));
+								skuDTOConverterContext.getLocale()));
 					});
 				setSku(replacementCPInstance::getSku);
 				setSkuExternalReferenceCode(
@@ -965,9 +969,6 @@ public class SkuDTOConverter implements DTOConverter<CPInstance, Sku> {
 	@Reference
 	private CPInstanceUnitOfMeasureLocalService
 		_cpInstanceUnitOfMeasureLocalService;
-
-	@Reference
-	private DTOConverterRegistry _dtoConverterRegistry;
 
 	@Reference
 	private JSONFactory _jsonFactory;

@@ -60,6 +60,20 @@ components:
                                 $ref: "#/components/schemas/WebUrl"
                             type: array
                     type: object
+                accountGroupBriefs:
+                    description:
+                        A list of the account's account groups.
+                    items:
+                        $ref: "#/components/schemas/AccountGroupBrief"
+                    readOnly: true
+                    type: array
+                accountRoles:
+                    description:
+                        A list of the account's roles.
+                    items:
+                        $ref: "#/components/schemas/AccountRole"
+                    readOnly: true
+                    type: array
                 accountUserAccounts:
                     description:
                         The users linked to the account
@@ -76,6 +90,11 @@ components:
                         Block of actions allowed by the user making the request.
                     readOnly: true
                     type: object
+                creator:
+                    $ref: "#/components/schemas/Creator"
+                    description:
+                        The user who created the account.
+                    readOnly: true
                 customFields:
                     items:
                         $ref: "#/components/schemas/CustomField"
@@ -123,6 +142,12 @@ components:
                     format: int64
                     readOnly: true
                     type: integer
+                keywords:
+                    description:
+                        A list of keywords describing the account.
+                    items:
+                        type: string
+                    type: array
                 logoExternalReferenceCode:
                     example: "AB-34098-789-N"
                     type: string
@@ -154,6 +179,10 @@ components:
                 parentAccountId:
                     format: int64
                     type: integer
+                permissions:
+                    items:
+                        type: permission
+                    type: array
                 postalAddresses:
                     description:
                         The addresses linked to the account
@@ -165,6 +194,13 @@ components:
                 taxId:
                     example: Abcd1234
                     type: string
+                taxonomyCategoryBriefs:
+                    description:
+                        The categories associated with this account.
+                    items:
+                        $ref: "#/components/schemas/TaxonomyCategoryBrief"
+                    readOnly: true
+                    type: array
                 type:
                     enum: [business, guest, person, supplier]
             type: object
@@ -199,6 +235,13 @@ components:
             type: object
         AccountGroup:
             properties:
+                accountBriefs:
+                    description:
+                        The list of accounts associated with this account group.
+                    items:
+                        $ref: "#/components/schemas/AccountBrief"
+                    readOnly: true
+                    type: array
                 actions:
                     additionalProperties:
                         additionalProperties:
@@ -209,6 +252,11 @@ components:
                         Block of actions allowed by the user making the request.
                     readOnly: true
                     type: object
+                creator:
+                    $ref: "#/components/schemas/Creator"
+                    description:
+                        The user who created the account group.
+                    readOnly: true
                 customFields:
                     items:
                         $ref: "#/components/schemas/CustomField"
@@ -228,6 +276,25 @@ components:
                 description:
                     example: AccountGroup Description
                     type: string
+                externalReferenceCode:
+                    example: AB-34098-789-N
+                    type: string
+                id:
+                    example: 30130
+                    format: int64
+                    minimum: 0
+                    readOnly: true
+                    type: integer
+                name:
+                    example: AccountGroup Name
+                    type: string
+                permissions:
+                    items:
+                        type: permission
+                    type: array
+            type: object
+        AccountGroupBrief:
+            properties:
                 externalReferenceCode:
                     example: AB-34098-789-N
                     type: string
@@ -274,6 +341,28 @@ components:
                     format: int64
                     readOnly: true
                     type: integer
+                roleType:
+                    description:
+                        The role's type.
+                    readOnly: true
+                    type: integer
+        AssetLibraryBrief:
+            properties:
+                externalReferenceCode:
+                    description:
+                        The asset library's external reference code.
+                    type: string
+                groupId:
+                    description:
+                        The asset library's group ID.
+                    format: int64
+                    readOnly: true
+                    type: integer
+                name:
+                    description:
+                        The asset library's name.
+                    readOnly: true
+                    type: string
         Creator:
             description:
                 Represents the user who created/authored the content. Properties follow the
@@ -405,6 +494,13 @@ components:
                 Represents an organization. Organizations can contain other organizations (suborganizations). Properties
                 follow the [Organization](https://schema.org/Organization) specification.
             properties:
+                accountBriefs:
+                    description:
+                        The list of accounts associated with this organization.
+                    items:
+                        $ref: "#/components/schemas/AccountBrief"
+                    readOnly: true
+                    type: array
                 actions:
                     additionalProperties:
                         additionalProperties:
@@ -420,6 +516,11 @@ components:
                     description:
                         The text of a comment associated with the organization.
                     type: string
+                creator:
+                    $ref: "#/components/schemas/Creator"
+                    description:
+                        The user who created the organization.
+                    readOnly: true
                 customFields:
                     items:
                         $ref: "#/components/schemas/CustomField"
@@ -559,6 +660,17 @@ components:
                     $ref: "#/components/schemas/Organization"
                     description:
                         The organization's parent organization.
+                permissions:
+                    items:
+                        type: permission
+                    type: array
+                roleBriefs:
+                    description:
+                        The list of roles associated with this organization.
+                    items:
+                        $ref: "#/components/schemas/RoleBrief"
+                    readOnly: true
+                    type: array
                 services:
                     description:
                         A list of services the organization provides. This follows the
@@ -592,10 +704,24 @@ components:
                                 type: string
                         type: object
                     type: array
+                taxonomyCategoryBriefs:
+                    description:
+                        The categories associated with this organization.
+                    items:
+                        $ref: "#/components/schemas/TaxonomyCategoryBrief"
+                    readOnly: true
+                    type: array
                 treePath:
                     description:
                         The tree path of the organization.
                     type: string
+                userAccountBriefs:
+                    description:
+                        The list of users associated with this organization.
+                    items:
+                        $ref: "#/components/schemas/UserAccountBrief"
+                    readOnly: true
+                    type: array
                 userAccounts:
                     items:
                         $ref: "#/components/schemas/UserAccount"
@@ -791,6 +917,10 @@ components:
                     additionalProperties:
                         type: string
                     type: object
+                permissions:
+                    items:
+                        type: permission
+                    type: array
                 rolePermissions:
                     items:
                         $ref: "#/components/schemas/RolePermission"
@@ -827,6 +957,11 @@ components:
                         type: string
                     readOnly: true
                     type: object
+                roleType:
+                    description:
+                        The role's type.
+                    readOnly: true
+                    type: integer
             type: object
         RolePermission:
             properties:
@@ -1045,6 +1180,45 @@ components:
                 siteId:
                     format: int64
                     type: integer
+        TaxonomyCategoryBrief:
+            properties:
+                embeddedTaxonomyCategory:
+                    description:
+                        Optional field with the embedded taxonomy category, can be embedded with nestedFields
+                    readOnly: true
+                    type: object
+                taxonomyCategoryId:
+                    description:
+                        The category's ID.
+                    format: int64
+                    readOnly: true
+                    type: integer
+                taxonomyCategoryName:
+                    description:
+                        The category's name.
+                    readOnly: true
+                    type: string
+                taxonomyCategoryName_i18n:
+                    additionalProperties:
+                        type: string
+                    description:
+                        The localized category's names.
+                    readOnly: true
+                    type: object
+                taxonomyCategoryReference:
+                    description:
+                        A unique reference to a taxonomy category.
+                    properties:
+                        externalReferenceCode:
+                            description:
+                                The taxonomy category's external reference code.
+                            type: string
+                        siteKey:
+                            description:
+                                The key of the site or asset library where the taxonomy category is located.
+                            type: string
+                    type: object
+            type: object
         Ticket:
             properties:
                 expirationDate:
@@ -1088,11 +1262,23 @@ components:
                     description:
                         The user's alias or screen name.
                     type: string
+                assetLibraryBriefs:
+                    description:
+                        The user's asset libraries.
+                    items:
+                        $ref: "#/components/schemas/AssetLibraryBrief"
+                    readOnly: true
+                    type: array
                 birthDate:
                     description:
                         The user's date of birth.
                     format: date
                     type: string
+                creator:
+                    $ref: "#/components/schemas/Creator"
+                    description:
+                        The user who created this user account.
+                    readOnly: true
                 currentPassword:
                     description:
                         The user's current password. Used to authenticate a user when they attempt to update their own
@@ -1218,6 +1404,10 @@ components:
                         The user's password.
                     type: string
                     writeOnly: true
+                permissions:
+                    items:
+                        type: permission
+                    type: array
                 profileURL:
                     description:
                         A relative URL to the user's profile.
@@ -1242,6 +1432,13 @@ components:
                         The user's status.
                     enum: [Active, Inactive]
                     type: string
+                taxonomyCategoryBriefs:
+                    description:
+                        The categories associated with this user.
+                    items:
+                        $ref: "#/components/schemas/TaxonomyCategoryBrief"
+                    readOnly: true
+                    type: array
                 userAccountContactInformation:
                     description:
                         The user's contact information.
@@ -5703,6 +5900,10 @@ paths:
             parameters:
                 - in: query
                   name: fields
+                  schema:
+                      type: string
+                - in: query
+                  name: filter
                   schema:
                       type: string
                 - in: query

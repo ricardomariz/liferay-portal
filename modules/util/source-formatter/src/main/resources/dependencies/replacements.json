@@ -3427,6 +3427,47 @@
 	},
 	{
 		"classNames": [
+			"ArchivedSettingsFactory"
+		],
+		"from": "getSettings(SettingsLocator paramName)",
+		"issueKey": "LPD-38353",
+		"newImports": [
+			"com.liferay.portal.kernel.settings.FallbackKeysSettingsUtil"
+		],
+		"to": "FallbackKeysSettingsUtil.getSettings(param#0#)"
+	},
+	{
+		"classNames": "CommercePaymentMethodGroupRel",
+		"from": "getEngineKey",
+		"issueKey": "LPD-40549",
+		"to": "getPaymentIntegrationKey"
+	},
+	{
+		"from": "CommercePaymentConstants.COMMERCE_PAYMENT_METHOD_TYPE_OFFLINE",
+		"issueKey": "LPD-40553",
+		"newImports": [
+			"com.liferay.commerce.constants.CommercePaymentMethodConstants"
+		],
+		"to": "CommercePaymentMethodConstants.TYPE_OFFLINE"
+	},
+	{
+		"from": "CommercePaymentConstants.COMMERCE_PAYMENT_METHOD_TYPE_ONLINE_REDIRECT",
+		"issueKey": "LPD-40553",
+		"newImports": [
+			"com.liferay.commerce.constants.CommercePaymentMethodConstants"
+		],
+		"to": "CommercePaymentMethodConstants.TYPE_ONLINE_REDIRECT"
+	},
+	{
+		"from": "CommercePaymentConstants.COMMERCE_PAYMENT_METHOD_TYPE_ONLINE_STANDARD",
+		"issueKey": "LPD-40553",
+		"newImports": [
+			"com.liferay.commerce.constants.CommercePaymentMethodConstants"
+		],
+		"to": "CommercePaymentMethodConstants.TYPE_ONLINE_STANDARD"
+	},
+	{
+		"classNames": [
 			"LayoutLocalService",
 			"LayoutLocalServiceUtil",
 			"LayoutService",
@@ -3449,6 +3490,86 @@
 			"com.liferay.portal.kernel.security.auth.CompanyThreadLocal"
 		],
 		"to": "getListType(CompanyThreadLocal.getCompanyId(), param#0#, param#1#)"
+	},
+	{
+		"classNames": [
+			"DDMTemplateLocalService",
+			"DDMTemplateLocalServiceUtil"
+		],
+		"from": "addTemplate(long paramName, long paramName, long paramName, long paramName, long paramName, Map<Locale, String> paramName, Map<Locale, String> paramName, String paramName, String paramName, String paramName, String paramName, ServiceContext paramName)",
+		"issueKey": "LPD-46890",
+		"to": "addTemplate(null, param#0#, param#1#, param#2#, param#3#, param#4#, param#5#, param#6#, param#7#, param#8#, param#9#, param#10#, param#11#)"
+	},
+	{
+		"classNames": [
+			"DDMTemplateService",
+			"DDMTemplateServiceUtil"
+		],
+		"from": "addTemplate(long paramName, long paramName, long paramName, long paramName, Map<Locale, String> paramName, Map<Locale, String> paramName, String paramName, String paramName, String paramName, String paramName, ServiceContext paramName)",
+		"issueKey": "LPD-46890",
+		"to": "addTemplate(null, param#0#, param#1#, param#2#, param#3#, param#4#, param#5#, param#6#, param#7#, param#8#, param#9#, param#10#)"
+	},
+	{
+		"classNames": [
+			"SiteNavigationMenuLocalService",
+			"SiteNavigationMenuLocalServiceUtil"
+		],
+		"from": "addSiteNavigationMenu(long paramName, long paramName, String paramName, int paramName, boolean paramName, ServiceContext paramName)",
+		"issueKey": "LPD-47113",
+		"to": "addSiteNavigationMenu(null, param#0#, param#1#, param#2#, param#3#, param#4#, param#5#)"
+	},
+	{
+		"classNames": [
+			"SiteNavigationMenuService",
+			"SiteNavigationMenuServiceUtil"
+		],
+		"from": "addSiteNavigationMenu(long paramName, String paramName, int paramName, boolean paramName, ServiceContext paramName)",
+		"issueKey": "LPD-47113",
+		"to": "addSiteNavigationMenu(null, param#0#, param#1#, param#2#, param#3#, param#4#)"
+	},
+	{
+		"classNames": [
+			"SiteNavigationMenuItemLocalService",
+			"SiteNavigationMenuItemLocalServiceUtil"
+		],
+		"from": "addSiteNavigationMenuItem(long paramName, long paramName, long paramName, long paramName, String paramName, int paramName, String paramName, ServiceContext paramName)",
+		"issueKey": "LPD-47115",
+		"to": "addSiteNavigationMenuItem(null, param#0#, param#1#, param#2#, param#3#, param#4#, param#5#, param#6#, param#7#)"
+	},
+	{
+		"classNames": [
+			"SiteNavigationMenuItemService",
+			"SiteNavigationMenuItemServiceUtil"
+		],
+		"from": "addSiteNavigationMenuItem(long paramName, long paramName, long paramName, String paramName, String paramName, ServiceContext paramName)",
+		"issueKey": "LPD-47115",
+		"to": "addSiteNavigationMenuItem(null, param#0#, param#1#, param#2#, param#3#, param#4#, param#5#)"
+	},
+	{
+		"classNames": [
+			"RoleLocalService",
+			"RoleLocalServiceUtil"
+		],
+		"from": "addRole(long paramName, String paramName, long paramName, String paramName, Map<Locale, String> paramName, Map<Locale, String> paramName, int paramName, String paramName, ServiceContext paramName)",
+		"issueKey": "LPD-47117",
+		"to": "addRole(null, param#0#, param#1#, param#2#, param#3#, param#4#, param#5#, param#6#, param#7#, param#8#)"
+	},
+	{
+		"classNames": [
+			"RoleService",
+			"RoleServiceUtil"
+		],
+		"from": "addRole(String paramName, long paramName, String paramName, Map<Locale, String> paramName, Map<Locale, String> paramName, int paramName, String paramName, ServiceContext paramName)",
+		"issueKey": "LPD-47117",
+		"to": "addRole(null, param#0#, param#1#, param#2#, param#3#, param#4#, param#5#, param#6#, param#7#)"
+	},
+	{
+		"classNames": [
+			"PortletDisplay"
+		],
+		"from": "regex:(?<variableName>\\w+)\\.(?<prefixMethodName>getPortlet|setPortlet)Setup",
+		"issueKey": "LPD-47124",
+		"to": "${variableName}.${prefixMethodName}Preferences"
 	},
 	{
 		"from": "CookieKeys.COMMERCE_CONTINUE_AS_GUEST",
@@ -3577,9 +3698,9 @@
 		"classNames": [
 			"CountryService"
 		],
-		"from": "fetchCommerceCountry",
+		"from": "fetchCountry(long param, String param)",
 		"issueKey": "LPS-187663",
-		"to": "fetchCountryByA2"
+		"to": "fetchCountryByA2(param#0#, param#1#)"
 	},
 	{
 		"from": "CommerceShippingOption(String paramName, String paramName, BigDecimal paramName)",
@@ -3912,7 +4033,7 @@
 		"classNames": [
 			"CommerceAccountHelper"
 		],
-		"from": "getCurrentCommerceAccount(HttpServletRequest paramName)",
+		"from": "getCurrentAccountEntry(HttpServletRequest paramName)",
 		"issueKey": "LPS-196638",
 		"to": "getCurrentAccountEntry(0, param#0#)"
 	},
@@ -3932,7 +4053,7 @@
 			"AccountGroupRelService",
 			"AccountGroupRelServiceUtil"
 		],
-		"from": "addCommerceAccountGroupRel(String paramName, long paramName, long paramName, ServiceContext paramName)",
+		"from": "addAccountGroupRel(String paramName, long paramName, long paramName, ServiceContext paramName)",
 		"issueKey": "LPS-196652",
 		"to": "addAccountGroupRel(param#2#, param#0#, param#1#)"
 	},
@@ -3983,7 +4104,10 @@
 		],
 		"from": "deleteCommerceOrderItems(long paramName)",
 		"issueKey": "LPS-197459",
-		"to": "deleteCommerceOrderItems(0, param#0#)"
+		"newImports": [
+			"com.liferay.portal.kernel.service.ServiceContextThreadLocal"
+		],
+		"to": "deleteCommerceOrderItems(ServiceContextThreadLocal.getServiceContext().getUserId(), param#0#)"
 	},
 	{
 		"classNames": [

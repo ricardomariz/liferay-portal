@@ -149,7 +149,6 @@ describe('RulesSidebar', () => {
 		renderComponent();
 
 		selectPickerOption('select-action', 'show');
-		selectPickerOption('select-item-for-the-action', 'fragment');
 		selectPickerOption('select-fragment', 'containercillo');
 
 		expect(
@@ -165,7 +164,6 @@ describe('RulesSidebar', () => {
 		selectPickerOption('select-user', 'user1');
 
 		selectPickerOption('select-action', 'show');
-		selectPickerOption('select-item-for-the-action', 'fragment');
 		selectPickerOption('select-fragment', 'containercillo');
 
 		fireEvent.click(screen.getByText('save'));
@@ -174,16 +172,18 @@ describe('RulesSidebar', () => {
 			expect.objectContaining({
 				actions: [
 					expect.objectContaining({
-						action: 'fragment',
 						itemId: 'item1',
 						type: 'show',
 					}),
 				],
 				conditions: [
 					expect.objectContaining({
-						condition: 'user',
+						field: 'user',
+						options: {
+							type: 'equal',
+							value: 'userId1',
+						},
 						type: 'user',
-						value: 'userId1',
 					}),
 				],
 				name: 'rule',
@@ -210,7 +210,6 @@ describe('RulesSidebar', () => {
 		renderComponent();
 
 		selectPickerOption('select-action', 'show');
-		selectPickerOption('select-item-for-the-action', 'fragment');
 		selectPickerOption('select-fragment', 'containercillo');
 
 		act(() => {

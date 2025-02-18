@@ -497,6 +497,8 @@ test('LPD-42940 Can Bulk Activate Users', async ({
 	page,
 	usersAndOrganizationsPage,
 }) => {
+	page.on('dialog', async (dialog) => await dialog.accept());
+
 	const user1 = await apiHelpers.headlessAdminUser.postUserAccount();
 	const user2 = await apiHelpers.headlessAdminUser.postUserAccount();
 	const user3 = await apiHelpers.headlessAdminUser.postUserAccount();
@@ -634,4 +636,103 @@ test('LPD-35634 Organization Administrator can activate and deactivate users', a
 			'Active'
 		)
 	).toBeVisible();
+});
+
+test(
+	'Bulk delete users succeed',
+	{tag: '@LPD-47050'},
+	async ({apiHelpers, page, usersAndOrganizationsPage}) => {
+		page.on('dialog', async (dialog) => await dialog.accept());
+
+		const user1 = await apiHelpers.headlessAdminUser.postUserAccount();
+		const user2 = await apiHelpers.headlessAdminUser.postUserAccount();
+		const user3 = await apiHelpers.headlessAdminUser.postUserAccount();
+		const user4 = await apiHelpers.headlessAdminUser.postUserAccount();
+		const user5 = await apiHelpers.headlessAdminUser.postUserAccount();
+
+		await usersAndOrganizationsPage.goToUsers();
+
+		const userNames: string[] = [user1.name, user2.name, user3.name];
+
+		await usersAndOrganizationsPage.deActivateUsers(userNames);
+
+		await usersAndOrganizationsPage.filterUsers('inactive');
+
+		for (const userName of userNames) {
+			await expect(
+				usersAndOrganizationsPage.usersTableCell(userName)
+			).toBeVisible();
+		}
+
+		await usersAndOrganizationsPage.deleteUsers(userNames);
+
+		for (const userName of userNames) {
+			await expect(
+				usersAndOrganizationsPage.usersTableCell(userName)
+			).not.toBeVisible();
+		}
+
+		await usersAndOrganizationsPage.goToUsers();
+
+		for (const userName of userNames) {
+			await expect(
+				usersAndOrganizationsPage.usersTableCell(userName)
+			).not.toBeVisible();
+		}
+
+		for (const userName of [user4.name, user5.name]) {
+			await expect(
+				usersAndOrganizationsPage.usersTableCell(userName)
+			).toBeVisible();
+		}
+	}
+);
+
+test('LPD-48741 User organizations list contains no duplicate', async ({
+	apiHelpers,
+	editUserPage,
+	usersAndOrganizationsPage,
+}) => {
+	const parentOrganization =
+		await apiHelpers.headlessAdminUser.postOrganization();
+	const organization1 = await apiHelpers.headlessAdminUser.postOrganization({
+		parentOrganization: {
+			externalReferenceCode: parentOrganization.externalReferenceCode,
+		},
+	});
+	const organization2 = await apiHelpers.headlessAdminUser.postOrganization({
+		parentOrganization: {
+			externalReferenceCode: parentOrganization.externalReferenceCode,
+		},
+	});
+
+	await apiHelpers.headlessAdminUser.assignUserToOrganizationByEmailAddress(
+		organization1.id,
+		'test@liferay.com'
+	);
+
+	apiHelpers.data.push({
+		id: `${organization1.id}_test@liferay.com`,
+		type: 'organizationUserAccountAssociation',
+	});
+
+	await apiHelpers.headlessAdminUser.assignUserToOrganizationByEmailAddress(
+		organization2.id,
+		'test@liferay.com'
+	);
+
+	apiHelpers.data.push({
+		id: `${organization2.id}_test@liferay.com`,
+		type: 'organizationUserAccountAssociation',
+	});
+
+	await usersAndOrganizationsPage.goToUsers();
+
+	await (await usersAndOrganizationsPage.usersTableRowLink('test')).click();
+
+	await editUserPage.organizationsLink.click();
+
+	await expect(
+		editUserPage.organizationsTable.getByText(`${parentOrganization.name}`)
+	).toHaveCount(1);
 });

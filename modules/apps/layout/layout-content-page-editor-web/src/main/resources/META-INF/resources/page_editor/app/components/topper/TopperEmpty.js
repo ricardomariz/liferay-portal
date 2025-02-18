@@ -7,13 +7,15 @@ import ClayButton from '@clayui/button';
 import ClayDropDown, {Align} from '@clayui/drop-down';
 import ClayIcon from '@clayui/icon';
 import classNames from 'classnames';
-import {FeatureIndicator} from 'frontend-js-components-web';
 import React, {useRef} from 'react';
 
 import {getLayoutDataItemPropTypes} from '../../../prop_types/index';
 import {ITEM_ACTIVATION_ORIGINS} from '../../config/constants/itemActivationOrigins';
 import {useClipboard} from '../../contexts/ClipboardContext';
-import {useToControlsId} from '../../contexts/CollectionItemContext';
+import {
+	useCollectionItemIndex,
+	useToControlsId,
+} from '../../contexts/CollectionItemContext';
 import {
 	useActiveItemIds,
 	useHoverItem,
@@ -45,12 +47,20 @@ import {TopperLabel} from './TopperLabel';
 
 export default function ({activable = true, children, ...props}) {
 	const canUpdatePageStructure = useSelector(selectCanUpdatePageStructure);
+	const collectionItemIndex = useCollectionItemIndex();
 
-	if (!canUpdatePageStructure) {
+	if (
+		!canUpdatePageStructure ||
+		(collectionItemIndex > 0 && Liferay.FeatureFlags['LPD-18221'])
+	) {
 		return children;
 	}
 
-	if (Liferay.FeatureFlags['LPD-18221'] && activable) {
+	if (
+		(Liferay.FeatureFlags['LPD-18221'] ||
+			Liferay.FeatureFlags['LPD-31772']) &&
+		activable
+	) {
 		return (
 			<ActivableTopperEmptyWrapper {...props}>
 				{children}
@@ -147,6 +157,7 @@ const ActivableTopperEmpty = ({
 	isActive,
 	isHovered,
 	item,
+	options = [],
 	itemElement,
 	shouldIgnoreEvents = () => {},
 }) => {
@@ -263,6 +274,7 @@ const ActivableTopperEmpty = ({
 						isHovered={isHovered && !isActive}
 						item={item}
 						itemElement={itemElement}
+						options={options}
 					/>
 				) : null}
 			</>
@@ -270,7 +282,13 @@ const ActivableTopperEmpty = ({
 	});
 };
 
-const TopperEmptyLabel = ({isActive, isHovered, item, itemElement}) => {
+const TopperEmptyLabel = ({
+	isActive,
+	isHovered,
+	item,
+	itemElement,
+	options,
+}) => {
 	const clipboard = useClipboard();
 	const activeItemIds = useActiveItemIds();
 
@@ -359,11 +377,22 @@ const TopperEmptyLabel = ({isActive, isHovered, item, itemElement}) => {
 									symbolLeft="paste"
 								>
 									{Liferay.Language.get('paste')}
-
-									<span className="ml-2">
-										<FeatureIndicator type="beta" />
-									</span>
 								</ClayDropDown.Item>
+
+								{options.map((option, index) => (
+									<ClayDropDown.Item
+										disabled={option.disabled}
+										key={index}
+										onClick={(event) => {
+											event.stopPropagation();
+
+											option.onClick();
+										}}
+										symbolLeft={option.symbol}
+									>
+										{option.label}
+									</ClayDropDown.Item>
+								))}
 							</ClayDropDown.ItemList>
 						</ClayDropDown>
 					</li>

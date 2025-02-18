@@ -788,25 +788,9 @@ public class JenkinsResultsParserUtil {
 			httpURLConnection.setDoOutput(true);
 			httpURLConnection.setRequestMethod("POST");
 
-			HTTPAuthorization httpAuthorization = null;
-
-			String jenkinsAdminUserName = getBuildProperty(
-				"jenkins.admin.user.name");
-
-			if (jenkinsMasterName.contains("test-1-0")) {
-				String jenkinsAdminUserPassword = getBuildProperty(
-					"jenkins.admin.user.password");
-
-				httpAuthorization = new BasicHTTPAuthorization(
-					jenkinsAdminUserPassword, jenkinsAdminUserName);
-			}
-			else {
-				String jenkinsAdminUserToken = getBuildProperty(
-					"jenkins.admin.user.token");
-
-				httpAuthorization = new BasicHTTPAuthorization(
-					jenkinsAdminUserToken, jenkinsAdminUserName);
-			}
+			HTTPAuthorization httpAuthorization = new BasicHTTPAuthorization(
+				getBuildProperty("jenkins.admin.user.token"),
+				getBuildProperty("jenkins.admin.user.name"));
 
 			httpURLConnection.setRequestProperty(
 				"Authorization", httpAuthorization.toString());
@@ -1279,7 +1263,7 @@ public class JenkinsResultsParserUtil {
 	public static String getBuildDirPath() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("/tmp/jenkins/");
+		sb.append("/opt/dev/projects/github/liferay-jenkins-ee/tmp/jenkins/");
 
 		String topLevelBuildURL = System.getenv("TOP_LEVEL_BUILD_URL");
 
@@ -1315,7 +1299,7 @@ public class JenkinsResultsParserUtil {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("/tmp/jenkins/");
+		sb.append("/opt/dev/projects/github/liferay-jenkins-ee/tmp/jenkins/");
 
 		if (!isCINode() || isNullOrEmpty(buildNumber) ||
 			isNullOrEmpty(jobName) || isNullOrEmpty(masterHostname)) {
@@ -4233,6 +4217,13 @@ public class JenkinsResultsParserUtil {
 	public static void pullDockerImageDependencies(
 		File baseDir, String[] excludedDockerImageNames) {
 
+		pullDockerImageDependencies(baseDir, excludedDockerImageNames, null);
+	}
+
+	public static void pullDockerImageDependencies(
+		File baseDir, String[] excludedDockerImageNames,
+		String ecrRegistryName) {
+
 		String dockerEnabled = System.getenv("LIFERAY_DOCKER_ENABLED");
 
 		if (isNullOrEmpty(dockerEnabled) || !dockerEnabled.equals("true")) {
@@ -4271,15 +4262,64 @@ public class JenkinsResultsParserUtil {
 			}
 
 			try {
-				Process process = executeBashCommands(
-					"docker pull " + dockerImageName);
+				Process process = null;
+
+				if (!isNullOrEmpty(ecrRegistryName)) {
+					Matcher dockerImageNameMatcher =
+						_dockerImageNamePattern.matcher(dockerImageName);
+
+					if (!dockerImageNameMatcher.find()) {
+						continue;
+					}
+
+					StringBuilder sb = new StringBuilder();
+
+					sb.append(ecrRegistryName);
+					sb.append("/");
+
+					String dockerImageRepository = dockerImageNameMatcher.group(
+						"repository");
+
+					if (isNullOrEmpty(dockerImageRepository)) {
+						sb.append("library");
+					}
+					else {
+						sb.append(dockerImageRepository);
+					}
+
+					sb.append("/");
+
+					sb.append(dockerImageNameMatcher.group("name"));
+
+					String dockerImageVersion = dockerImageNameMatcher.group(
+						"version");
+
+					if (!isNullOrEmpty(dockerImageVersion)) {
+						sb.append(":");
+						sb.append(dockerImageVersion);
+					}
+
+					process = executeBashCommands(
+						"docker pull " + sb,
+						"docker tag " + sb + " " + dockerImageName);
+				}
+				else {
+					process = executeBashCommands(
+						"docker pull " + dockerImageName);
+				}
 
 				if (process.exitValue() != 0) {
 					System.out.println(
 						"Unable to pull Docker image " + dockerImageName);
 
+					System.out.println(
+						readInputStream(process.getErrorStream(), true));
+
 					return;
 				}
+
+				System.out.println(
+					readInputStream(process.getInputStream(), true));
 
 				pulledDockerImageNames.add(dockerImageName);
 			}
@@ -6970,6 +7010,9 @@ public class JenkinsResultsParserUtil {
 	private static Long _currentTimeMillisDelta;
 	private static final Pattern _dockerFilePattern = Pattern.compile(
 		".*FROM (?<dockerImageName>[^\\s]+)( AS builder)?\\n[\\s\\S]*");
+	private static final Pattern _dockerImageNamePattern = Pattern.compile(
+		"((?<repository>[^/\\s]+)/)?(?<name>[^/:\\s]+)" +
+			"(:(?<version>[^:\\s]+))?");
 	private static final List<String> _forbiddenRedactTokens = Arrays.asList(
 		"admin", "liferay", "test");
 	private static JSONArray _gitDirectoriesJSONArray;

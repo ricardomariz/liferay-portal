@@ -19,7 +19,7 @@ import {liferayConfig} from '../../liferay.config';
 import {checkAccessibility} from '../../utils/checkAccessibility';
 import {clickAndExpectToBeVisible} from '../../utils/clickAndExpectToBeVisible';
 import getRandomString from '../../utils/getRandomString';
-import performLogin, {performLogout} from '../../utils/performLogin';
+import {performLoginViaApi, performLogout} from '../../utils/performLogin';
 import {selectAndExpectToHaveValue} from '../../utils/selectAndExpectToHaveValue';
 import {waitForAlert} from '../../utils/waitForAlert';
 import {pagesPagesTest} from './fixtures/pagesPagesTest';
@@ -1205,7 +1205,7 @@ test.describe('SEO configuration', () => {
 			`${liferayConfig.environment.baseUrl}/web${site.friendlyUrlPath}`
 		);
 
-		await performLogin(page, 'test');
+		await performLoginViaApi(page, 'test');
 
 		// Go to SEO
 
@@ -1269,7 +1269,7 @@ test.describe('SEO configuration', () => {
 
 		// Edit custom meta tags
 
-		await page.getByLabel('Add Custom Tags').waitFor();
+		await page.getByRole('button', {name: 'Add'}).waitFor();
 
 		const property1 = page.getByLabel('Property', {exact: true}).nth(0);
 
@@ -1287,7 +1287,7 @@ test.describe('SEO configuration', () => {
 
 		// Add new custom meta tag
 
-		await page.getByLabel('Add Custom Tags').click();
+		await page.getByRole('button', {name: 'Add'}).click();
 
 		// Edit new custom meta tag
 
@@ -1307,9 +1307,16 @@ test.describe('SEO configuration', () => {
 
 		// Switch language
 
-		await page.getByRole('button').filter({hasText: 'en-US'}).click();
-
-		await page.getByRole('link').filter({hasText: 'es-ES'}).click();
+		await clickAndExpectToBeVisible({
+			autoClick: true,
+			target: page.getByRole('menuitem', {
+				name: 'Not translated into Spanish.',
+			}),
+			trigger: page
+				.getByRole('button')
+				.filter({hasText: 'en-US'})
+				.first(),
+		});
 
 		// Translate custom meta tags
 
@@ -1392,13 +1399,15 @@ test.describe('SEO configuration', () => {
 
 			const fileChooserPromise = page.waitForEvent('filechooser');
 
-			await page.getByLabel('Select Image', {exact: true}).click();
-
 			const iframe = page.frameLocator('iframe[title="Select Image"]');
 
-			await expect(
-				iframe.getByText('Drag & Drop Your Images or Browse to Upload')
-			).toBeVisible();
+			await clickAndExpectToBeVisible({
+				target: iframe.getByText(
+					'Drag & Drop Your Images or Browse to Upload'
+				),
+				timeout: 2000,
+				trigger: page.getByLabel('Select Image', {exact: true}),
+			});
 
 			await iframe
 				.getByText('Drag & Drop Your Images or Browse to Upload')

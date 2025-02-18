@@ -4,7 +4,7 @@
 		"node-scripts": "./bin.js"
 	},
 	"com.liferay": {
-		"sha256": "fa7d3f842259dc5ba968a3ba2ffc1424e66bbf6b76cb3f1515af2cf869ac513f"
+		"sha256": "8bfdff517d274a24cc0edfef3693d5a1a7bb9791e8bffe1fc1fb7d52d6fc1b6f"
 	},
 	"dependencies": {
 		"@babel/preset-env": "7.24.7",
@@ -25,6 +25,8 @@
 		"@types/react-dom": "17.0.3",
 		"@types/vfile-message": "2.0.0",
 		"@typescript-eslint/parser": "^7.8.0",
+		"acorn": "^8.14.0",
+		"acorn-typescript": "^1.4.13",
 		"babel-eslint": "^10.1.0",
 		"babel-jest": "25.1.0",
 		"cosmiconfig": "^9.0.0",
@@ -32,7 +34,9 @@
 		"deepmerge": "^4.3.1",
 		"esbuild": "^0.20.2",
 		"esbuild-plugin-polyfill-node": "^0.3.0",
+		"escodegen": "^2.1.0",
 		"eslint": "7.32.0",
+		"estraverse": "^5.3.0",
 		"execa": "^9.1.0",
 		"fast-glob": "^3.3.2",
 		"gulp": "4.0.2",
@@ -49,6 +53,7 @@
 		"regenerator-runtime": "0.11.1",
 		"resolve": "^1.19.0",
 		"sass": "1.77.5",
+		"sonda": "^0.7.1",
 		"stylelint": "13.2.0",
 		"tar": "^7.2.0",
 		"typescript": "4.4.2",

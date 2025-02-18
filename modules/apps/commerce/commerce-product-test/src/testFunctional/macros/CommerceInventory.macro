@@ -235,7 +235,7 @@ definition {
 		var currentDateYY = DateUtil.getFormattedCurrentDate("MMM d, yy");
 
 		if (${warehouseWithLink} == "false") {
-			AssertElementPresent(locator1 = "//td[contains(.,'${warehouse}')]/following-sibling::div[1][contains(text(),'${currentDateYYYY}') or contains(text(),'${currentDateYY}')]");
+			AssertElementPresent(locator1 = "//td[contains(.,'${warehouse}')]/following-sibling::td[1][contains(text(),'${currentDateYYYY}') or contains(text(),'${currentDateYY}')]");
 
 			AssertElementPresent(
 				key_columnNumber = 2,
@@ -244,7 +244,7 @@ definition {
 				locator1 = "CommerceEntry#TABLE_SEARCH_BY_NAME_AND_COLUMN_CONTENT");
 		}
 		else {
-			AssertElementPresent(locator1 = "//*[contains(@class, 'table-list-title')]/a[text()='${warehouse}']/../../../div[2][contains(text(),'${currentDateYYYY}') or contains(text(),'${currentDateYY}')]");
+			AssertElementPresent(locator1 = "//*[contains(@class, 'table-list-title')]/a[text()='${warehouse}']/../../../td[2][contains(text(),'${currentDateYYYY}') or contains(text(),'${currentDateYY}')]");
 
 			AssertElementPresent(
 				key_entryTitle = ${warehouse},
