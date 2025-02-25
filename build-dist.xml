@@ -113,7 +113,7 @@
 		</sequential>
 	</macrodef>
 
-	<target name="attach-jakarta-ee-transformer-agent">
+	<target name="set-up-jakarta-ee-transformer-agent">
 		<if>
 			<and>
 				<equals arg1="${app.server.type}" arg2="tomcat" />
@@ -1105,7 +1105,7 @@ org.apache.level=WARNING]]>
 			</fileset>
 		</chmod>
 
-		<antcall target="attach-jakarta-ee-transformer-agent">
+		<antcall target="set-up-jakarta-ee-transformer-agent">
 			<param name="app.server.type" value="tomcat" />
 			<param name="app.server.version" value="${app.server.tomcat.version}" />
 		</antcall>
