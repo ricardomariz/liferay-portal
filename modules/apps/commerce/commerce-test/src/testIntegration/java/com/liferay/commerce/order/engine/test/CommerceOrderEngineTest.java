@@ -108,6 +108,12 @@ public class CommerceOrderEngineTest {
 
 		_user = UserTestUtil.addUser(_company);
 
+		_accountEntry = CommerceAccountTestUtil.addBusinessAccountEntry(
+			_user.getUserId(), RandomTestUtil.randomString(),
+			RandomTestUtil.randomString() + "@liferay.com",
+			RandomTestUtil.randomString(), new long[] {_user.getUserId()}, null,
+			_serviceContext);
+
 		_commerceCurrency = CommerceCurrencyTestUtil.addCommerceCurrency(
 			_group.getCompanyId());
 
@@ -120,12 +126,6 @@ public class CommerceOrderEngineTest {
 			CommerceChannelConstants.CHANNEL_TYPE_SITE, null,
 			_commerceCurrency.getCode(), _serviceContext);
 
-		_accountEntry = CommerceAccountTestUtil.addBusinessAccountEntry(
-			_user.getUserId(), RandomTestUtil.randomString(),
-			RandomTestUtil.randomString() + "@liferay.com",
-			RandomTestUtil.randomString(), new long[] {_user.getUserId()}, null,
-			_serviceContext);
-
 		_commerceOrder = CommerceTestUtil.addB2BCommerceOrder(
 			_group.getGroupId(), _user.getUserId(),
 			_accountEntry.getAccountEntryId(),
@@ -134,14 +134,13 @@ public class CommerceOrderEngineTest {
 		_commerceOrder = CommerceTestUtil.addCheckoutDetailsToCommerceOrder(
 			_commerceOrder, _user.getUserId(), false);
 
+		_commerceContext = new TestCommerceContext(
+			_commerceOrder.getAccountEntry(), _commerceCurrency,
+			_commerceChannel, _user, _group, _commerceOrder);
 		_commerceShipment1 = _commerceShipmentLocalService.addCommerceShipment(
 			_commerceOrder.getCommerceOrderId(), _serviceContext);
 		_commerceShipment2 = _commerceShipmentLocalService.addCommerceShipment(
 			_commerceOrder.getCommerceOrderId(), _serviceContext);
-
-		_commerceContext = new TestCommerceContext(
-			_commerceOrder.getAccountEntry(), _commerceCurrency,
-			_commerceChannel, _user, _group, _commerceOrder);
 
 		_originalName = PrincipalThreadLocal.getName();
 		_originalPermissionChecker =
