@@ -1171,8 +1171,8 @@ public class CommerceOrderEngineTest {
 	@Rule
 	public FrutillaRule frutillaRule = new FrutillaRule();
 
-	private static Company _company;
-	private static User _user;
+	private Company _company;
+	private User _user;
 
 	private AccountEntry _accountEntry;
 
