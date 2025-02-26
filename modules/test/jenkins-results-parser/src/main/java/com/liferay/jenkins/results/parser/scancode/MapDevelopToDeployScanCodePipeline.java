@@ -43,7 +43,7 @@ public class MapDevelopToDeployScanCodePipeline extends BaseScanCodePipeline {
 		String tomcatURL = getTomcatURL();
 
 		if (JenkinsResultsParserUtil.isNullOrEmpty(tomcatURL)) {
-			throw new NullPointerException("Tomcat url is null");
+			throw new NullPointerException("Tomcat URL is null");
 		}
 
 		List<String> inputURLs = new ArrayList<>();
@@ -64,9 +64,8 @@ public class MapDevelopToDeployScanCodePipeline extends BaseScanCodePipeline {
 				_buildURL, "TEST_PORTAL_RELEASE_VERSION");
 		SimpleDateFormat simpleDateFormat = getSimpleDateFormat();
 
-		JSONObject jsonObject = new JSONObject();
-
-		jsonObject.put(
+		return new JSONObject(
+		).put(
 			"execute_now", true
 		).put(
 			"input_urls", inputURLs
@@ -80,8 +79,6 @@ public class MapDevelopToDeployScanCodePipeline extends BaseScanCodePipeline {
 		).put(
 			"pipeline", "map_deploy_to_develop:Java,Javascript"
 		);
-
-		return jsonObject;
 	}
 
 	public String getReleaseTarballLink() {

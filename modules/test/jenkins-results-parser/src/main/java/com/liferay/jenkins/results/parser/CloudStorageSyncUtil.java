@@ -79,7 +79,7 @@ public class CloudStorageSyncUtil {
 		Process process = JenkinsResultsParserUtil.executeBashCommands(
 			true, commands.toArray(new String[0]));
 
-		Matcher matcher = _signedUrlPattern.matcher(
+		Matcher matcher = _signedURLPattern.matcher(
 			JenkinsResultsParserUtil.readInputStream(process.getInputStream()));
 
 		if (matcher.find()) {
@@ -179,7 +179,7 @@ public class CloudStorageSyncUtil {
 	}
 
 	private static final Properties _buildProperties;
-	private static final Pattern _signedUrlPattern = Pattern.compile(
+	private static final Pattern _signedURLPattern = Pattern.compile(
 		"https:\\/\\/storage.googleapis.com\\/.*");
 
 	static {
