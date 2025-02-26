@@ -5045,7 +5045,7 @@ public class DataFactory {
 			fragmentEntryLinkModel.getSegmentsExperienceId());
 
 		layoutPageTemplateStructureRelModel.setData(
-			_generateJsonData(fragmentEntryLinkModels));
+			_generateData(fragmentEntryLinkModels));
 		layoutPageTemplateStructureRelModel.setStatusByUserId(_sampleUserId);
 		layoutPageTemplateStructureRelModel.setStatusByUserName(
 			_SAMPLE_USER_NAME);
@@ -5111,7 +5111,7 @@ public class DataFactory {
 			fragmentEntryLinkModel.getSegmentsExperienceId());
 
 		layoutPageTemplateStructureRelModel.setData(
-			_generateJsonData(targetFragmentEntryLinkModels, templateFileName));
+			_generateData(targetFragmentEntryLinkModels, templateFileName));
 		layoutPageTemplateStructureRelModel.setStatusByUserId(_sampleUserId);
 		layoutPageTemplateStructureRelModel.setStatusByUserName(
 			_SAMPLE_USER_NAME);
@@ -8789,7 +8789,7 @@ public class DataFactory {
 		}
 	}
 
-	private String _generateJsonData(
+	private String _generateData(
 			List<FragmentEntryLinkModel> fragmentEntryLinkModels)
 		throws Exception {
 
@@ -8860,7 +8860,7 @@ public class DataFactory {
 		).toString();
 	}
 
-	private String _generateJsonData(
+	private String _generateData(
 			List<FragmentEntryLinkModel> fragmentEntryLinkModels,
 			String templateFileName)
 		throws Exception {
