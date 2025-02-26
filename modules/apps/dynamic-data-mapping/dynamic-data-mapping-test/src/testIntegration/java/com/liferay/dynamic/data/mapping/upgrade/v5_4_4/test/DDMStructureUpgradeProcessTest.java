@@ -66,7 +66,7 @@ public class DDMStructureUpgradeProcessTest {
 		_ddmStructureVersionLocalService.updateDDMStructureVersion(
 			ddmStructureVersion);
 
-		_createDDMStructure();
+		_addDDMStructure();
 
 		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
 				_CLASS_NAME, LoggerTestUtil.WARN)) {
@@ -89,7 +89,7 @@ public class DDMStructureUpgradeProcessTest {
 		}
 	}
 
-	private DDMStructure _createDDMStructure() throws Exception {
+	private DDMStructure _addDDMStructure() throws Exception {
 		DDMForm ddmForm = DDMFormTestUtil.createDDMForm("textField");
 
 		ddmForm.addDDMFormRule(
