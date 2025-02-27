@@ -50,7 +50,6 @@ public class AccountTicketsRestController extends BaseRestController {
 		try {
 			long zendeskOrganizationId = _fetchZendeskOrganizationId(
 				externalReferenceCode);
-
 			ZendeskTicket zendeskTicket = _zendeskService.getZendeskTicket(
 				ticketId);
 
