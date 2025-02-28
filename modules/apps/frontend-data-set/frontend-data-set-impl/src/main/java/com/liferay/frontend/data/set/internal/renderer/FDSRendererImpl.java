@@ -52,8 +52,6 @@ public class FDSRendererImpl implements FDSRenderer {
 			props.putAll(baseProps);
 		}
 
-		String finalPropsTransformer = propsTransformer;
-
 		if (fdsSerializer == null) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
@@ -99,11 +97,12 @@ public class FDSRendererImpl implements FDSRenderer {
 						fdsName, httpServletRequest)
 				).build());
 
-			finalPropsTransformer = fdsSerializer.serializePropsTransformer(
-				fdsName, httpServletRequest);
+			String tempPropsTransformer =
+				fdsSerializer.serializePropsTransformer(
+					fdsName, httpServletRequest);
 
-			if (Validator.isNull(finalPropsTransformer)) {
-				finalPropsTransformer = propsTransformer;
+			if (Validator.isNotNull(tempPropsTransformer)) {
+				propsTransformer = tempPropsTransformer;
 			}
 		}
 
@@ -111,7 +110,7 @@ public class FDSRendererImpl implements FDSRenderer {
 			_reactRenderer.renderReact(
 				new ComponentDescriptor(
 					"{FrontendDataSet} from frontend-data-set-web", componentId,
-					null, inline, finalPropsTransformer),
+					null, inline, propsTransformer),
 				props, httpServletRequest, writer);
 		}
 		catch (Exception exception) {
