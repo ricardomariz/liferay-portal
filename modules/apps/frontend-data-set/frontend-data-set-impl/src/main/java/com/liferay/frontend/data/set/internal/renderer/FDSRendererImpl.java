@@ -63,38 +63,34 @@ public class FDSRendererImpl implements FDSRenderer {
 			props.putAll(
 				HashMapBuilder.<String, Object>put(
 					"apiURL",
-					() -> fdsSerializer.serializeAPIURL(
-						fdsName, httpServletRequest)
+					fdsSerializer.serializeAPIURL(fdsName, httpServletRequest)
 				).put(
 					"bulkActions",
-					() -> fdsSerializer.serializeBulkActions(
+					fdsSerializer.serializeBulkActions(
 						fdsName, httpServletRequest)
 				).put(
 					"creationMenu",
-					() -> fdsSerializer.serializeCreationMenu(
+					fdsSerializer.serializeCreationMenu(
 						fdsName, httpServletRequest)
 				).put(
 					"currentURL", _portal.getCurrentURL(httpServletRequest)
 				).put(
 					"filters",
-					() -> fdsSerializer.serializeFilters(
-						fdsName, httpServletRequest)
+					fdsSerializer.serializeFilters(fdsName, httpServletRequest)
 				).put(
 					"itemsActions",
-					() -> fdsSerializer.serializeItemsActions(
+					fdsSerializer.serializeItemsActions(
 						fdsName, httpServletRequest)
 				).put(
 					"pagination",
-					() -> fdsSerializer.serializePagination(
+					fdsSerializer.serializePagination(
 						fdsName, httpServletRequest)
 				).put(
 					"sorts",
-					() -> fdsSerializer.serializeSorts(
-						fdsName, httpServletRequest)
+					fdsSerializer.serializeSorts(fdsName, httpServletRequest)
 				).put(
 					"views",
-					() -> fdsSerializer.serializeViews(
-						fdsName, httpServletRequest)
+					fdsSerializer.serializeViews(fdsName, httpServletRequest)
 				).build());
 
 			String tempPropsTransformer =
