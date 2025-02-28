@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
-import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Collections;
 import java.util.List;
@@ -175,7 +174,7 @@ public class SystemFDSSerializer
 
 				if (ArrayUtil.isEmpty(listOfItemsPerPage)) {
 					listOfItemsPerPage =
-						_defaultSystemFDSEntry.getListOfItemsPerPage();
+						_systemFDSEntry.getListOfItemsPerPage();
 				}
 
 				return JSONUtil.toJSONArray(
@@ -195,7 +194,7 @@ public class SystemFDSSerializer
 					return systemFDSEntry.getDefaultItemsPerPage();
 				}
 
-				return _defaultSystemFDSEntry.getDefaultItemsPerPage();
+				return _systemFDSEntry.getDefaultItemsPerPage();
 			}
 		);
 	}
@@ -360,52 +359,51 @@ public class SystemFDSSerializer
 		}
 	}
 
-	private static final SystemFDSEntry _defaultSystemFDSEntry =
-		new SystemFDSEntry() {
+	private static final SystemFDSEntry _systemFDSEntry = new SystemFDSEntry() {
 
-			@Override
-			public String getAdditionalAPIURLParameters() {
-				return "";
-			}
+		@Override
+		public String getAdditionalAPIURLParameters() {
+			return "";
+		}
 
-			public int getDefaultItemsPerPage() {
-				return SystemFDSEntry.super.getDefaultItemsPerPage();
-			}
+		public int getDefaultItemsPerPage() {
+			return SystemFDSEntry.super.getDefaultItemsPerPage();
+		}
 
-			@Override
-			public String getDescription() {
-				return "";
-			}
+		@Override
+		public String getDescription() {
+			return "";
+		}
 
-			public int[] getListOfItemsPerPage() {
-				return SystemFDSEntry.super.getListOfItemsPerPage();
-			}
+		public int[] getListOfItemsPerPage() {
+			return SystemFDSEntry.super.getListOfItemsPerPage();
+		}
 
-			@Override
-			public String getName() {
-				return "";
-			}
+		@Override
+		public String getName() {
+			return "";
+		}
 
-			@Override
-			public String getRESTApplication() {
-				return "";
-			}
+		@Override
+		public String getRESTApplication() {
+			return "";
+		}
 
-			@Override
-			public String getRESTEndpoint() {
-				return "";
-			}
+		@Override
+		public String getRESTEndpoint() {
+			return "";
+		}
 
-			@Override
-			public String getRESTSchema() {
-				return "";
-			}
+		@Override
+		public String getRESTSchema() {
+			return "";
+		}
 
-			@Override
-			public String getTitle() {
-				return "";
-			}
+		@Override
+		public String getTitle() {
+			return "";
+		}
 
-		};
+	};
 
 }
