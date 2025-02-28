@@ -62,9 +62,8 @@ public class SystemFDSSerializer
 	public boolean isAvailable(
 		String fdsName, HttpServletRequest httpServletRequest) {
 
-		if (Validator.isNotNull(
-				systemFDSEntryRegistry.getSystemFDSEntry(fdsName)) ||
-			Validator.isNotNull(fdsViewRegistry.getFDSViews(fdsName))) {
+		if ((systemFDSEntryRegistry.getSystemFDSEntry(fdsName) != null) ||
+			(fdsViewRegistry.getFDSViews(fdsName) != null)) {
 
 			return true;
 		}
