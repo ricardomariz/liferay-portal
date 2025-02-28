@@ -55,10 +55,10 @@ public class FDSRendererImpl implements FDSRenderer {
 		String finalPropsTransformer = propsTransformer;
 
 		if (fdsSerializer == null) {
-			if (_log.isInfoEnabled()) {
-				_log.info(
-					"No FDSSerializer is available for " + fdsName +
-						". Passing props through.");
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					"No frontend data set serializer is associated with " +
+						fdsName);
 			}
 		}
 		else {
