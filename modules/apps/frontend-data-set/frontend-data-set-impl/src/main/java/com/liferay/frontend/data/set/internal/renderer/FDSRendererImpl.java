@@ -115,7 +115,8 @@ public class FDSRendererImpl implements FDSRenderer {
 				props, httpServletRequest, writer);
 		}
 		catch (Exception exception) {
-			_log.error("Unable to render data set " + fdsName, exception);
+			_log.error(
+				"Unable to render frontend data set " + fdsName, exception);
 		}
 	}
 
