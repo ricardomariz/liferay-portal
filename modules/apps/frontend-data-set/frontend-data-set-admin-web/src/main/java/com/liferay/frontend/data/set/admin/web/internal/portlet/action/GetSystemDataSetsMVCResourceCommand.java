@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.Set;
-import java.util.TreeSet;
 
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
@@ -82,7 +81,7 @@ public class GetSystemDataSetsMVCResourceCommand
 			JSONUtil.put(
 				"items",
 				JSONUtil.toJSONArray(
-					new TreeSet<>(systemFDSNames),
+					systemFDSNames,
 					systemFDSName -> {
 						SystemFDSEntry systemFDSEntry =
 							_systemFDSEntryRegistry.getSystemFDSEntry(
