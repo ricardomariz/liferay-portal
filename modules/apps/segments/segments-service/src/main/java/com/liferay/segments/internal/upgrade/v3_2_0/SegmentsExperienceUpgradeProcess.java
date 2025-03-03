@@ -130,7 +130,9 @@ public class SegmentsExperienceUpgradeProcess extends UpgradeProcess {
 			}
 
 			preparedStatement2.executeBatch();
+
 			preparedStatement3.executeBatch();
+
 			preparedStatement4.executeBatch();
 		}
 	}
