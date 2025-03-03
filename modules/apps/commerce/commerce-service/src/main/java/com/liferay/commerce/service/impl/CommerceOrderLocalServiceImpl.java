@@ -2786,8 +2786,6 @@ public class CommerceOrderLocalServiceImpl
 		throws PortalException {
 
 		if (CommerceOrderThreadLocal.isSkipValidateAccountOrdersLimit()) {
-			CommerceOrderThreadLocal.setSkipValidateAccountOrdersLimit(false);
-
 			return;
 		}
 
