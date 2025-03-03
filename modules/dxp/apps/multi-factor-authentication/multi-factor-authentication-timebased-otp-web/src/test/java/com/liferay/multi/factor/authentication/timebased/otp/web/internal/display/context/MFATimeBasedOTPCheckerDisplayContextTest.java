@@ -70,8 +70,7 @@ public class MFATimeBasedOTPCheckerDisplayContextTest {
 			MFATimeBasedOTPUtil.MFA_TIMEBASED_OTP_DIGITS,
 			context.get("digits"));
 		Assert.assertEquals(_company.getName(), context.get("issuer"));
-		Assert.assertEquals(
-			_mfaTimeBasedOTPSharedSecret, context.get("secret"));
+		Assert.assertEquals(_SECRET, context.get("secret"));
 	}
 
 	private void _setUpCompany() {
@@ -87,9 +86,6 @@ public class MFATimeBasedOTPCheckerDisplayContextTest {
 	private void _setUpHttpServletRequest() {
 		_httpServletRequest = new MockHttpServletRequest();
 
-		_mfaTimeBasedOTPSharedSecret = MFATimeBasedOTPUtil.generateSharedSecret(
-			20);
-
 		_httpServletRequest.setAttribute(
 			MFATimeBasedOTPWebKeys.MFA_TIME_BASED_OTP_ALGORITHM, "SHA1");
 		_httpServletRequest.setAttribute(
@@ -99,8 +95,7 @@ public class MFATimeBasedOTPCheckerDisplayContextTest {
 			MFATimeBasedOTPWebKeys.MFA_TIME_BASED_OTP_DIGITS,
 			MFATimeBasedOTPUtil.MFA_TIMEBASED_OTP_DIGITS);
 		_httpServletRequest.setAttribute(
-			MFATimeBasedOTPWebKeys.MFA_TIME_BASED_OTP_SHARED_SECRET,
-			_mfaTimeBasedOTPSharedSecret);
+			MFATimeBasedOTPWebKeys.MFA_TIME_BASED_OTP_SHARED_SECRET, _SECRET);
 		_httpServletRequest.setAttribute(
 			MFATimeBasedOTPWebKeys.MFA_TIME_BASED_OTP_TIME_COUNTER,
 			MFATimeBasedOTPUtil.MFA_TIMEBASED_OTP_COUNTER);
@@ -149,9 +144,11 @@ public class MFATimeBasedOTPCheckerDisplayContextTest {
 		);
 	}
 
+	private static final String _SECRET =
+		MFATimeBasedOTPUtil.generateSharedSecret(20);
+
 	private Company _company;
 	private HttpServletRequest _httpServletRequest;
-	private String _mfaTimeBasedOTPSharedSecret;
 	private ThemeDisplay _themeDisplay;
 	private User _user;
 
