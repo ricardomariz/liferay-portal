@@ -5,6 +5,7 @@
 
 package com.liferay.portal.tools.rest.builder.internal.typescript;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -18,10 +19,12 @@ import com.liferay.portal.tools.rest.builder.internal.freemarker.tool.java.parse
 import com.liferay.portal.tools.rest.builder.internal.freemarker.tool.java.parser.util.OpenAPIParserUtil;
 import com.liferay.portal.tools.rest.builder.internal.freemarker.util.FreeMarkerUtil;
 import com.liferay.portal.tools.rest.builder.internal.util.FileUtil;
+import com.liferay.portal.tools.rest.builder.internal.yaml.config.Application;
 import com.liferay.portal.tools.rest.builder.internal.yaml.config.ConfigYAML;
 import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Components;
 import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Content;
 import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Discriminator;
+import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Info;
 import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Items;
 import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.OpenAPIYAML;
 import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Operation;
@@ -248,8 +251,7 @@ public class TypeScriptClientUtil {
 								StringUtil.replace(
 									name, '-', CharPool.UNDERLINE)
 							).put(
-								"type",
-								_getDataType(propertySchema, imports)
+								"type", _getDataType(propertySchema, imports)
 							).build()));
 				}
 			}
@@ -264,7 +266,7 @@ public class TypeScriptClientUtil {
 				(name, propertySchema) -> properties.add(
 					HashMapBuilder.<String, Object>put(
 						"name",
-						StringUtil.replace(name, '-', StringPool.UNDERLINE)
+						StringUtil.replace(name, '-', CharPool.UNDERLINE)
 					).put(
 						"type", _getDataType(propertySchema, imports)
 					).build()));
@@ -317,13 +319,13 @@ public class TypeScriptClientUtil {
 			"parameters", _getParameterDatas(operation, imports)
 		).put(
 			"path",
-			StringBundler.concat(
-				configYAML.getApplication(
-				).getBaseURI(),
-				"/",
-				openAPIYAML.getInfo(
-				).getVersion(),
-				path)
+			() -> {
+				Application application = configYAML.getApplication();
+				Info info = openAPIYAML.getInfo();
+
+				return StringBundler.concat(
+					application.getBaseURI(), "/", info.getVersion(), path);
+			}
 		).put(
 			"responseContentTypes",
 			() -> {
