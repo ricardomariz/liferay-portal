@@ -394,7 +394,7 @@ public class TypeScriptClientUtil {
 
 		Map<String, PathItem> pathItems = openAPIYAML.getPathItems();
 
-		Map<String, List<Map<String, Object>>> tagOperationDatas =
+		Map<String, List<Map<String, Object>>> operationDatasMap =
 			new HashMap<>();
 
 		Map<String, Set<String>> tagImports = new HashMap<>();
@@ -406,7 +406,7 @@ public class TypeScriptClientUtil {
 				List<String> tags = operation.getTags();
 
 				List<Map<String, Object>> operationDatas =
-					tagOperationDatas.computeIfAbsent(
+					operationDatasMap.computeIfAbsent(
 						tags.get(0), k -> new ArrayList<>());
 
 				operationDatas.add(
@@ -421,7 +421,7 @@ public class TypeScriptClientUtil {
 		Map<String, Map<String, Object>> tagAPIContexts = new HashMap<>();
 
 		for (Map.Entry<String, List<Map<String, Object>>> entry :
-				tagOperationDatas.entrySet()) {
+				operationDatasMap.entrySet()) {
 
 			tagAPIContexts.put(
 				entry.getKey(),
