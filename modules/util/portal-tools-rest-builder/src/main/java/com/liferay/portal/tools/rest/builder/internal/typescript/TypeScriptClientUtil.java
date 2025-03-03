@@ -554,12 +554,11 @@ public class TypeScriptClientUtil {
 					additionalPropertySchema.getAdditionalPropertySchema(),
 					imports);
 
-				return "{ [key: string]: { [key: string]: " + dataType +
-					"; }; }";
+				return "{[key: string]: {[key: string]: " + dataType + ";};}";
 			}
 
-			return "{ [key: string]: " +
-				_getDataType(additionalPropertySchema, imports) + "; }";
+			return "{[key: string]: " +
+				_getDataType(additionalPropertySchema, imports) + ";}";
 		}
 		else if (type.equals("permission")) {
 			imports.add("Permission");
