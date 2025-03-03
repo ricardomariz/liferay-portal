@@ -1131,18 +1131,16 @@ public abstract class BaseBuild implements Build {
 			}
 		}
 
-		_stopWatchRecordsGroup = new StopWatchRecordsGroup();
-
 		String consoleText = getConsoleText();
 
 		if (JenkinsResultsParserUtil.isNullOrEmpty(consoleText)) {
 			System.out.println(
 				"Console text for " + getBuildName() + " is null or empty");
 
-			_stopWatchRecordsGroup = null;
-
 			return new StopWatchRecordsGroup();
 		}
+
+		_stopWatchRecordsGroup = new StopWatchRecordsGroup();
 
 		for (String line : consoleText.split("\n")) {
 			Matcher matcher = stopWatchStartTimestampPattern.matcher(line);
