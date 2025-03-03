@@ -255,6 +255,8 @@ public class TypeScriptClientUtil {
 			}
 		}
 
+		// TODO Rename "imports" to "importClasses"
+
 		Map<String, Schema> propertySchemas = schema.getPropertySchemas();
 
 		if (propertySchemas != null) {
