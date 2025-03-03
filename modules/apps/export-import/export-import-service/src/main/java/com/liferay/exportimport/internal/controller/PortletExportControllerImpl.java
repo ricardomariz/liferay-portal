@@ -531,14 +531,6 @@ public class PortletExportControllerImpl implements PortletExportController {
 		element.addAttribute("portlet-id", portlet.getPortletId());
 		element.addAttribute("layout-id", String.valueOf(layoutId));
 		element.addAttribute("path", path);
-		element.addAttribute("portlet-data", String.valueOf(exportPortletData));
-
-		element.addAttribute(
-			"schema-version", portletDataHandler.getSchemaVersion());
-
-		if (portletDataContext.isValidateExistingDataHandler()) {
-			element.addAttribute("validate-existing-data-handler", "true");
-		}
 
 		StringBundler configurationOptionsSB = new StringBundler(6);
 
@@ -563,6 +555,14 @@ public class PortletExportControllerImpl implements PortletExportController {
 
 		element.addAttribute(
 			"portlet-configuration", configurationOptionsSB.toString());
+
+		element.addAttribute("portlet-data", String.valueOf(exportPortletData));
+		element.addAttribute(
+			"schema-version", portletDataHandler.getSchemaVersion());
+
+		if (portletDataContext.isValidateExistingDataHandler()) {
+			element.addAttribute("validate-existing-data-handler", "true");
+		}
 
 		try {
 			portletDataContext.addZipEntry(path, document.formattedString());
