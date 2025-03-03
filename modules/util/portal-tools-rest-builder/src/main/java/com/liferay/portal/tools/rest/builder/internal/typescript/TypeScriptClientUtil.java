@@ -566,12 +566,12 @@ public class TypeScriptClientUtil {
 			return "Permission";
 		}
 		else if (type.equals("string")) {
-			List<String> enumValues = schema.getEnumValues();
+			List<String> values = schema.getEnumValues();
 
-			if (ListUtil.isNotNull(enumValues)) {
+			if (ListUtil.isNotNull(values)) {
 				StringBuilder sb = new StringBuilder();
 
-				for (String value : enumValues) {
+				for (String value : values) {
 					if (sb.length() > 0) {
 						sb.append(" | ");
 					}
