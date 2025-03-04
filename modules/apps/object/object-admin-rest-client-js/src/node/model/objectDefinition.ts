@@ -10,6 +10,7 @@
 			import {ObjectRelationship} from './objectRelationship';
 			import {ObjectValidationRule} from './objectValidationRule';
 			import {ObjectView} from './objectView';
+			import {rest-openapi.yaml#Creator} from './rest-openapi.yaml#Creator';
 			import {Status} from './status';
 
 /**
@@ -23,6 +24,7 @@
 			'actions'?: {[key: string]: {[key: string]: string;};};
 			'active'?: boolean;
 			'className'?: string;
+			'creator'?: rest-openapi.yaml#Creator;
 			'dateCreated'?: Date;
 			'dateModified'?: Date;
 			'defaultLanguageId'?: string;
@@ -90,6 +92,11 @@
 			baseName: "className",
 			name: "className",
 			type: "string",
+		},
+		{
+			baseName: "creator",
+			name: "creator",
+			type: "rest-openapi.yaml#Creator",
 		},
 		{
 			baseName: "dateCreated",
