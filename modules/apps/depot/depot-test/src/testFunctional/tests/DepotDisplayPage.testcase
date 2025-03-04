@@ -609,7 +609,7 @@ definition {
 			webContentText = "Asset Library Text",
 			webContentTitle = "Web Content Title");
 
-		PortletEntry.publish();
+		WebContent.publishWithPermissions();
 
 		DisplayPageTemplate.selectDisplayPageTemplateForAsset(
 			assetType = "Web Content",
