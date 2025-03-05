@@ -97,13 +97,16 @@ public class LanguageFilter extends BasePortalFilter {
 	protected String translateResponse(
 		HttpServletRequest httpServletRequest, String content) {
 
-		Enumeration<String> parameterNamesEnumeration =
-			httpServletRequest.getParameterNames();
+		Locale locale = LocaleUtil.fromLanguageId(
+			LanguageUtil.getLanguageId(httpServletRequest));
 
 		PortletConfig portletConfig = null;
 
-		while (parameterNamesEnumeration.hasMoreElements()) {
-			String parameterName = parameterNamesEnumeration.nextElement();
+		Enumeration<String> enumeration =
+			httpServletRequest.getParameterNames();
+
+		while (enumeration.hasMoreElements()) {
+			String parameterName = enumeration.nextElement();
 
 			int index = parameterName.indexOf(CharPool.COLON);
 
@@ -114,9 +117,6 @@ public class LanguageFilter extends BasePortalFilter {
 		}
 
 		PortletConfig finalPortletConfig = portletConfig;
-
-		Locale locale = LocaleUtil.fromLanguageId(
-			LanguageUtil.getLanguageId(httpServletRequest));
 
 		return LanguageUtil.process(
 			() -> {
