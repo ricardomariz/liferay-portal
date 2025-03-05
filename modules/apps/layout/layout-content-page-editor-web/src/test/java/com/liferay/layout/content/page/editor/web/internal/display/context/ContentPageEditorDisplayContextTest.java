@@ -139,6 +139,12 @@ public class ContentPageEditorDisplayContextTest {
 		);
 
 		Mockito.when(
+			themeDisplay.getLayout()
+		).thenReturn(
+			Mockito.mock(Layout.class)
+		);
+
+		Mockito.when(
 			themeDisplay.getScopeGroupId()
 		).thenReturn(
 			RandomTestUtil.randomLong()
@@ -148,12 +154,6 @@ public class ContentPageEditorDisplayContextTest {
 			themeDisplay.getThemeId()
 		).thenReturn(
 			RandomTestUtil.randomString()
-		);
-
-		Mockito.when(
-			themeDisplay.getLayout()
-		).thenReturn(
-			Mockito.mock(Layout.class)
 		);
 
 		return themeDisplay;
