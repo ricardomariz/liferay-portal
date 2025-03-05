@@ -50,35 +50,29 @@
 					import org.json.JSONArray;
 					import org.json.JSONObject;
 
-					String bucketList = project.getProperty("bucket.list");
-
 					List expiredBuckets = new ArrayList();
-
-					JSONObject bucketListJSONObject = new JSONObject(bucketList);
-
-					JSONArray bucketsJSONArray = bucketListJSONObject.getJSONArray("Buckets");
 
 					SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-DD'T'HH:mm:ss");
 
 					simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+					JSONObject bucketListJSONObject = new JSONObject(project.getProperty("bucket.list"));
+
+					JSONArray bucketsJSONArray = bucketListJSONObject.getJSONArray("Buckets");
 
 					for (int i = 0; i < bucketsJSONArray.length(); i++) {
 						JSONObject bucketJSONObject = bucketsJSONArray.getJSONObject(i);
 
 						String bucketName = bucketJSONObject.getString("Name");
 
-						if (bucketName.contains("lfr-qa-poshi-test")) {
-							String creationDate = bucketJSONObject.getString("CreationDate");
+						if (!bucketName.contains("lfr-qa-poshi-test")) {
+							continue;
+						}
 
-							Date bucketCreationDate = simpleDateFormat.parse(creationDate);
+						Date creationDate = simpleDateFormat.parse(bucketJSONObject.getString("CreationDate"));
 
-							Date currentDate = new Date();
-
-							long diffHours = (currentDate.getTime() - bucketCreationDate.getTime()) / (1000 * 60 * 60);
-
-							if (diffHours > 12) {
-								expiredBuckets.add(bucketName);
-							}
+						if (((System.currentTimeMillis() - creationDate.getTime()) / (1000 * 60 * 60)) > 12) {
+							expiredBuckets.add(bucketName);
 						}
 					}
 
