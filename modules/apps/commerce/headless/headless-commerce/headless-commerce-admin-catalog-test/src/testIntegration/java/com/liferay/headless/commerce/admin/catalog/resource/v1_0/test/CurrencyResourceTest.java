@@ -66,6 +66,9 @@ public class CurrencyResourceTest extends BaseCurrencyResourceTestCase {
 	@Override
 	@Test
 	public void testGraphQLGetCurrenciesPage() throws Exception {
+
+		// Namespace headlessCommerceAdminCatalog_v1_0
+
 		GraphQLField graphQLField = new GraphQLField(
 			"currencies",
 			HashMapBuilder.<String, Object>put(
@@ -83,8 +86,6 @@ public class CurrencyResourceTest extends BaseCurrencyResourceTestCase {
 			).build(),
 			new GraphQLField("items", getGraphQLFields()),
 			new GraphQLField("page"), new GraphQLField("totalCount"));
-
-		// Namespace headlessCommerceAdminCatalog_v1_0
 
 		JSONObject currenciesJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLQuery(
