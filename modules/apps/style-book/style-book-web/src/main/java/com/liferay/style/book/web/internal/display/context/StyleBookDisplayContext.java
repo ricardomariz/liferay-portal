@@ -210,13 +210,6 @@ public class StyleBookDisplayContext {
 		styleFromThemeStyleBookEntry.setHeadId(-1);
 		styleFromThemeStyleBookEntry.setStyleBookEntryId(0);
 		styleFromThemeStyleBookEntry.setGroupId(groupId);
-		styleFromThemeStyleBookEntry.setName(
-			LanguageUtil.get(_httpServletRequest, "styles-from-theme"));
-
-		LayoutSet layoutSet = LayoutSetLocalServiceUtil.fetchLayoutSet(
-			groupId, false);
-
-		styleFromThemeStyleBookEntry.setThemeId(layoutSet.getThemeId());
 
 		StyleBookEntry defaultStyleBookEntry =
 			StyleBookEntryLocalServiceUtil.fetchDefaultStyleBookEntry(groupId);
@@ -224,6 +217,14 @@ public class StyleBookDisplayContext {
 		if (defaultStyleBookEntry == null) {
 			styleFromThemeStyleBookEntry.setDefaultStyleBookEntry(true);
 		}
+
+		styleFromThemeStyleBookEntry.setName(
+			LanguageUtil.get(_httpServletRequest, "styles-from-theme"));
+
+		LayoutSet layoutSet = LayoutSetLocalServiceUtil.fetchLayoutSet(
+			groupId, false);
+
+		styleFromThemeStyleBookEntry.setThemeId(layoutSet.getThemeId());
 
 		return styleFromThemeStyleBookEntry;
 	}
