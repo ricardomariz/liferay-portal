@@ -111,7 +111,7 @@ public class ObjectEntryFolderLocalServiceTest {
 			ObjectEntryFolderScopeException.class,
 			StringBundler.concat(
 				"Group ID ", TestPropsValues.getGroupId(),
-				" does not match parent folder group ID ", _group.getGroupId()),
+				" does not match parent object entry folder group ID ", _group.getGroupId()),
 			() -> {
 				ObjectEntryFolder parentObjectEntryFolder =
 					_addObjectEntryFolder(
@@ -223,7 +223,7 @@ public class ObjectEntryFolderLocalServiceTest {
 			ObjectEntryFolderScopeException.class,
 			StringBundler.concat(
 				"Group ID ", _group.getGroupId(),
-				" does not match parent folder group ID ",
+				" does not match parent object entry folder group ID ",
 				TestPropsValues.getGroupId()),
 			() -> {
 				ObjectEntryFolder objectEntryFolder = _addObjectEntryFolder(

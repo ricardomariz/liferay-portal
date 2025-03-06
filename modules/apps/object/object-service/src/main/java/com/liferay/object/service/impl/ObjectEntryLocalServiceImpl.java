@@ -306,14 +306,14 @@ public class ObjectEntryLocalServiceImpl
 
 		_validateGroupId(groupId, objectDefinition);
 
+		_validateObjectEntryFolderId(groupId, objectEntryFolderId);
+
 		int workflowAction = serviceContext.getWorkflowAction();
 
 		_validateWorkflowAction(
 			objectDefinition.isEnableObjectEntryDraft(), null, workflowAction);
 
 		User user = _userLocalService.getUser(userId);
-
-		_validateObjectEntryFolderId(groupId, objectEntryFolderId);
 
 		_fillDefaultValue(objectDefinitionId, values);
 
@@ -5320,7 +5320,7 @@ public class ObjectEntryLocalServiceImpl
 			throw new ObjectEntryFolderScopeException(
 				StringBundler.concat(
 					"Group ID ", groupId,
-					" does not match parent folder group ID ",
+					" does not match parent object entry folder group ID ",
 					objectEntryFolder.getGroupId()));
 		}
 	}
