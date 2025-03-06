@@ -24,6 +24,7 @@ import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.test.util.ObjectDefinitionTestUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.test.TestInfo;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
@@ -130,6 +131,7 @@ public class BatchEnginePortletDataHandlerTest {
 	}
 
 	@Test
+	@TestInfo("LPD-50142")
 	public void testExportImportCompanyGroup() throws Exception {
 		_objectEntryLocalService.deleteObjectEntry(_objectEntry1);
 		_objectEntryLocalService.deleteObjectEntry(_objectEntry2);
