@@ -346,13 +346,16 @@ public class ObjectDefinitionGraphQLTest {
 				null, TestPropsValues.getUserId(),
 				LocalizedMapUtil.getLocalizedMap(StringUtil.randomId()), false,
 				Collections.emptyList());
-
 		String listTypeEntryKey1 = StringUtil.randomId();
-		String listTypeEntryKey2 = StringUtil.randomId();
-		String listTypeEntryKey3 = StringUtil.randomId();
 
 		_addListTypeEntry(listTypeDefinition, listTypeEntryKey1);
+
+		String listTypeEntryKey2 = StringUtil.randomId();
+
 		_addListTypeEntry(listTypeDefinition, listTypeEntryKey2);
+
+		String listTypeEntryKey3 = StringUtil.randomId();
+
 		_addListTypeEntry(listTypeDefinition, listTypeEntryKey3);
 
 		String multiselectPicklistObjectFieldName = StringUtil.randomId();
