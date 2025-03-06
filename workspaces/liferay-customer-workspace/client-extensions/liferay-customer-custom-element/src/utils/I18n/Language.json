@@ -416,7 +416,7 @@
 	"please-note-that-the-friendly-url-cannot-be-changed-once-added": "Please note that the friendly URL cannot be changed once added.",
 	"please-provide-static-server-identifiers-that-do-not-change-over-time": "Please provide static server identifiers that do not change over time.",
 	"please-remove-duplicate-emails": "Please remove duplicate emails: ",
-	"please-select-the-tickets-that-are-impacting-this-event": "Please select the tickets that are impacting this event",
+	"please-select-the-tickets-that-are-impacting-this-event": "Please select the tickets that are impacting this event.",
 	"portal": "Portal",
 	"portal-backup": "Portal Backup",
 	"portal-backup-(additional-jvm)": "Portal Backup (Additional JVM)",
