@@ -9704,29 +9704,11 @@ go</echo>
 	</target>
 
 	<target name="cluster-session-replication">
-		<if>
-			<not>
-				<resourcecontains
-					resource="${app.server.tomcat.dir}/webapps/ROOT/WEB-INF/classes/logging.properties"
-					substring="org.apache.catalina.ha.session.handlers"
-				/>
-			</not>
-			<then>
-				<echo append="true" file="${app.server.tomcat.dir}/webapps/ROOT/WEB-INF/classes/logging.properties">
-			<![CDATA[
-org.apache.catalina.ha.session.handlers=java.util.logging.ConsoleHandler
-org.apache.catalina.ha.session.level=INFO]]>
-				</echo>
-			</then>
-		</if>
-
 		<replace
-			failOnNoReplacements="true"
-			file="${app.server.tomcat.dir}/webapps/ROOT/WEB-INF/web.xml"
+			file="${app.server.tomcat.dir}/conf/context.xml"
 		>
-			<replacetoken><![CDATA[xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">]]></replacetoken>
-			<replacevalue><![CDATA[xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
-	<distributable />]]></replacevalue>
+			<replacetoken><![CDATA[    <Manager pathname="SESSIONS.ser" />]]></replacetoken>
+			<replacevalue><![CDATA[]]></replacevalue>
 		</replace>
 
 		<echo append="true" file="${app.server.tomcat.dir}/conf/logging.properties">
@@ -9773,11 +9755,29 @@ org.apache.catalina.tribes.level = FINE]]>
 	</Cluster>]]></replacevalue>
 		</replace>
 
+		<if>
+			<not>
+				<resourcecontains
+					resource="${app.server.tomcat.dir}/webapps/ROOT/WEB-INF/classes/logging.properties"
+					substring="org.apache.catalina.ha.session.handlers"
+				/>
+			</not>
+			<then>
+				<echo append="true" file="${app.server.tomcat.dir}/webapps/ROOT/WEB-INF/classes/logging.properties">
+			<![CDATA[
+org.apache.catalina.ha.session.handlers=java.util.logging.ConsoleHandler
+org.apache.catalina.ha.session.level=INFO]]>
+				</echo>
+			</then>
+		</if>
+
 		<replace
-			file="${app.server.tomcat.dir}/conf/context.xml"
+			failOnNoReplacements="true"
+			file="${app.server.tomcat.dir}/webapps/ROOT/WEB-INF/web.xml"
 		>
-			<replacetoken><![CDATA[    <Manager pathname="SESSIONS.ser" />]]></replacetoken>
-			<replacevalue><![CDATA[]]></replacevalue>
+			<replacetoken><![CDATA[xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">]]></replacetoken>
+			<replacevalue><![CDATA[xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+	<distributable />]]></replacevalue>
 		</replace>
 	</target>
 
