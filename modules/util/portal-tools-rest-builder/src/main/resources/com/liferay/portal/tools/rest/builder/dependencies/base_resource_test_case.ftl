@@ -1433,6 +1433,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 						"${schemaJavaType}"
 					).acceptLanguage(
 						new AcceptLanguage() {
+
 							@Override
 							public List<Locale> getLocales() {
 								return Arrays.asList(LocaleUtil.getDefault());
@@ -1448,6 +1449,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 							public Locale getPreferredLocale() {
 								return LocaleUtil.getDefault();
 							}
+
 						}
 					).groupLocalService(
 						_groupLocalService
@@ -1583,6 +1585,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 						public URI relativize(URI uri) {
 							return getBaseUri().relativize(uri);
 						}
+
 					};
 				}
 
@@ -3873,7 +3876,6 @@ public abstract class Base${schemaName}ResourceTestCase {
 	private static final com.liferay.portal.kernel.log.Log _log = LogFactoryUtil.getLog(Base${schemaName}ResourceTestCase.class);
 
 	private static DateFormat _dateFormat;
-
 	private static com.liferay.portal.kernel.model.User _user;
 
 	@Inject
