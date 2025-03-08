@@ -8,17 +8,12 @@ package com.liferay.site.cms.site.initializer.internal.display.context;
 import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.model.ObjectDefinition;
-import com.liferay.object.model.ObjectFolder;
 import com.liferay.object.service.ObjectDefinitionService;
-import com.liferay.object.service.ObjectFolderLocalService;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.site.cms.site.initializer.internal.configuration.CMSSiteInitializerConfiguration;
 
 import java.util.List;
@@ -34,14 +29,12 @@ public class FilesSectionDisplayContext extends BaseSectionDisplayContext {
 	public FilesSectionDisplayContext(
 		CMSSiteInitializerConfiguration cmsSiteInitializerConfiguration,
 		HttpServletRequest httpServletRequest, Language language,
-		ObjectDefinitionService objectDefinitionService,
-		ObjectFolderLocalService objectFolderLocalService) {
+		ObjectDefinitionService objectDefinitionService) {
 
 		super(cmsSiteInitializerConfiguration, httpServletRequest);
 
 		_language = language;
 		_objectDefinitionService = objectDefinitionService;
-		_objectFolderLocalService = objectFolderLocalService;
 	}
 
 	@Override
@@ -65,18 +58,10 @@ public class FilesSectionDisplayContext extends BaseSectionDisplayContext {
 							_language.get(httpServletRequest, "folder"));
 					});
 
-				ObjectFolder objectFolder =
-					_objectFolderLocalService.
-						fetchObjectFolderByExternalReferenceCode(
-							"L_CMS_FILE_TYPES", themeDisplay.getCompanyId());
-
 				for (ObjectDefinition objectDefinition :
-						_objectDefinitionService.getObjectDefinitions(
+						_objectDefinitionService.getCMSObjectDefinitions(
 							themeDisplay.getCompanyId(),
-							new long[] {objectFolder.getObjectFolderId()}, true,
-							true, ObjectDefinitionConstants.SCOPE_SITE,
-							WorkflowConstants.STATUS_APPROVED,
-							QueryUtil.ALL_POS, QueryUtil.ALL_POS)) {
+							new String[] {"L_CMS_FILE_TYPES"})) {
 
 					addPrimaryDropdownItem(
 						dropdownItem -> {
@@ -114,6 +99,5 @@ public class FilesSectionDisplayContext extends BaseSectionDisplayContext {
 
 	private final Language _language;
 	private final ObjectDefinitionService _objectDefinitionService;
-	private final ObjectFolderLocalService _objectFolderLocalService;
 
 }

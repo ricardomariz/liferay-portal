@@ -7,18 +7,23 @@ package com.liferay.object.service.impl;
 
 import com.liferay.object.constants.ObjectActionKeys;
 import com.liferay.object.constants.ObjectConstants;
+import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectDefinitionSetting;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectFolder;
+import com.liferay.object.service.ObjectFolderLocalService;
 import com.liferay.object.service.base.ObjectDefinitionServiceBaseImpl;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.aop.AopService;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -146,6 +151,28 @@ public class ObjectDefinitionServiceImpl
 	}
 
 	@Override
+	public List<ObjectDefinition> getCMSObjectDefinitions(
+		long companyId, String[] objectFolderExternalReferenceCodes) {
+
+		long[] objectFolderIds = TransformUtil.transformToLongArray(
+			Arrays.asList(objectFolderExternalReferenceCodes),
+			objectFolderExternalReferenceCode -> {
+				ObjectFolder objectFolder =
+					_objectFolderLocalService.
+						fetchObjectFolderByExternalReferenceCode(
+							objectFolderExternalReferenceCode, companyId);
+
+				return objectFolder.getObjectFolderId();
+			});
+
+		return objectDefinitionPersistence.filterFindByC_OFI_A_E_S_S(
+			companyId, objectFolderIds, true, true,
+			ObjectDefinitionConstants.SCOPE_SITE,
+			WorkflowConstants.STATUS_APPROVED, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS);
+	}
+
+	@Override
 	public ObjectDefinition getObjectDefinition(long objectDefinitionId)
 		throws PortalException {
 
@@ -183,17 +210,6 @@ public class ObjectDefinitionServiceImpl
 
 		return objectDefinitionPersistence.findByCompanyId(
 			companyId, start, end);
-	}
-
-	@Override
-	public List<ObjectDefinition> getObjectDefinitions(
-		long companyId, long[] objectFolderIds, boolean active,
-		boolean enableObjectEntryDraft, String scope, int status, int start,
-		int end) {
-
-		return objectDefinitionPersistence.filterFindByC_OFI_A_E_S_S(
-			companyId, objectFolderIds, active, enableObjectEntryDraft, scope,
-			status, start, end);
 	}
 
 	@Override
@@ -330,6 +346,9 @@ public class ObjectDefinitionServiceImpl
 	)
 	private ModelResourcePermission<ObjectDefinition>
 		_objectDefinitionModelResourcePermission;
+
+	@Reference
+	private ObjectFolderLocalService _objectFolderLocalService;
 
 	@Reference(
 		target = "(model.class.name=com.liferay.object.model.ObjectFolder)"
