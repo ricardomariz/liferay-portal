@@ -11,8 +11,6 @@
 ControlledFDSDisplayContext controlledFDSDisplayContext = new ControlledFDSDisplayContext(request);
 %>
 
-<p>React component tag renders a wrapper that controls items provided to the FDS</p>
-
 <div>
 	<react:component
 		module="{ControlledFrontendDataSet} from frontend-data-set-sample-web"

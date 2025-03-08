@@ -11,7 +11,6 @@
 EmptyFDSDisplayContext emptyFDSDisplayContext = new EmptyFDSDisplayContext(request);
 %>
 
-<p>Headless display tag customizing the empty state</p>
 <frontend-data-set:headless-display
 	apiURL="<%= emptyFDSDisplayContext.getAPIURL() %>"
 	emptyState="<%= emptyFDSDisplayContext.getEmptyState() %>"

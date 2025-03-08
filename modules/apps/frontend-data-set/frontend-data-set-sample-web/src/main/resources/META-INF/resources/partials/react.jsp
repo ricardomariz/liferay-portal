@@ -11,8 +11,6 @@
 ReactFDSDisplayContext reactFDSDisplayContext = new ReactFDSDisplayContext(request);
 %>
 
-<p>React component tag configured with a simple set of properties</p>
-
 <div>
 	<react:component
 		module="{SampleReactFrontendDataSet} from frontend-data-set-sample-web"

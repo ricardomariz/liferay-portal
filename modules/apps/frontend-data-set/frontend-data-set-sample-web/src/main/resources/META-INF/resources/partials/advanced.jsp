@@ -11,7 +11,6 @@
 FDSSampleDisplayContext fdsSampleDisplayContext = (FDSSampleDisplayContext)request.getAttribute(FDSSampleWebKeys.FDS_SAMPLE_DISPLAY_CONTEXT);
 %>
 
-<p>Advanced usage of headless display tag, including bulk/items actions, custom views, selection and propsTransformer </p>
 <frontend-data-set:headless-display
 	additionalProps='<%=
 		HashMapBuilder.<String, Object>put(
