@@ -82,6 +82,10 @@ public interface ObjectDefinitionService extends BaseService {
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<ObjectDefinition> getCMSObjectDefinitions(
+		long companyId, String[] objectFolderExternalReferenceCodes);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public ObjectDefinition getObjectDefinition(long objectDefinitionId)
 		throws PortalException;
 
@@ -96,12 +100,6 @@ public interface ObjectDefinitionService extends BaseService {
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<ObjectDefinition> getObjectDefinitions(
 		long companyId, int start, int end);
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<ObjectDefinition> getObjectDefinitions(
-		long companyId, long[] objectFolderIds, boolean active,
-		boolean enableObjectEntryDraft, String scope, int status, int start,
-		int end);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getObjectDefinitionsCount() throws PortalException;

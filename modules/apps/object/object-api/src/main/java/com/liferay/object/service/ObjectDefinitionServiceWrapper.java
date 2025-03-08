@@ -103,6 +103,15 @@ public class ObjectDefinitionServiceWrapper
 	}
 
 	@Override
+	public java.util.List<com.liferay.object.model.ObjectDefinition>
+		getCMSObjectDefinitions(
+			long companyId, String[] objectFolderExternalReferenceCodes) {
+
+		return _objectDefinitionService.getCMSObjectDefinitions(
+			companyId, objectFolderExternalReferenceCodes);
+	}
+
+	@Override
 	public com.liferay.object.model.ObjectDefinition getObjectDefinition(
 			long objectDefinitionId)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -134,18 +143,6 @@ public class ObjectDefinitionServiceWrapper
 
 		return _objectDefinitionService.getObjectDefinitions(
 			companyId, start, end);
-	}
-
-	@Override
-	public java.util.List<com.liferay.object.model.ObjectDefinition>
-		getObjectDefinitions(
-			long companyId, long[] objectFolderIds, boolean active,
-			boolean enableObjectEntryDraft, String scope, int status, int start,
-			int end) {
-
-		return _objectDefinitionService.getObjectDefinitions(
-			companyId, objectFolderIds, active, enableObjectEntryDraft, scope,
-			status, start, end);
 	}
 
 	@Override

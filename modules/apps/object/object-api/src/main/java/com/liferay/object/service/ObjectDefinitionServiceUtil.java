@@ -97,6 +97,13 @@ public class ObjectDefinitionServiceUtil {
 			externalReferenceCode, companyId);
 	}
 
+	public static List<ObjectDefinition> getCMSObjectDefinitions(
+		long companyId, String[] objectFolderExternalReferenceCodes) {
+
+		return getService().getCMSObjectDefinitions(
+			companyId, objectFolderExternalReferenceCodes);
+	}
+
 	public static ObjectDefinition getObjectDefinition(long objectDefinitionId)
 		throws PortalException {
 
@@ -121,16 +128,6 @@ public class ObjectDefinitionServiceUtil {
 		long companyId, int start, int end) {
 
 		return getService().getObjectDefinitions(companyId, start, end);
-	}
-
-	public static List<ObjectDefinition> getObjectDefinitions(
-		long companyId, long[] objectFolderIds, boolean active,
-		boolean enableObjectEntryDraft, String scope, int status, int start,
-		int end) {
-
-		return getService().getObjectDefinitions(
-			companyId, objectFolderIds, active, enableObjectEntryDraft, scope,
-			status, start, end);
 	}
 
 	public static int getObjectDefinitionsCount() throws PortalException {
