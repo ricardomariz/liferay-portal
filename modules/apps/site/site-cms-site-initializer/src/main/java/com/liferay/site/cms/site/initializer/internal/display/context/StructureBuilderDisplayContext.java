@@ -94,35 +94,33 @@ public class StructureBuilderDisplayContext {
 			return null;
 		}
 
-		try {
-			for (ObjectAction objectAction :
-					objectDefinition.getObjectActions()) {
+		for (ObjectAction objectAction : objectDefinition.getObjectActions()) {
+			Map<String, Object> parameters =
+				(Map<String, Object>)objectAction.getParameters();
 
-				Map<String, Object> parameters =
-					(Map<String, Object>)objectAction.getParameters();
+			Object object = parameters.get("predefinedValues");
 
-				Object object = parameters.get("predefinedValues");
-
-				if (object == null) {
-					continue;
-				}
-
-				parameters.put(
-					"predefinedValues",
-					ListUtil.toList(
-						(ArrayList<LinkedHashMap>)object,
-						_jsonFactory::createJSONObject));
+			if (object == null) {
+				continue;
 			}
 
+			parameters.put(
+				"predefinedValues",
+				ListUtil.toList(
+					(ArrayList<LinkedHashMap>)object,
+					_jsonFactory::createJSONObject));
+		}
+
+		try {
 			return _jsonFactory.createJSONObject(objectDefinition.toString());
 		}
 		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(exception);
 			}
-		}
 
-		return null;
+			return null;
+		}
 	}
 
 	private String _getObjectFolderExternalReferenceCode() {
