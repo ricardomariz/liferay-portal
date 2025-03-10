@@ -31,5 +31,4 @@ import org.osgi.service.component.annotations.Reference;
 	service = Portlet.class
 )
 public class ${className}Portlet extends MVCPortlet {
-
 }
