@@ -117,9 +117,7 @@ public class CETConfigurationFactoryTest {
 	}
 
 	@Test
-	public void testAddAndUpdateThemeCSSClientExtensionEntry()
-		throws Exception {
-
+	public void testDeleteClientExtensionEntryRels() throws Exception {
 		Dictionary<String, Object> themeCSSCETConfigurationProperties =
 			_getThemeCSSCETConfigurationProperties(
 				_virtualInstanceCompanyId, false);
