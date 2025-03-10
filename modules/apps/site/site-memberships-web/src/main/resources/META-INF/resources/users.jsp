@@ -215,8 +215,8 @@ Team team = usersDisplayContext.getTeam();
 </aui:form>
 
 <aui:form cssClass="hide" method="post" name="editUserGroupRoleFm">
-	<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
 	<aui:input name="tabs1" type="hidden" value="users" />
+	<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
 </aui:form>
 
 <portlet:actionURL name="unassignUserGroupRole" var="unassignUserGroupRoleURL">
