@@ -244,7 +244,7 @@ export default function ActionBuilder({
 					title={`${Liferay.Language.get('info')}:`}
 				>
 					{Liferay.Language.get(
-						'this-object-includes-translatable-fields.-actions-always-use-the-object-entrys-default-language'
+						'this-object-includes-translatable-fields'
 					)}
 				</ClayAlert>
 			)}
