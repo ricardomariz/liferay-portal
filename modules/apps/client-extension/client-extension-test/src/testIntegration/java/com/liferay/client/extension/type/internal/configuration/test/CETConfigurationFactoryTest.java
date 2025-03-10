@@ -390,8 +390,6 @@ public class CETConfigurationFactoryTest {
 
 	private static final List<AutoCloseable> _autoCloseables =
 		new ArrayList<>();
-	private static Group _group;
-	private static User _user;
 	private static long _virtualInstanceCompanyId;
 
 	@Inject
@@ -401,6 +399,8 @@ public class CETConfigurationFactoryTest {
 	private ClientExtensionEntryRelLocalService
 		_clientExtensionEntryRelLocalService;
 
+	private Group _group;
+
 	@Inject
 	private GroupLocalService _groupLocalService;
 
@@ -409,5 +409,7 @@ public class CETConfigurationFactoryTest {
 
 	@Inject
 	private Portal _portal;
+
+	private User _user;
 
 }
