@@ -5,7 +5,6 @@
 
 import {ClayInput, ClayRadio} from '@clayui/form';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
-import {Input as TimeInput} from '@clayui/time-picker/lib';
 import {FieldArray, Formik} from 'formik';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
@@ -28,7 +27,7 @@ import useGetGMTTimeZonesList from '../../hooks/useGetGMTTimeZonesList';
 import useGetVersionOfLiferaySoftwareList from '../../hooks/useGetVersionOfLiferaySoftwareList';
 import useHasAllEventsPermissions from '../../hooks/useHasAllEventsPermissions';
 import useUpdateOrg from '../../hooks/useUpdateOrg';
-import formatDateToISO from '../../utils/formatDateToISO';
+import {getFormattedGoLiveDateTime} from '../../utils/getFormattedGoLiveDate';
 import useIsSaasOnly from '../../utils/useIsSaasOnly';
 
 interface IProps {
@@ -149,30 +148,10 @@ const BusinessEventsAddPage: React.FC<IProps> = ({
 			newLiferayVersion: {key: businessEvent.newLiferayVersion?.key},
 		};
 
-		if (updatedBusinessEvent.targetGoLiveDate) {
-			const formattedDate = formatDateToISO(
-				updatedBusinessEvent.targetGoLiveDate
-			);
-
-			if (updatedBusinessEvent.targetGoLiveTime) {
-				const targetGoLiveTime =
-					updatedBusinessEvent.targetGoLiveTime as unknown as TimeInput;
-				updatedBusinessEvent.targetGoLiveDateTime = `${formattedDate}T${targetGoLiveTime.hours}:${targetGoLiveTime.minutes}:00.000`;
-			}
-			else {
-				updatedBusinessEvent.targetGoLiveDateTime = `${formattedDate}T00:00:00.000`;
-			}
-		}
-
 		try {
 			setIsLoadingSubmitButton(true);
 
-			if (
-				businessEvent.associatedTickets !== '[]' &&
-				hasImpactingEvents === 'yes'
-			) {
-				await updateOrg();
-			}
+			await updateOrg();
 
 			await client.mutate<{
 				addBusinessEvent: IBusinessEvent;
@@ -267,6 +246,20 @@ const BusinessEventsAddPage: React.FC<IProps> = ({
 		businessEvent.newLiferayVersion?.key,
 		setFieldValue,
 		versionOfLiferaySoftwareOptions,
+	]);
+
+	useEffect(() => {
+		setFieldValue(
+			'businessEvent.targetGoLiveDateTime',
+			getFormattedGoLiveDateTime(
+				businessEvent.targetGoLiveDate,
+				businessEvent.targetGoLiveTime
+			)
+		);
+	}, [
+		businessEvent.targetGoLiveDate,
+		businessEvent.targetGoLiveTime,
+		setFieldValue,
 	]);
 
 	useEffect(() => {
@@ -412,7 +405,7 @@ const BusinessEventsAddPage: React.FC<IProps> = ({
 						render={() => (
 							<>
 								<Input
-									badgeClassName="ml-3 mr-3 mt-1"
+									badgeClassName="mt-1 mx-3"
 									label={i18n.translate('event-name')}
 									name="businessEvent.name"
 									placeholder={i18n.translate('event-name')}
@@ -421,7 +414,7 @@ const BusinessEventsAddPage: React.FC<IProps> = ({
 								/>
 
 								<Select
-									badgeClassName="ml-3 mr-3 mt-1"
+									badgeClassName="mt-1 mx-3"
 									label={i18n.translate('event-type')}
 									link="https://help.liferay.com/hc"
 									linkText="here"
@@ -434,7 +427,7 @@ const BusinessEventsAddPage: React.FC<IProps> = ({
 
 								{subscriptionGroups && !isSaasOnly && (
 									<Select
-										badgeClassName="ml-3 mr-3 mt-1"
+										badgeClassName="mt-1 mx-3"
 										label={i18n.translate(
 											'your-current-liferay-version'
 										)}
@@ -448,7 +441,7 @@ const BusinessEventsAddPage: React.FC<IProps> = ({
 
 								{isNewLiferayVersionRequired && (
 									<Select
-										badgeClassName="ml-3 mr-3 mt-1"
+										badgeClassName="mt-1 mx-3"
 										label={i18n.translate('new-version')}
 										name="businessEvent.newLiferayVersion.key"
 										options={
@@ -460,7 +453,7 @@ const BusinessEventsAddPage: React.FC<IProps> = ({
 
 								{isDescriptionRequired && (
 									<Input
-										badgeClassName="ml-3 mr-3 mt-1"
+										badgeClassName="mt-1 mx-3"
 										component="textarea"
 										label={i18n.translate(
 											'event-description'
@@ -477,7 +470,7 @@ const BusinessEventsAddPage: React.FC<IProps> = ({
 								<ClayInput.Group className="m-0">
 									<ClayInput.GroupItem className="m-0">
 										<DatePicker
-											badgeClassName="ml-3 mr-3 mt-1"
+											badgeClassName="mt-1 mx-3"
 											dateFormat="MM-dd-yyyy"
 											label={i18n.translate(
 												'target-go-live-date'
@@ -521,7 +514,7 @@ const BusinessEventsAddPage: React.FC<IProps> = ({
 
 								{tickets && !!tickets.length ? (
 									<>
-										<div className="ml-3 mr-3 pb-3">
+										<div className="mx-3 pb-3">
 											<label>
 												{i18n.translate(
 													'are-there-any-support-tickets-impacting-this-event'
@@ -556,7 +549,7 @@ const BusinessEventsAddPage: React.FC<IProps> = ({
 										</div>
 
 										{hasImpactingEvents === 'yes' && (
-											<div className="ml-3 mr-3 pb-3">
+											<div className="mx-3 pb-3">
 												<label>
 													{i18n.translate(
 														'please-select-the-tickets-that-are-impacting-this-event'
@@ -573,7 +566,7 @@ const BusinessEventsAddPage: React.FC<IProps> = ({
 										)}
 									</>
 								) : (
-									<div className="ml-3 mr-3 pb-3">
+									<div className="mx-3 pb-3">
 										{i18n.translate(
 											'there-are-currently-no-open-tickets-under-this-project'
 										)}

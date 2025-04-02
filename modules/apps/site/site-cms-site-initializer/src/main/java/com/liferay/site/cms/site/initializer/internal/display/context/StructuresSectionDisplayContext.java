@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.portlet.url.builder.ResourceURLBuilder;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -119,17 +120,37 @@ public class StructuresSectionDisplayContext {
 				LanguageUtil.get(_httpServletRequest, "export-as-json"), "get",
 				"exportObjectDefinition", null),
 			new FDSActionDropdownItem(
-				"", "import", "import",
+				PortletURLBuilder.create(
+					PortletURLFactoryUtil.create(
+						_httpServletRequest,
+						ObjectPortletKeys.OBJECT_DEFINITIONS,
+						PortletRequest.ACTION_PHASE)
+				).setActionName(
+					"/object_definitions/import_object_definition"
+				).setParameter(
+					"externalReferenceCode", "{externalReferenceCode}"
+				).buildString(),
+				"import", "import",
 				LanguageUtil.get(_httpServletRequest, "import-and-override"),
-				null, "update", null),
+				"get", "update", null),
 			new FDSActionDropdownItem(
 				"", "password-policies", "permissions",
 				LanguageUtil.get(_httpServletRequest, "permissions"), "get",
 				"permissions", "modal-permissions"),
 			new FDSActionDropdownItem(
-				"", "trash", "delete",
+				ResourceURLBuilder.createResourceURL(
+					PortletURLFactoryUtil.create(
+						_httpServletRequest,
+						ObjectPortletKeys.OBJECT_DEFINITIONS,
+						PortletRequest.RESOURCE_PHASE)
+				).setParameter(
+					"objectDefinitionId", "{id}"
+				).setResourceID(
+					"/object_definitions/get_object_definition_delete_info"
+				).buildString(),
+				"trash", "delete",
 				LanguageUtil.get(_httpServletRequest, "delete"), "delete",
-				"delete", "headless"));
+				"delete", null));
 	}
 
 	private String _getHref(String objectFolderExternalReferenceCode) {

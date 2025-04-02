@@ -12,9 +12,11 @@ import ClayButton from '@clayui/button';
 import {ClayRadio} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import ClayLabel from '@clayui/label';
+import ClayLink from '@clayui/link';
 import ClayList from '@clayui/list';
 import ClayModal from '@clayui/modal';
 import ClaySticker from '@clayui/sticker';
+import {ClayTooltipProvider} from '@clayui/tooltip';
 import classNames from 'classnames';
 import {openModal} from 'frontend-js-components-web';
 import {fetch, navigate} from 'frontend-js-web';
@@ -25,6 +27,7 @@ import {
 	DEFAULT_FETCH_HEADERS,
 	FDS_DEFAULT_PROPS,
 } from './utils/constants';
+import getAPIExplorerURL from './utils/getAPIExplorerURL';
 import openDefaultFailureToast from './utils/openDefaultFailureToast';
 import openDefaultSuccessToast from './utils/openDefaultSuccessToast';
 import {IDataSet, ISystemDataSet} from './utils/types';
@@ -179,34 +182,39 @@ const SelectSystemDataSetModalContent = ({
 	};
 
 	return (
-		<div className="select-system-data-set-modal-content">
-			<ClayModal.Header>
+		<>
+			<ClayModal.Header className="select-system-data-set-modal-header">
 				{Liferay.Language.get('create-system-data-set-customization')}
 			</ClayModal.Header>
 
 			<ClayModal.Body>
-				<FrontendDataSet
-					{...FDS_DEFAULT_PROPS}
-					apiURL={getSystemDataSetsURL}
-					id="SystemDataSets"
-					onSelect={({
-						selectedItems,
-					}: {
-						selectedItems: Array<ISystemDataSet>;
-					}) => {
-						setSelectedSystemDataSet(selectedItems[0]);
-					}}
-					selectedItemsKey="name"
-					selectionType="single"
-					views={[
-						{
-							component: SystemDataSetsView,
-						},
-					]}
-				/>
+				<div className="modal-height-full select-system-data-set-modal-body">
+					<FrontendDataSet
+						{...FDS_DEFAULT_PROPS}
+						apiURL={getSystemDataSetsURL}
+						id="SystemDataSets"
+						onSelect={({
+							selectedItems,
+						}: {
+							selectedItems: Array<ISystemDataSet>;
+						}) => {
+							setSelectedSystemDataSet(selectedItems[0]);
+						}}
+						selectedItemsKey="name"
+						selectionType="single"
+						views={[
+							{
+								component: SystemDataSetsView,
+								contentRenderer: 'custom',
+								name: 'custom',
+							},
+						]}
+					/>
+				</div>
 			</ClayModal.Body>
 
 			<ClayModal.Footer
+				className="select-system-data-set-modal-footer"
 				last={
 					<ClayButton.Group spaced>
 						<ClayButton
@@ -228,7 +236,7 @@ const SelectSystemDataSetModalContent = ({
 					</ClayButton.Group>
 				}
 			/>
-		</div>
+		</>
 	);
 };
 
@@ -379,6 +387,37 @@ const SystemDataSets = ({
 		],
 	};
 
+	const restApplicationRenderer = function ({
+		itemData,
+	}: {
+		itemData: IDataSet;
+	}) {
+		const apiExplorerURL = getAPIExplorerURL(itemData.restApplication);
+
+		return (
+			<ClayTooltipProvider>
+				<ClayLink
+					data-tooltip-align="top"
+					decoration="underline"
+					displayType="tertiary"
+					href={apiExplorerURL}
+					rel="noopener noreferrer"
+					target="_blank"
+					title={apiExplorerURL}
+				>
+					<span className="inline-item inline-item-before">
+						<ClayIcon
+							className="mr-1 text-2 text-secondary"
+							symbol="shortcut"
+						/>
+					</span>
+
+					{itemData.restApplication}
+				</ClayLink>
+			</ClayTooltipProvider>
+		);
+	};
+
 	const toggleRenderer = function ({
 		itemData,
 		onItemsChange,
@@ -417,6 +456,7 @@ const SystemDataSets = ({
 						sortable: true,
 					},
 					{
+						contentRenderer: 'restApplicationRenderer',
 						fieldName: 'restApplication',
 						label: Liferay.Language.get('rest-application'),
 						sortable: true,
@@ -459,7 +499,7 @@ const SystemDataSets = ({
 				{...FDS_DEFAULT_PROPS}
 				apiURL={getAPIURL()}
 				creationMenu={creationMenu}
-				customDataRenderers={{toggleRenderer}}
+				customDataRenderers={{restApplicationRenderer, toggleRenderer}}
 				emptyState={{
 					description: Liferay.Language.get(
 						'start-creating-one-to-show-your-data'

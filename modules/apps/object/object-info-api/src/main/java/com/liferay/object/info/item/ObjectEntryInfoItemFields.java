@@ -7,9 +7,11 @@ package com.liferay.object.info.item;
 
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.type.DateInfoFieldType;
+import com.liferay.info.field.type.FriendlyURLInfoFieldType;
 import com.liferay.info.field.type.ImageInfoFieldType;
 import com.liferay.info.field.type.TextInfoFieldType;
 import com.liferay.info.localized.InfoLocalizedValue;
+import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
 
 /**
@@ -88,6 +90,23 @@ public class ObjectEntryInfoItemFields {
 			InfoLocalizedValue.localize(
 				ObjectEntryInfoItemFields.class, "user-profile-image")
 		).build();
+
+	public static InfoField getFriendlyURLInfoField(
+		ObjectDefinition objectDefinition) {
+
+		return BuilderHolder._builder.infoFieldType(
+			FriendlyURLInfoFieldType.INSTANCE
+		).name(
+			"objectEntryFriendlyURL"
+		).editable(
+			objectDefinition.isEnableFriendlyURLCustomization()
+		).labelInfoLocalizedValue(
+			InfoLocalizedValue.localize(
+				ObjectEntryInfoItemFields.class, "friendly-url")
+		).localizable(
+			true
+		).build();
+	}
 
 	private static class BuilderHolder {
 

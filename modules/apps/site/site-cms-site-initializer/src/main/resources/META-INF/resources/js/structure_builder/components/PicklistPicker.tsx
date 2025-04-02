@@ -53,15 +53,19 @@ export default function PicklistPicker({field}: {field: Field}) {
 
 					<Picker
 						aria-describedby={feedbackId}
-						aria-label={sub(
-							Liferay.Language.get('select-x'),
-							Liferay.Language.get('picklist')
-						)}
 						disabled={isPublished || !picklists.length}
 						id={pickerId}
 						items={picklists}
-						onBlur={() => {
-							if (!selectedKey) {
+						onBlur={(
+							event: React.FocusEvent<HTMLButtonElement>
+						) => {
+							const noOptionSelected = !picklists.some(
+								(picklist) =>
+									picklist.id ===
+									Number(event.relatedTarget?.id)
+							);
+
+							if (!selectedKey && noOptionSelected) {
 								dispatch({
 									error: 'no-picklist',
 									type: 'add-validation-error',
@@ -78,7 +82,11 @@ export default function PicklistPicker({field}: {field: Field}) {
 
 							setSelectedKey(selectedKey);
 						}}
-						selectedKey={String(selectedKey)}
+						placeholder={sub(
+							Liferay.Language.get('select-x'),
+							Liferay.Language.get('picklist')
+						)}
+						selectedKey={selectedKey ? String(selectedKey) : ''}
 					>
 						{(item) => <Option key={item.id}>{item.name}</Option>}
 					</Picker>

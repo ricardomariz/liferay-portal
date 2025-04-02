@@ -9,7 +9,8 @@ import './BusinessEvents.css';
 
 import Button from '@clayui/button';
 import ClayIcon from '@clayui/icon';
-import ClayModal, {useModal} from '@clayui/modal';
+import ClayLoadingIndicator from '@clayui/loading-indicator';
+import {useModal} from '@clayui/modal';
 import {useCallback, useMemo, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {ButtonDropDown} from '~/components';
@@ -22,7 +23,7 @@ import {getFormattedDate} from '~/utils/getFormattedDate';
 import {getFormattedTime} from '~/utils/getFormattedTime';
 import {IBusinessEvent} from '~/utils/types';
 
-import CancelEventForm from './components/CancelEventForm';
+import ManageEventModal from './components/ManageEventModal';
 import useFilters from './hooks/useFilters';
 import useGetBusinessEvents from './hooks/useGetBusinessEvents';
 import useHasAllEventsPermissions from './hooks/useHasAllEventsPermissions';
@@ -64,6 +65,7 @@ const BusinessEvents = () => {
 
 	const {businessEvents, fetchBusinessEvents, loading} =
 		useGetBusinessEvents(filterQuery);
+	const [modalType, setModalType] = useState('');
 
 	const {client} = useAppPropertiesContext();
 
@@ -88,6 +90,17 @@ const BusinessEvents = () => {
 
 		Liferay.Util.openToast({
 			message: i18n.translate('business-event-canceled-successfully'),
+			type: 'success',
+		});
+	}, [fetchBusinessEvents]);
+
+	const handleOnCompleted = useCallback(() => {
+		fetchBusinessEvents();
+
+		Liferay.Util.openToast({
+			message: i18n.translate(
+				'business-event-actual-go-live-date-recorded-successfully'
+			),
 			type: 'success',
 		});
 	}, [fetchBusinessEvents]);
@@ -184,12 +197,17 @@ const BusinessEvents = () => {
 						{
 							customOptionStyle: 'pr-5',
 							label: i18n.translate('record-actual-go-live'),
-							onClick: () => {},
+							onClick: () => {
+								setModalType('goLiveEvent');
+								onOpenChange(true);
+								setSelectedBusinessEvent(businessEvent);
+							},
 						},
 						{
 							customOptionStyle: 'be-cancel-event-option pr-5',
 							label: i18n.translate('cancel-event'),
 							onClick: () => {
+								setModalType('cancelEvent');
 								onOpenChange(true);
 								setSelectedBusinessEvent(businessEvent);
 							},
@@ -278,7 +296,9 @@ const BusinessEvents = () => {
 	]);
 
 	return loading ? (
-		<div className="py-4">{i18n.translate('loading')}</div>
+		<div className="mx-auto">
+			<ClayLoadingIndicator size="sm" />
+		</div>
 	) : (
 		<div className="py-4">
 			<div>
@@ -314,21 +334,18 @@ const BusinessEvents = () => {
 						/>
 
 						{selectedBusinessEvent && open && (
-							<ClayModal
-								center
-								disableAutoClose
+							<ManageEventModal
+								accountExternalReferenceCode={
+									project?.accountKey || ''
+								}
+								businessEvent={selectedBusinessEvent}
+								client={client}
+								closeFunction={onOpenChange}
+								modalType={modalType}
 								observer={observer}
-							>
-								<CancelEventForm
-									accountExternalReferenceCode={
-										project?.accountKey || ''
-									}
-									businessEvent={selectedBusinessEvent}
-									client={client}
-									closeFunction={onOpenChange}
-									onCancel={handleOnCancel}
-								/>
-							</ClayModal>
+								onCancel={handleOnCancel}
+								onCompleted={handleOnCompleted}
+							/>
 						)}
 					</>
 				) : (

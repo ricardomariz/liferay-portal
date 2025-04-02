@@ -7,7 +7,9 @@ import ClayButton from '@clayui/button';
 import ClayForm, {ClayInput} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import ClayLayout from '@clayui/layout';
+import ClayLink from '@clayui/link';
 import ClayList from '@clayui/list';
+import {ClayTooltipProvider} from '@clayui/tooltip';
 import classNames from 'classnames';
 import {LearnMessage} from 'frontend-js-components-web';
 import {fetch, navigate, sub} from 'frontend-js-web';
@@ -16,6 +18,7 @@ import React, {useRef, useState} from 'react';
 import {IDataSet} from '../..//utils/types';
 import RequiredMark from '../../components/RequiredMark';
 import {API_URL, DEFAULT_FETCH_HEADERS} from '../../utils/constants';
+import getAPIExplorerURL from '../../utils/getAPIExplorerURL';
 import openDefaultFailureToast from '../../utils/openDefaultFailureToast';
 import openDefaultSuccessToast from '../../utils/openDefaultSuccessToast';
 import {IDataSetSectionProps} from '../DataSet';
@@ -125,6 +128,8 @@ const Details = ({
 
 	const {restApplication, restEndpoint, restSchema} = dataSet;
 
+	const apiExplorerURL = getAPIExplorerURL(restApplication);
+
 	return (
 		<ClayLayout.ContainerFluid
 			className="mt-3 visualization-modes"
@@ -208,7 +213,26 @@ const Details = ({
 								</ClayList.ItemTitle>
 
 								<ClayList.ItemText>
-									{restApplication}
+									<ClayTooltipProvider>
+										<ClayLink
+											data-tooltip-align="top"
+											decoration="underline"
+											displayType="tertiary"
+											href={apiExplorerURL}
+											rel="noopener noreferrer"
+											target="_blank"
+											title={apiExplorerURL}
+										>
+											{restApplication}
+
+											<span className="inline-item inline-item-after">
+												<ClayIcon
+													className="text-2 text-secondary"
+													symbol="shortcut"
+												/>
+											</span>
+										</ClayLink>
+									</ClayTooltipProvider>
 								</ClayList.ItemText>
 							</ClayList.ItemField>
 						</ClayList.Item>

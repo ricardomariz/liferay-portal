@@ -32,7 +32,7 @@ import useHasAllEventsPermissions from '../../../hooks/useHasAllEventsPermission
 import useUpdateOrg from '../../../hooks/useUpdateOrg';
 import {getFormattedGoLiveDateTime} from '../../../utils/getFormattedGoLiveDate';
 import useIsSaasOnly from '../../../utils/useIsSaasOnly';
-import BusinessEventsConfirmationPopup from './components/BusinessEventsConfirmationPopup';
+import BusinessEventsConfirmationPage from './components/BusinessEventsConfirmationPage';
 
 interface IProps {
 	businessEvent: IBusinessEvent;
@@ -43,7 +43,6 @@ interface IProps {
 		value: any,
 		shouldValidate?: boolean
 	) => void;
-	touched?: any;
 	values: any;
 }
 
@@ -52,7 +51,6 @@ const BusinessEventsItemEditPage: React.FC<IProps> = ({
 	errors,
 	originalBusinessEvent,
 	setFieldValue,
-	touched,
 	values,
 }) => {
 	const {client} = useAppPropertiesContext();
@@ -165,6 +163,8 @@ const BusinessEventsItemEditPage: React.FC<IProps> = ({
 			eventType: updatedBusinessEvent.eventType?.key,
 			lastComment: reason,
 			newLiferayVersion: updatedBusinessEvent.newLiferayVersion?.key,
+			r_accountEntryToBusinessEvents_accountEntryId:
+				updatedBusinessEvent.r_accountEntryToBusinessEvents_accountEntryId,
 			targetGoLiveDateTime: updatedBusinessEvent.targetGoLiveDateTime,
 			timeZone: updatedBusinessEvent.timeZone?.key,
 		};
@@ -366,7 +366,6 @@ const BusinessEventsItemEditPage: React.FC<IProps> = ({
 		const hasEventType = values.businessEvent.eventType.key;
 		const hasNewLiferayVersion = values.businessEvent.newLiferayVersion.key;
 		const hasTargetGoLiveDate = values.businessEvent.targetGoLiveDate;
-		const hasTouched = Boolean(Object.keys(touched).length);
 
 		let hasAllRequiredFieldsFilled =
 			Boolean(hasEventName) &&
@@ -388,15 +387,12 @@ const BusinessEventsItemEditPage: React.FC<IProps> = ({
 				hasAllRequiredFieldsFilled && hasCurrentLiferayVersion;
 		}
 
-		setBaseButtonDisabled(
-			!hasAllRequiredFieldsFilled || Boolean(hasError) || !hasTouched
-		);
+		setBaseButtonDisabled(!hasAllRequiredFieldsFilled || Boolean(hasError));
 	}, [
 		errors,
 		isDescriptionRequired,
 		isNewLiferayVersionRequired,
 		isSaasOnly,
-		touched,
 		values.businessEvent.currentLiferayVersion,
 		values.businessEvent.description,
 		values.businessEvent.eventType,
@@ -479,7 +475,7 @@ const BusinessEventsItemEditPage: React.FC<IProps> = ({
 					</div>
 
 					{isModalOpen && (
-						<BusinessEventsConfirmationPopup
+						<BusinessEventsConfirmationPage
 							handleSubmit={handleSubmit}
 							message={i18n.translate(
 								'we-understand-that-plans-change-please-let-us-know-why-the-target-go-live-date-for-this-event-is-being-updated'
@@ -493,6 +489,7 @@ const BusinessEventsItemEditPage: React.FC<IProps> = ({
 
 					<div className="mb-4">
 						<NavigationBar
+							fluidSize={false}
 							triggerLabel={i18n.translate('event-details')}
 						>
 							<Nav.Item>
@@ -515,7 +512,7 @@ const BusinessEventsItemEditPage: React.FC<IProps> = ({
 								<>
 									<div className="event-edit-field mb-4">
 										<Select
-											className="ml-3 mr-3"
+											className="mx-3"
 											groupStyle="pb-1"
 											label={i18n.translate('event-type')}
 											name="businessEvent.eventType.key"
@@ -527,7 +524,7 @@ const BusinessEventsItemEditPage: React.FC<IProps> = ({
 									{subscriptionGroups && !isSaasOnly && (
 										<div className="event-edit-field mb-4">
 											<Select
-												className="ml-3 mr-3"
+												className="mx-3"
 												groupStyle="pb-1"
 												label={i18n.translate(
 													'your-current-liferay-version'
@@ -544,8 +541,8 @@ const BusinessEventsItemEditPage: React.FC<IProps> = ({
 									{isNewLiferayVersionRequired && (
 										<div className="event-edit-field mb-4">
 											<Select
-												badgeClassName="ml-3 mr-3"
-												className="ml-3 mr-3"
+												badgeClassName="mx-3"
+												className="mx-3"
 												groupStyle="pb-1"
 												label={i18n.translate(
 													'new-version'
@@ -562,7 +559,7 @@ const BusinessEventsItemEditPage: React.FC<IProps> = ({
 									{isDescriptionRequired && (
 										<div className="event-edit-field mb-4">
 											<Input
-												badgeClassName="ml-3 mr-3"
+												badgeClassName="mx-3"
 												component="textarea"
 												groupStyle="pb-1"
 												label={i18n.translate(
@@ -582,8 +579,8 @@ const BusinessEventsItemEditPage: React.FC<IProps> = ({
 										<ClayInput.Group className="m-0">
 											<ClayInput.GroupItem className="m-0">
 												<DatePicker
-													badgeClassName="ml-3 mr-3"
-													className="ml-3 mr-3"
+													badgeClassName="mx-3"
+													className="mx-3"
 													dateFormat="MM-dd-yyyy"
 													groupStyle="pb-1"
 													label={i18n.translate(
@@ -639,7 +636,7 @@ const BusinessEventsItemEditPage: React.FC<IProps> = ({
 
 									{tickets && !!tickets.length ? (
 										<>
-											<div className="event-edit-field ml-3 mr-3 pb-3">
+											<div className="event-edit-field mx-3 pb-3">
 												<label>
 													{i18n.translate(
 														'are-there-any-support-tickets-impacting-this-event'
@@ -678,7 +675,7 @@ const BusinessEventsItemEditPage: React.FC<IProps> = ({
 											</div>
 
 											{hasImpactingEvents === 'yes' && (
-												<div className="event-edit-field ml-3 mr-3 pb-3">
+												<div className="event-edit-field mx-3 pb-3">
 													<label>
 														{i18n.translate(
 															'please-select-the-tickets-that-are-impacting-this-event'
@@ -703,7 +700,7 @@ const BusinessEventsItemEditPage: React.FC<IProps> = ({
 											)}
 										</>
 									) : (
-										<div className="ml-3 mr-3 pb-3">
+										<div className="mx-3 pb-3">
 											{i18n.translate(
 												'there-are-currently-no-open-tickets-under-this-project'
 											)}
@@ -793,7 +790,6 @@ const BusinessEventsItemEdit: React.FC = () => {
 					errors={formikProps.errors}
 					originalBusinessEvent={businessEvent}
 					setFieldValue={formikProps.setFieldValue}
-					touched={formikProps.touched}
 					values={formikProps.values}
 				/>
 			)}

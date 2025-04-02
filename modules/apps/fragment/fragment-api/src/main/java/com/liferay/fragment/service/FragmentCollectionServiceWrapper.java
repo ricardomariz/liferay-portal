@@ -178,12 +178,32 @@ public class FragmentCollectionServiceWrapper
 
 	@Override
 	public java.util.List<FragmentCollection> getFragmentCollections(
+		long[] groupIds, boolean marketplace, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<FragmentCollection>
+			orderByComparator) {
+
+		return _fragmentCollectionService.getFragmentCollections(
+			groupIds, marketplace, start, end, orderByComparator);
+	}
+
+	@Override
+	public java.util.List<FragmentCollection> getFragmentCollections(
 		long[] groupIds, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<FragmentCollection>
 			orderByComparator) {
 
 		return _fragmentCollectionService.getFragmentCollections(
 			groupIds, start, end, orderByComparator);
+	}
+
+	@Override
+	public java.util.List<FragmentCollection> getFragmentCollections(
+		long[] groupIds, String name, boolean marketplace, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<FragmentCollection>
+			orderByComparator) {
+
+		return _fragmentCollectionService.getFragmentCollections(
+			groupIds, name, marketplace, start, end, orderByComparator);
 	}
 
 	@Override
@@ -229,9 +249,25 @@ public class FragmentCollectionServiceWrapper
 	}
 
 	@Override
+	public int getFragmentCollectionsCount(
+		long[] groupIds, boolean marketplace) {
+
+		return _fragmentCollectionService.getFragmentCollectionsCount(
+			groupIds, marketplace);
+	}
+
+	@Override
 	public int getFragmentCollectionsCount(long[] groupIds, String name) {
 		return _fragmentCollectionService.getFragmentCollectionsCount(
 			groupIds, name);
+	}
+
+	@Override
+	public int getFragmentCollectionsCount(
+		long[] groupIds, String name, boolean marketplace) {
+
+		return _fragmentCollectionService.getFragmentCollectionsCount(
+			groupIds, name, marketplace);
 	}
 
 	/**

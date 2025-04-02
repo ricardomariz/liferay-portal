@@ -1,215 +1,295 @@
-import http from 'http';
+import {ObjectSerializer} from '../utils/SerDes';
 
-import localVarRequest from 'request';
-/* tslint:disable:no-unused-locals */
-import {
-	Authentication,
-	Interceptor,
-	ObjectSerializer,
-	VoidAuth,
-} from '../model/models';
 <#if importClasses??>
 	<#list importClasses?sort as import>
-		import {${import}} from '../model/${import?uncap_first}';
+		import {${import}} from '../models/${import}';
 	</#list>
 </#if>
-
-import {HttpError} from './apis';
-const defaultBasePath = 'http://localhost';
 
 /**
  * @author ${configYAML.author}
  * @generated
  */
 
-export enum ${className}ApiKeys {}
-
 export class ${className} {
-	protected _basePath = defaultBasePath;
+	protected _basePath: string;
 	protected _defaultHeaders: any = {};
-	protected _useQuerystring: boolean = false;
 
-	protected authentications = {
-		default: <Authentication>new VoidAuth(),
-	};
-
-	protected interceptors: Interceptor[] = [];
-
-	constructor(basePath?: string);
-	constructor(
-		basePathOrUsername: string,
-		password?: string,
-		basePath?: string
-	) {
-		if (password) {
-			if (basePath) {
-				this.basePath = basePath;
-			}
+	constructor(basePath?: string) {
+		if (basePath) {
+			this._basePath = basePath;
 		}
-		else {
-			if (basePathOrUsername) {
-				this.basePath = basePathOrUsername;
-			}
-		}
-	}
-
-	set useQuerystring(value: boolean) {
-		this._useQuerystring = value;
-	}
-
-	set basePath(basePath: string) {
-		this._basePath = basePath;
 	}
 
 	set defaultHeaders(defaultHeaders: any) {
 		this._defaultHeaders = defaultHeaders;
 	}
 
-	get defaultHeaders() {
-		return this._defaultHeaders;
-	}
-
-	get basePath() {
-		return this._basePath;
-	}
-
-	public setDefaultAuthentication(auth: Authentication) {
-		this.authentications.default = auth;
-	}
-
-	public setApiKey(key: ${className}ApiKeys, value: string) {
-		(this.authentications as any)[${className}ApiKeys[key]].apiKey =
-			value;
-	}
-
-	public addInterceptor(interceptor: Interceptor) {
-		this.interceptors.push(interceptor);
-	}
-
-	<#list operationsData?sort_by("operationId") as operationData>
+	<#list operationDatas?sort_by("operationId") as operationData>
 		/**
 		 * ${operationData.description!}
 		 <#if operationData.parameters??>
-			 <#list operationData.parameters as parameter>
-				 * @param ${parameter.name} ${parameter.description!}
+		 	<#list operationData.parameters as parameter>
+				 * @param ${parameter.name}
 			 </#list>
 		 </#if>
+		 <#if operationData.bodyParameters?has_content>
+		 	<#if (operationData.bodyParameters?keys?size == 1)>
+			 	<#list operationData.bodyParameters?keys as requestBodyContentType>
+					<#assign firstRequestBodyContentType = requestBodyContentType />
+			 	</#list>
+			 	<#list operationData.bodyParameters[firstRequestBodyContentType] as bodyParameter>
+				 	* @param ${bodyParameter.name}
+			 	</#list>
+		 	<#else>
+		 		* @param requestBody Request body that can be one of multiple content types
+		 	</#if>
+		 </#if>
+		 * @param headers Optional custom request headers
 		 */
-		public async ${operationData.operationId}(
+		public async ${operationData.operationId}<#if operationData.bodyParameters?has_content && (operationData.bodyParameters?keys?size > 1)>WithContentType</#if>(
 			<#if operationData.parameters??>
 				<#list operationData.parameters as parameter>
-					${parameter.name}${parameter.required?then('', '?')}: ${parameter.dataType},
+					<#if parameter.required>
+						${parameter.name}: ${parameter.dataType},
+					</#if>
 				</#list>
 			</#if>
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			<#if operationData.bodyParameters?has_content>
+				<#if (operationData.bodyParameters?keys?size == 1)>
+					<#list operationData.bodyParameters[firstRequestBodyContentType] as bodyParameter>
+						${bodyParameter.name}${bodyParameter.required?then("", "?")}: ${bodyParameter.dataType},
+					</#list>
+				<#else>
+					requestBody:
+						<#list operationData.bodyParameters?keys?sort as requestBodyContentType>
+							{
+								parameters: {
+									<#list operationData.bodyParameters[requestBodyContentType] as bodyParameter>
+										${bodyParameter.name}${bodyParameter.required?then("", "?")}: ${bodyParameter.dataType}<#if bodyParameter?has_next>,</#if>
+									</#list>
+								},
+								type: "${requestBodyContentType}"
+							}
+							<#if requestBodyContentType?has_next>
+								|
+							<#else>
+								,
+							</#if>
+						</#list>
+				</#if>
+			</#if>
+			<#if operationData.parameters??>
+				<#list operationData.parameters as parameter>
+					<#if !parameter.required>
+						${parameter.name}?: ${parameter.dataType},
+					</#if>
+				</#list>
+			</#if>
+			headers?: {[name: string]: string},
 		): Promise<{
 			<#if operationData.returnDataType??>
 				body: ${operationData.returnDataType};
 			<#else>
 				body?: any;
 			</#if>
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '${operationData.path}'
+			<#if operationData.bodyParameters?has_content>
+				let body;
+				<#if (operationData.bodyParameters?keys?size > 1)>
+					<#assign hasMultipartContentType = false />
+					<#list operationData.bodyParameters?keys?sort as requestBodyContentType>
+						<#if requestBodyContentType == "multipart/form-data">
+							<#assign hasMultipartContentType = true />
+						</#if>
+						if (requestBody.type === "${requestBodyContentType}") {
+							<#if requestBodyContentType == "multipart/form-data">
+								const formData = new FormData();
+								<#list operationData.bodyParameters[requestBodyContentType] as bodyParameter>
+									<#if stringUtil.equals(bodyParameter.dataType, "File")>
+										formData.append("${bodyParameter.name}", requestBody.parameters.${bodyParameter.name});
+									<#else>
+										formData.append("${bodyParameter.name}", JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.${bodyParameter.name}, "${bodyParameter.dataType}")));
+									</#if>
+								</#list>
+								body = formData;
+							<#else>
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.${operationData.bodyParameters[requestBodyContentType][0].name}, "${operationData.bodyParameters[requestBodyContentType][0].dataType}"));
+							</#if>
+						}
+					</#list>
+				<#else>
+					<#if firstRequestBodyContentType == "multipart/form-data">
+						const formData = new FormData();
+						<#list operationData.bodyParameters[firstRequestBodyContentType] as bodyParameter>
+							<#if stringUtil.equals(bodyParameter.dataType, "File")>
+								formData.append("${bodyParameter.name}", requestBody.parameters.${bodyParameter.name});
+							<#else>
+								formData.append("${bodyParameter.name}", JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.${bodyParameter.name}, "${bodyParameter.dataType}")));
+							</#if>
+						</#list>
+						body = formData;
+					<#else>
+						body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.${operationData.bodyParameters[firstRequestBodyContentType][0].name}, "${operationData.bodyParameters[firstRequestBodyContentType][0].dataType}"));
+					</#if>
+				</#if>
+			</#if>
+
+			const path = this._basePath + "${operationData.path}"
 				<#list operationData.parameters as parameter>
 					<#if stringUtil.equals(parameter.type, "path")>
-						.replace(
-							'{' + '${parameter.name}' + '}',
-							encodeURIComponent(String(${parameter.name}))
-						)
+						.replace("{${parameter.name}}",encodeURIComponent(${parameter.name}))
 					</#if>
 				</#list>;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-			<#if operationData.responseContentTypes?? && operationData.responseContentTypes?has_content>
-				const responseContentTypes = [<#list operationData.responseContentTypes as responseContentType>'${responseContentType}'<#sep>, </#list>];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			</#if>
-			const localVarFormParams: any = {};
 
+			const queryParameters: any = {};
 			<#if operationData.parameters??>
 				<#list operationData.parameters as parameter>
 					<#if parameter.required>
+
 						if (${parameter.name} === null || ${parameter.name} === undefined) {
-							throw new Error('Required parameter ${parameter.name} was null or undefined when calling ${operationData.operationId}.');
+							throw new Error("Required parameter ${parameter.name} was null or undefined when calling ${operationData.operationId}.");
+						}
+					</#if>
+					<#if stringUtil.equals(parameter.type, "query")>
+
+						if (${parameter.name} !== undefined) {
+							queryParameters["${parameter.name}"] = ObjectSerializer.serialize(${parameter.name}, "${parameter.dataType}");
 						}
 					</#if>
 				</#list>
 			</#if>
-			<#list operationData.parameters as parameter>
-				<#if stringUtil.equals(parameter.type, "query")>
-					if (${parameter.name} !== undefined) {
-						localVarQueryParameters['${parameter.name}'] = ObjectSerializer.serialize(${parameter.name}, "${parameter.dataType}");
+
+			const queryString = Object.keys(queryParameters).length ?
+				"?" + new URLSearchParams(queryParameters).toString() :
+					"";
+
+			const response = await fetch(path + queryString, {
+				<#if operationData.bodyParameters?has_content>
+					body: body,
+				</#if>
+				headers:
+					Object.assign({}, this._defaultHeaders
+					<#if operationData.responseContentTypes?? && operationData.responseContentTypes?has_content>
+						,{
+							<#if operationData.responseContentTypes?seq_contains("application/json")>
+								Accept: "application/json"
+							<#else>
+								Accept: "${operationData.responseContentTypes[0]}"
+							</#if>
+						}
+					</#if>
+					<#if operationData.bodyParameters?has_content>
+						<#if (operationData.bodyParameters?keys?size > 1)>
+							<#if hasMultipartContentType>
+								,(requestBody.type !== "multipart/form-data") ?
+									{"Content-Type": requestBody.type} : {}
+							<#else>
+								,{"Content-Type": requestBody.type}
+							</#if>
+						<#elseif firstRequestBodyContentType != "multipart/form-data">
+							,{"Content-Type": ${firstRequestBodyContentType}}
+						</#if>
+					</#if>
+					,headers || {}
+					),
+				method: "${operationData.httpMethod}",
+			});
+
+			if (response.ok) {
+				const contentType = response.headers.get("content-type") || "";
+
+				<#if operationData.returnDataType??>
+					if (contentType.includes("application/json")) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "${operationData.returnDataType}"), response};
+					}
+					else {
+						return {body: await response.text() as any, response};
+					}
+				<#else>
+					if (contentType.includes("application/json")) {
+						return {body: await response.json(), response};
+					}
+					else {
+						return {body: await response.text(), response};
+					}
+				</#if>
+			}
+			else {
+				throw new Error("HTTP Error " + response.status + ": " + response.statusText + ". " + await response.text());
+			}
+		}
+
+		<#if operationData.bodyParameters?has_content && (operationData.bodyParameters?keys?size > 1)>
+			<#list operationData.bodyParameters?keys as requestBodyContentType>
+				<#if requestBodyContentType == "application/json">
+					/**
+					 * ${operationData.description!} - Default method for JSON body
+					 <#if operationData.parameters??>
+						 <#list operationData.parameters as parameter>
+							 * @param ${parameter.name}
+						 </#list>
+					 </#if>
+					 <#list operationData.bodyParameters[requestBodyContentType] as bodyParameter>
+						 * @param ${bodyParameter.name}
+					 </#list>
+					 */
+					public async ${operationData.operationId}(
+						<#if operationData.parameters??>
+							<#list operationData.parameters as parameter>
+								<#if parameter.required>
+									${parameter.name}: ${parameter.dataType},
+								</#if>
+							</#list>
+						</#if>
+						<#list operationData.bodyParameters[requestBodyContentType] as bodyParameter>
+							${bodyParameter.name}${bodyParameter.required?then("", "?")}: ${bodyParameter.dataType},
+						</#list>
+						<#if operationData.parameters??>
+							<#list operationData.parameters as parameter>
+								<#if !parameter.required>
+									${parameter.name}?: ${parameter.dataType},
+								</#if>
+							</#list>
+						</#if>
+						headers?: {[name: string]: string}
+					): Promise<{
+						<#if operationData.returnDataType??>
+							body: ${operationData.returnDataType};
+						<#else>
+							body?: any;
+						</#if>
+						response: Response;
+					}> {
+						return this.${operationData.operationId}WithContentType(
+							<#if operationData.parameters??>
+								<#list operationData.parameters as parameter>
+									<#if parameter.required>
+										${parameter.name},
+									</#if>
+								</#list>
+							</#if>
+							{
+								parameters: {
+									<#list operationData.bodyParameters[requestBodyContentType] as bodyParameter>
+										${bodyParameter.name}: ${bodyParameter.name}<#if bodyParameter?has_next>,</#if>
+									</#list>
+								},
+								type: "application/json"
+							},
+							<#if operationData.parameters??>
+								<#list operationData.parameters as parameter>
+									<#if !parameter.required>
+										${parameter.name},
+									</#if>
+								</#list>
+							</#if>
+							headers
+						);
 					}
 				</#if>
 			</#list>
-			(<any>Object).assign(localVarHeaderParams, options.headers);
-
-			const localVarUseFormData = false;
-
-			const localVarRequestOptions: localVarRequest.Options = {
-				<#list operationData.parameters as parameter>
-					<#if stringUtil.equals(parameter.type, "body")>
-						body: ObjectSerializer.serialize(${parameter.name}, "${parameter.dataType}"),
-					</#if>
-				</#list>
-				headers: localVarHeaderParams,
-				json: true,
-				method: '${operationData.httpMethod}',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{ <#if operationData.returnDataType??> body: ${operationData.returnDataType};<#else> body?: any;</#if> response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
-						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
-			});
-		});
-	}
+		</#if>
 	</#list>
 }

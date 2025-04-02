@@ -12,24 +12,28 @@ import com.liferay.headless.admin.site.internal.resource.v1_0.util.GroupUtil;
 import com.liferay.headless.admin.site.internal.resource.v1_0.util.LayoutUtil;
 import com.liferay.headless.admin.site.internal.resource.v1_0.util.ServiceContextUtil;
 import com.liferay.headless.admin.site.resource.v1_0.UtilityPageResource;
-import com.liferay.headless.common.spi.service.context.ServiceContextBuilder;
 import com.liferay.layout.utility.page.kernel.constants.LayoutUtilityPageEntryConstants;
 import com.liferay.layout.utility.page.model.LayoutUtilityPageEntry;
 import com.liferay.layout.utility.page.service.LayoutUtilityPageEntryService;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.vulcan.aggregation.Aggregation;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 
+import java.util.Collections;
+import java.util.Locale;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
@@ -187,6 +191,11 @@ public class UtilityPageResourceImpl extends BaseUtilityPageResourceImpl {
 			return _addLayoutUtilityPageEntry(groupId, utilityPage);
 		}
 
+		LayoutUtil.updateContentLayout(
+			layoutUtilityPageEntry.getPlid(),
+			utilityPage.getPageSpecifications(),
+			_getServiceContext(groupId, utilityPage));
+
 		if (Validator.isNotNull(utilityPage.getMarkedAsDefault())) {
 			if (GetterUtil.getBoolean(utilityPage.getMarkedAsDefault()) &&
 				!layoutUtilityPageEntry.isDefaultLayoutUtilityPageEntry()) {
@@ -214,24 +223,59 @@ public class UtilityPageResourceImpl extends BaseUtilityPageResourceImpl {
 				utilityPage.getName()));
 	}
 
+	@Override
+	protected void preparePatch(
+		UtilityPage utilityPage, UtilityPage existingUtilityPage) {
+
+		if (utilityPage.getPageSpecifications() != null) {
+			existingUtilityPage.setPageSpecifications(
+				utilityPage::getPageSpecifications);
+		}
+	}
+
 	private UtilityPage _addLayoutUtilityPageEntry(
 			long groupId, UtilityPage utilityPage)
 		throws Exception {
 
+		ServiceContext serviceContext = _getServiceContext(
+			groupId, utilityPage);
+
 		return _utilityPageDTOConverter.toDTO(
 			_layoutUtilityPageEntryService.addLayoutUtilityPageEntry(
-				utilityPage.getExternalReferenceCode(), groupId, 0L, 0L,
+				utilityPage.getExternalReferenceCode(), groupId,
+				_getLayoutPlid(groupId, utilityPage, serviceContext), 0L,
 				utilityPage.getMarkedAsDefault(), utilityPage.getName(),
-				_getType(utilityPage.getType()), 0L,
-				_getServiceContext(groupId, utilityPage)));
+				_getType(utilityPage.getType()), 0L, serviceContext));
+	}
+
+	private long _getLayoutPlid(
+			long groupId, UtilityPage utilityPage,
+			ServiceContext serviceContext)
+		throws Exception {
+
+		Map<Locale, String> titleMap = Collections.singletonMap(
+			_portal.getSiteDefaultLocale(groupId), utilityPage.getName());
+
+		serviceContext.setAttribute(
+			"layout.instanceable.allowed", Boolean.TRUE);
+
+		Layout layout = LayoutUtil.addContentLayout(
+			groupId, utilityPage.getPageSpecifications(), false, titleMap,
+			LayoutConstants.TYPE_UTILITY, true, true,
+			WorkflowConstants.STATUS_DRAFT, serviceContext);
+
+		if (layout == null) {
+			return 0;
+		}
+
+		return layout.getPlid();
 	}
 
 	private ServiceContext _getServiceContext(
 		long groupId, UtilityPage utilityPage) {
 
-		ServiceContext serviceContext = ServiceContextBuilder.create(
-			groupId, contextHttpServletRequest, null
-		).build();
+		ServiceContext serviceContext = ServiceContextUtil.createServiceContext(
+			groupId, contextHttpServletRequest, contextUser.getUserId());
 
 		serviceContext.setCreateDate(utilityPage.getDateCreated());
 		serviceContext.setModifiedDate(utilityPage.getDateModified());
@@ -284,6 +328,9 @@ public class UtilityPageResourceImpl extends BaseUtilityPageResourceImpl {
 	)
 	private DTOConverter<Layout, PageSpecification>
 		_pageSpecificationDTOConverter;
+
+	@Reference
+	private Portal _portal;
 
 	@Reference(
 		target = "(component.name=com.liferay.headless.admin.site.internal.dto.v1_0.converter.UtilityPageDTOConverter)"

@@ -28,7 +28,6 @@ import com.liferay.portal.kernel.json.JSONSerializer;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.module.util.SystemBundleUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -61,8 +60,6 @@ import org.junit.Test;
 
 import org.mockito.Mockito;
 
-import org.osgi.framework.BundleContext;
-
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
@@ -79,8 +76,6 @@ public class CustomFDSSerializerTest extends BaseFDSSerializerTestCase {
 	@Before
 	public void setUp() {
 		super.setUp();
-
-		_bundleContext = SystemBundleUtil.getBundleContext();
 
 		ThemeDisplay themeDisplay = Mockito.mock(ThemeDisplay.class);
 
@@ -108,10 +103,10 @@ public class CustomFDSSerializerTest extends BaseFDSSerializerTestCase {
 			<String,
 			 ServiceTrackerCustomizerFactory.ServiceWrapper<FDSAPIURLResolver>>
 				serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
-					_bundleContext, FDSAPIURLResolver.class,
+					bundleContext, FDSAPIURLResolver.class,
 					"fds.rest.application.key",
 					ServiceTrackerCustomizerFactory.
-						<FDSAPIURLResolver>serviceWrapper(_bundleContext));
+						<FDSAPIURLResolver>serviceWrapper(bundleContext));
 
 		FDSAPIURLResolverRegistry fdsAPIURLResolverRegistry =
 			new FDSAPIURLResolverRegistryImpl(serviceTrackerMap);
@@ -1106,10 +1101,9 @@ public class CustomFDSSerializerTest extends BaseFDSSerializerTestCase {
 								"label", LABELS[2]
 							).put(
 								"sortable", false
-							))
-					).put(
-						"thumbnail", "table"
-					)
+							)))
+				).put(
+					"thumbnail", "table"
 				)
 			).toString(),
 			_customFDSSerializer.serializeViews(
@@ -1576,6 +1570,8 @@ public class CustomFDSSerializerTest extends BaseFDSSerializerTestCase {
 
 		ReflectionTestUtil.setFieldValue(
 			_customFDSSerializer, "_jsonFactory", new JSONFactoryImpl());
+		ReflectionTestUtil.setFieldValue(
+			_customFDSSerializer, "_systemFDSSerializer", systemFDSSerializer);
 	}
 
 	private void _resetFDSSerializer(
@@ -1590,7 +1586,6 @@ public class CustomFDSSerializerTest extends BaseFDSSerializerTestCase {
 	private static final Log _log = LogFactoryUtil.getLog(
 		CustomFDSSerializerTest.class);
 
-	private static BundleContext _bundleContext;
 	private static CustomFDSSerializer _customFDSSerializer;
 
 }

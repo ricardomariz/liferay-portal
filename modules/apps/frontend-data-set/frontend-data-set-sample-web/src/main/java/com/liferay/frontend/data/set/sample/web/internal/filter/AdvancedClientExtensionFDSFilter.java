@@ -35,6 +35,11 @@ public class AdvancedClientExtensionFDSFilter
 	extends BaseClientExtensionFDSFilter {
 
 	@Override
+	public String getCETExternalReferenceCode() {
+		return "LXC:liferay-sample-fds-filter";
+	}
+
+	@Override
 	public String getEntityFieldType() {
 		return FDSEntityFieldTypes.STRING;
 	}
@@ -46,7 +51,7 @@ public class AdvancedClientExtensionFDSFilter
 
 	@Override
 	public String getLabel() {
-		return "Client Extension";
+		return "client-extension";
 	}
 
 	@Override
@@ -75,7 +80,7 @@ public class AdvancedClientExtensionFDSFilter
 				for (FDSFilterCET fdsFilterCET : fdsFilterCETs) {
 					if (Objects.equals(
 							fdsFilterCET.getExternalReferenceCode(),
-							"LXC:liferay-sample-fds-filter")) {
+							getCETExternalReferenceCode())) {
 
 						moduleURL = fdsFilterCET.getURL();
 

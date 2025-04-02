@@ -1176,10 +1176,6 @@ app.server.type=@{app.server.type}]]></echo>
 				</elseif>
 			</if>
 
-			<setup-libs />
-
-			<setup-yarn />
-
 			<antcall inheritAll="false" target="install-portal-snapshots" />
 
 			<echo if:set="env.JENKINS_HOME">ANT_OPTS=${env.ANT_OPTS}</echo>
@@ -3746,7 +3742,7 @@ information. Make sure to commit in all build-lib-versions results.
 		<run-bundle-blacklist-restart-test database.type="mysql" />
 	</target>
 
-	<target name="bundle-blacklist-restart-postgresql155">
+	<target name="bundle-blacklist-restart-postgresql163">
 		<run-bundle-blacklist-restart-test database.type="postgresql" />
 	</target>
 
@@ -3824,11 +3820,11 @@ information. Make sure to commit in all build-lib-versions results.
 		<run-empty-osgi-core-dir-test database.type="mysql" />
 	</target>
 
-	<target name="empty-osgi-core-dir-postgresql155">
+	<target name="empty-osgi-core-dir-postgresql163">
 		<run-empty-osgi-core-dir-test database.type="postgresql" />
 	</target>
 
-	<target name="empty-osgi-core-dir-postgresql155-jdk21_zulu">
+	<target name="empty-osgi-core-dir-postgresql163-jdk21_zulu">
 		<run-empty-osgi-core-dir-test database.type="postgresql" />
 	</target>
 
@@ -5235,6 +5231,10 @@ information. Make sure to commit in all format-javadoc results.
 		<run-functional-test app.server.type="tomcat" database.type="postgresql" database.version="16.3" test.portal.log.assert="true" />
 	</target>
 
+	<target name="functional-smoke-tomcat90-postgresql163_stable">
+		<run-functional-test app.server.type="tomcat" database.type="postgresql" database.version="16.3" test.portal.log.assert="true" />
+	</target>
+
 	<target name="functional-smoke-tomcat90-sqlserver">
 		<run-functional-test app.server.type="tomcat" database.type="sqlserver" test.portal.log.assert="true" />
 	</target>
@@ -6167,6 +6167,10 @@ information. Make sure to commit in all format-javadoc results.
 		<run-functional-test app.server.type="tomcat" database.type="postgresql" database.version="16.3" />
 	</target>
 
+	<target name="functional-upgrade-tomcat90-postgresql163_stable">
+		<run-functional-test app.server.type="tomcat" database.type="postgresql" database.version="16.3" />
+	</target>
+
 	<target name="functional-upgrade-tomcat90-sqlserver">
 		<run-functional-test app.server.type="tomcat" database.type="sqlserver" />
 	</target>
@@ -6709,7 +6713,7 @@ information. Make sure to commit in all format-javadoc results.
 		</run-batch-test>
 	</target>
 
-	<target name="gogo-shell-client-postgresql155">
+	<target name="gogo-shell-client-postgresql163">
 		<run-batch-test>
 			<test-action>
 				<database-test-run-test database.type="postgresql" stop.app.server="true">
@@ -6950,7 +6954,7 @@ information. Make sure to commit in all format-javadoc results.
 		</run-batch-test>
 	</target>
 
-	<target name="jsp-runtime-compile-postgresql155">
+	<target name="jsp-runtime-compile-postgresql163">
 		<run-batch-test>
 			<test-action>
 				<database-test-run-test database.type="postgresql" stop.app.server="true">
@@ -7031,7 +7035,7 @@ information. Make sure to commit in all format-javadoc results.
 		<run-lpkg-container-test database.type="mysql" />
 	</target>
 
-	<target name="lpkg-container-postgresql155">
+	<target name="lpkg-container-postgresql163">
 		<run-lpkg-container-test database.type="postgresql" />
 	</target>
 
@@ -7039,7 +7043,7 @@ information. Make sure to commit in all format-javadoc results.
 		<run-lpkg-controller-test database.type="mysql" />
 	</target>
 
-	<target name="lpkg-controller-postgresql155">
+	<target name="lpkg-controller-postgresql163">
 		<run-lpkg-controller-test database.type="postgresql" />
 	</target>
 
@@ -7047,7 +7051,7 @@ information. Make sure to commit in all format-javadoc results.
 		<run-lpkg-override-test database.type="mysql" />
 	</target>
 
-	<target name="lpkg-override-postgresql155">
+	<target name="lpkg-override-postgresql163">
 		<run-lpkg-override-test database.type="postgresql" />
 	</target>
 
@@ -7055,7 +7059,7 @@ information. Make sure to commit in all format-javadoc results.
 		<run-lpkg-persistence-test database.type="mysql" />
 	</target>
 
-	<target name="lpkg-persistence-postgresql155">
+	<target name="lpkg-persistence-postgresql163">
 		<run-lpkg-persistence-test database.type="postgresql" />
 	</target>
 
@@ -7063,7 +7067,7 @@ information. Make sure to commit in all format-javadoc results.
 		<run-lpkg-startup-test database.type="mysql" />
 	</target>
 
-	<target name="lpkg-startup-postgresql155">
+	<target name="lpkg-startup-postgresql163">
 		<run-lpkg-startup-test database.type="postgresql" />
 	</target>
 
@@ -7552,11 +7556,11 @@ information. Make sure to commit in all format-javadoc results.
 		<run-modules-integration-test database.type="postgresql" database.version="15.5" />
 	</target>
 
-	<target name="modules-integration-postgresql155_stable">
-		<run-modules-integration-test database.type="postgresql" database.version="15.5" />
+	<target name="modules-integration-postgresql163">
+		<run-modules-integration-test database.type="postgresql" database.version="16.3" />
 	</target>
 
-	<target name="modules-integration-postgresql163">
+	<target name="modules-integration-postgresql163_stable">
 		<run-modules-integration-test database.type="postgresql" database.version="16.3" />
 	</target>
 
@@ -8054,16 +8058,16 @@ ${output.content}</echo>
 		<antcall target="playwright-js-tomcat90-mysql57" />
 	</target>
 
-	<target name="playwright-js-tomcat90-postgresql155">
+	<target name="playwright-js-tomcat90-postgresql163">
 		<run-playwright-js-test database.type="postgresql" />
 	</target>
 
-	<target name="playwright-js-tomcat90-postgresql155-jdk21_zulu">
+	<target name="playwright-js-tomcat90-postgresql163-jdk21_zulu">
 		<run-playwright-js-test database.type="postgresql" />
 	</target>
 
-	<target name="playwright-js-tomcat90-postgresql155_stable">
-		<antcall target="playwright-js-tomcat90-postgresql155" />
+	<target name="playwright-js-tomcat90-postgresql163_stable">
+		<antcall target="playwright-js-tomcat90-postgresql163" />
 	</target>
 
 	<target name="plugins-compile">
@@ -8264,7 +8268,7 @@ ${output.content}</echo>
 		</run-batch-test>
 	</target>
 
-	<target name="portal-license-smoke-postgresql155">
+	<target name="portal-license-smoke-postgresql163">
 		<run-batch-test>
 			<test-action>
 				<database-test-run-test database.type="postgresql" stop.app.server="true">

@@ -79,17 +79,9 @@ public class TypeScriptClientUtil {
 				entry.getValue(), configYAML, copyrightFile, files,
 				"typescript/api",
 				StringBundler.concat(
-					baseClientDir.getPath(), "/src/node/api/",
-					StringUtil.lowerCaseFirstLetter(entry.getKey()), "Api.ts"));
+					baseClientDir.getPath(), "/src/apis/", entry.getKey(),
+					"API.ts"));
 		}
-
-		_createFile(
-			null, configYAML, copyrightFile, files, "typescript/api_global",
-			baseClientDir.getPath() + "/src/node/api.ts");
-		_createFile(
-			Collections.singletonMap("apiContexts", apiContexts.values()),
-			configYAML, copyrightFile, files, "typescript/apis",
-			baseClientDir.getPath() + "/src/node/api/apis.ts");
 
 		Components components = openAPIYAML.getComponents();
 
@@ -103,8 +95,7 @@ public class TypeScriptClientUtil {
 					_buildModelContext(entry.getKey(), entry.getValue()),
 					configYAML, copyrightFile, files, "typescript/model",
 					StringBundler.concat(
-						baseClientDir.getPath(), "/src/node/model/",
-						StringUtil.lowerCaseFirstLetter(entry.getKey()),
+						baseClientDir.getPath(), "/src/models/", entry.getKey(),
 						".ts"));
 				_createRelatedSchemaModels(
 					baseClientDir, configYAML, copyrightFile, files, "",
@@ -113,9 +104,17 @@ public class TypeScriptClientUtil {
 		}
 
 		_createFile(
-			Collections.singletonMap("schemaMap", schemas), configYAML,
-			copyrightFile, files, "typescript/models",
-			baseClientDir.getPath() + "/src/node/model/models.ts");
+			HashMapBuilder.<String, Object>put(
+				"apiContexts", apiContexts.values()
+			).put(
+				"schemas", schemas
+			).build(),
+			configYAML, copyrightFile, files, "typescript/index",
+			baseClientDir.getPath() + "/src/index.ts");
+		_createFile(
+			Collections.singletonMap("schemas", schemas), configYAML,
+			copyrightFile, files, "typescript/serdes",
+			baseClientDir.getPath() + "/src/utils/SerDes.ts");
 
 		FileUtil.deleteFiles(baseClientDir.getPath(), files);
 	}
@@ -254,12 +253,12 @@ public class TypeScriptClientUtil {
 			apiContexts.put(
 				entry.getKey(),
 				HashMapBuilder.<String, Object>put(
-					"className", entry.getKey() + "Api"
+					"className", entry.getKey() + "API"
 				).put(
 					"importClasses",
 					importsMap.getOrDefault(entry.getKey(), new HashSet<>())
 				).put(
-					"operationsData", entry.getValue()
+					"operationDatas", entry.getValue()
 				).build());
 		}
 
@@ -355,6 +354,93 @@ public class TypeScriptClientUtil {
 		Map<ResponseCode, Response> responses = operation.getResponses();
 
 		return HashMapBuilder.<String, Object>put(
+			"bodyParameters",
+			() -> {
+				RequestBody requestBody = operation.getRequestBody();
+
+				if (requestBody == null) {
+					return null;
+				}
+
+				Map<String, Content> requestBodyContent =
+					requestBody.getContent();
+
+				if ((requestBodyContent == null) ||
+					requestBodyContent.isEmpty()) {
+
+					return null;
+				}
+
+				Map<String, List<Map<String, Object>>> bodyParameters =
+					new HashMap<>();
+
+				for (Map.Entry<String, Content> entry :
+						requestBodyContent.entrySet()) {
+
+					if (entry.getValue() == null) {
+						continue;
+					}
+
+					Content content = entry.getValue();
+
+					Schema schema = content.getSchema();
+
+					if (schema == null) {
+						continue;
+					}
+
+					Map<String, Schema> propertySchemas =
+						schema.getPropertySchemas();
+
+					List<Map<String, Object>> list = new ArrayList<>();
+
+					if (propertySchemas != null) {
+						propertySchemas.forEach(
+							(name, propertySchema) -> list.add(
+								HashMapBuilder.<String, Object>put(
+									"dataType",
+									_getDataType(importClasses, propertySchema)
+								).put(
+									"name", StringUtil.replace(name, '-', '_')
+								).put(
+									"required", false
+								).put(
+									"type", "form"
+								).build()));
+					}
+					else {
+						String dataType = _getDataType(importClasses, schema);
+
+						list.add(
+							HashMapBuilder.<String, Object>put(
+								"dataType", dataType
+							).put(
+								"name",
+								() -> {
+									if (Validator.isNull(
+											schema.getReference())) {
+
+										return "body";
+									}
+
+									return StringUtil.replace(
+										StringUtil.lowerCaseFirstLetter(
+											dataType),
+										'-', '_');
+								}
+							).put(
+								"required", false
+							).put(
+								"type", "body"
+							).build());
+					}
+
+					bodyParameters.put(entry.getKey(), list);
+				}
+
+				return bodyParameters;
+			}
+		).put(
 			"description", operation.getDescription()
 		).put(
 			"httpMethod",
@@ -362,7 +448,34 @@ public class TypeScriptClientUtil {
 		).put(
 			"operationId", operation.getOperationId()
 		).put(
-			"parameters", _getParameterDatas(operation, importClasses)
+			"parameters",
+			() -> {
+				if (operation.getParameters() == null) {
+					return null;
+				}
+
+				List<Map<String, Object>> parameterDatas = new ArrayList<>();
+
+				for (Parameter parameter : operation.getParameters()) {
+					parameterDatas.add(
+						HashMapBuilder.<String, Object>put(
+							"dataType",
+							_getDataType(importClasses, parameter.getSchema())
+						).put(
+							"name",
+							StringUtil.replace(
+								parameter.getName(), '-', StringPool.UNDERLINE)
+						).put(
+							"required",
+							Validator.isNotNull(parameter.isRequired()) &&
+							parameter.isRequired()
+						).put(
+							"type", parameter.getIn()
+						).build());
+				}
+
+				return parameterDatas;
+			}
 		).put(
 			"path",
 			() -> {
@@ -590,9 +703,8 @@ public class TypeScriptClientUtil {
 					_buildModelContext(referencedSchemaName, referencedSchema),
 					configYAML, copyrightFile, files, "typescript/model",
 					StringBundler.concat(
-						baseClientDir.getPath(), "/src/node/model/",
-						StringUtil.lowerCaseFirstLetter(referencedSchemaName),
-						".ts"));
+						baseClientDir.getPath(), "/src/models/",
+						referencedSchemaName, ".ts"));
 				_createRelatedSchemaModels(
 					baseClientDir, configYAML, copyrightFile, files,
 					referencedYAMLFile.getAbsolutePath(), processedReferences,
@@ -686,93 +798,21 @@ public class TypeScriptClientUtil {
 				return sb.toString();
 			}
 
-			String schemaFormat = schema.getFormat();
+			String format = schema.getFormat();
 
-			if (Validator.isNotNull(schemaFormat) &&
-				(schemaFormat.equals("date") ||
-				 schemaFormat.equals("date-time"))) {
-
-				return "Date";
+			if (Validator.isNotNull(format)) {
+				if (format.equals("date") || format.equals("date-time")) {
+					return "Date";
+				}
+				else if (format.equals("binary")) {
+					return "File";
+				}
 			}
 
 			return "string";
 		}
 
 		return "any";
-	}
-
-	private static List<Map<String, Object>> _getParameterDatas(
-		Operation operation, Set<String> importClasses) {
-
-		List<Map<String, Object>> parameterDatas = new ArrayList<>();
-
-		if (operation.getParameters() != null) {
-			for (Parameter parameter : operation.getParameters()) {
-				parameterDatas.add(
-					HashMapBuilder.<String, Object>put(
-						"dataType",
-						_getDataType(importClasses, parameter.getSchema())
-					).put(
-						"name",
-						StringUtil.replace(
-							parameter.getName(), '-', StringPool.UNDERLINE)
-					).put(
-						"required",
-						Validator.isNotNull(parameter.isRequired()) &&
-						parameter.isRequired()
-					).put(
-						"type", parameter.getIn()
-					).build());
-			}
-		}
-
-		RequestBody requestBody = operation.getRequestBody();
-
-		if (requestBody == null) {
-			return parameterDatas;
-		}
-
-		Map<String, Content> content = requestBody.getContent();
-
-		if ((content == null) || content.isEmpty()) {
-			return parameterDatas;
-		}
-
-		Collection<Content> contents = content.values();
-
-		Iterator<Content> iterator = contents.iterator();
-
-		Content firstBodyContent = iterator.next();
-
-		if (firstBodyContent == null) {
-			return parameterDatas;
-		}
-
-		Schema schema = firstBodyContent.getSchema();
-
-		if (schema == null) {
-			return parameterDatas;
-		}
-
-		// TODO Retrieve "required" property inside requestBody
-
-		String dataType = _getDataType(importClasses, schema);
-
-		parameterDatas.add(
-			HashMapBuilder.<String, Object>put(
-				"dataType", dataType
-			).put(
-				"name",
-				StringUtil.replace(
-					Validator.isNull(schema.getReference()) ? "body" : dataType,
-					'-', '_')
-			).put(
-				"required", false
-			).put(
-				"type", "body"
-			).build());
-
-		return parameterDatas;
 	}
 
 }

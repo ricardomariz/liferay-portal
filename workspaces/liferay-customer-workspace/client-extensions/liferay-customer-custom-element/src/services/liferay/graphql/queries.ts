@@ -461,6 +461,20 @@ export const getBannedEmailDomains = gql`
 	}
 `;
 
+export const getBusinessEvent = gql`
+	query getBusinessEvent($businessEventId: Long!) {
+		businessEvent(businessEventId: $businessEventId)
+			@rest(
+				method: "GET"
+				type: "C_BusinessEvent"
+				path: "/c/businessevents/{args.businessEventId}"
+			) {
+			id
+			r_accountEntryToBusinessEvents_accountEntryId
+		}
+	}
+`;
+
 export const getCommerceOrderItems = gql`
 	query getCommerceOrderItems(
 		$filter: String
@@ -806,6 +820,7 @@ export const updateBusinessEvent = gql`
 			description
 			eventType
 			feedback
+			lastComment
 			name
 			newLiferayVersion
 			targetGoLiveDateTime

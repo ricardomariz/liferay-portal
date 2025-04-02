@@ -39,6 +39,7 @@ import com.liferay.style.book.service.StyleBookEntryServiceUtil;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -46,6 +47,121 @@ import java.util.Objects;
  * @author Lourdes Fernández Besada
  */
 public class LayoutUtil {
+
+	public static Layout addContentLayout(
+			long groupId, PageSpecification[] pageSpecifications,
+			boolean privateLayout, Map<Locale, String> titleMap, String type,
+			boolean hidden, boolean system, int status,
+			ServiceContext serviceContext)
+		throws Exception {
+
+		if (pageSpecifications == null) {
+			return null;
+		}
+
+		if (pageSpecifications.length != 2) {
+			throw new UnsupportedOperationException();
+		}
+
+		ContentPageSpecification draftContentPageSpecification = null;
+		ContentPageSpecification publishedContentPageSpecification =
+			(ContentPageSpecification)pageSpecifications[0];
+
+		if (Validator.isNull(
+				publishedContentPageSpecification.
+					getDraftContentPageSpecificationExternalReferenceCode())) {
+
+			draftContentPageSpecification = publishedContentPageSpecification;
+			publishedContentPageSpecification =
+				(ContentPageSpecification)pageSpecifications[1];
+		}
+		else {
+			draftContentPageSpecification =
+				(ContentPageSpecification)pageSpecifications[1];
+		}
+
+		if (Validator.isNull(
+				publishedContentPageSpecification.
+					getDraftContentPageSpecificationExternalReferenceCode()) ||
+			!Objects.equals(
+				draftContentPageSpecification.getExternalReferenceCode(),
+				publishedContentPageSpecification.
+					getDraftContentPageSpecificationExternalReferenceCode())) {
+
+			throw new UnsupportedOperationException();
+		}
+
+		UnicodeProperties typeSettingsUnicodeProperties =
+			new UnicodeProperties();
+
+		Settings settings = publishedContentPageSpecification.getSettings();
+
+		if ((settings == null) ||
+			Validator.isNull(settings.getMasterPageItemExternalReference())) {
+
+			typeSettingsUnicodeProperties.setProperty(
+				"lfr-theme:regular:show-footer", Boolean.FALSE.toString());
+			typeSettingsUnicodeProperties.setProperty(
+				"lfr-theme:regular:show-header", Boolean.FALSE.toString());
+			typeSettingsUnicodeProperties.setProperty(
+				"lfr-theme:regular:show-header-search",
+				Boolean.FALSE.toString());
+			typeSettingsUnicodeProperties.setProperty(
+				"lfr-theme:regular:wrap-widget-page-content",
+				Boolean.FALSE.toString());
+		}
+
+		serviceContext.setAttribute(
+			"defaultSegmentsExperienceExternalReferenceCode",
+			SegmentsExperienceUtil.
+				getDefaultSegmentsExperienceExternalReferenceCode(
+					publishedContentPageSpecification.getPageExperiences()));
+		serviceContext.setAttribute(
+			"draftLayoutDefaultSegmentsExperienceExternalReferenceCode",
+			SegmentsExperienceUtil.
+				getDefaultSegmentsExperienceExternalReferenceCode(
+					draftContentPageSpecification.getPageExperiences()));
+		serviceContext.setAttribute(
+			"draftLayoutExternalReferenceCode",
+			draftContentPageSpecification.getExternalReferenceCode());
+
+		if (Objects.equals(
+				publishedContentPageSpecification.getStatus(),
+				PageSpecification.Status.APPROVED)) {
+
+			serviceContext.setAttribute("published", Boolean.TRUE.toString());
+
+			typeSettingsUnicodeProperties.setProperty(
+				LayoutTypeSettingsConstants.KEY_PUBLISHED,
+				Boolean.TRUE.toString());
+		}
+		else {
+			serviceContext.setAttribute("published", Boolean.FALSE.toString());
+		}
+
+		Layout layout = LayoutLocalServiceUtil.addLayout(
+			publishedContentPageSpecification.getExternalReferenceCode(),
+			serviceContext.getUserId(), groupId, privateLayout, 0, 0, 0,
+			titleMap, titleMap, null, null, null, type,
+			typeSettingsUnicodeProperties.toString(), hidden, system,
+			new HashMap<>(), 0L, serviceContext);
+
+		int draftLayoutStatus = WorkflowConstants.STATUS_APPROVED;
+
+		if (Objects.equals(
+				draftContentPageSpecification.getStatus(),
+				PageSpecification.Status.DRAFT)) {
+
+			draftLayoutStatus = WorkflowConstants.STATUS_DRAFT;
+		}
+
+		updateLayout(
+			draftContentPageSpecification, layout.fetchDraftLayout(),
+			draftLayoutStatus, serviceContext);
+
+		return updateLayout(
+			publishedContentPageSpecification, layout, status, serviceContext);
+	}
 
 	public static Layout addDraftToLayout(
 			ContentPageSpecification contentPageSpecification, Layout layout,
@@ -95,6 +211,82 @@ public class LayoutUtil {
 		return GetterUtil.getBoolean(
 			draftLayout.getTypeSettingsProperty(
 				LayoutTypeSettingsConstants.KEY_PUBLISHED));
+	}
+
+	public static Layout updateContentLayout(
+			long plid, PageSpecification[] pageSpecifications,
+			ServiceContext serviceContext)
+		throws Exception {
+
+		if (pageSpecifications == null) {
+			return LayoutLocalServiceUtil.getLayout(plid);
+		}
+
+		if (pageSpecifications.length != 2) {
+			throw new UnsupportedOperationException();
+		}
+
+		Layout layout = LayoutLocalServiceUtil.getLayout(plid);
+
+		ContentPageSpecification draftContentPageSpecification = null;
+		ContentPageSpecification publishedContentPageSpecification =
+			(ContentPageSpecification)pageSpecifications[0];
+
+		if (!Objects.equals(
+				layout.getExternalReferenceCode(),
+				publishedContentPageSpecification.getExternalReferenceCode())) {
+
+			draftContentPageSpecification = publishedContentPageSpecification;
+			publishedContentPageSpecification =
+				(ContentPageSpecification)pageSpecifications[1];
+		}
+		else {
+			draftContentPageSpecification =
+				(ContentPageSpecification)pageSpecifications[1];
+		}
+
+		Layout draftLayout = layout.fetchDraftLayout();
+
+		if (!Objects.equals(
+				draftLayout.getExternalReferenceCode(),
+				draftContentPageSpecification.getExternalReferenceCode()) ||
+			!Objects.equals(
+				layout.getExternalReferenceCode(),
+				publishedContentPageSpecification.getExternalReferenceCode()) ||
+			!Objects.equals(
+				publishedContentPageSpecification.
+					getDraftContentPageSpecificationExternalReferenceCode(),
+				draftContentPageSpecification.getExternalReferenceCode())) {
+
+			throw new UnsupportedOperationException();
+		}
+
+		int draftLayoutStatus = WorkflowConstants.STATUS_APPROVED;
+
+		if (Objects.equals(
+				draftContentPageSpecification.getStatus(),
+				PageSpecification.Status.DRAFT)) {
+
+			draftLayoutStatus = WorkflowConstants.STATUS_DRAFT;
+		}
+
+		int status = layout.getStatus();
+
+		if (Objects.equals(
+				publishedContentPageSpecification.getStatus(),
+				PageSpecification.Status.APPROVED)) {
+
+			serviceContext.setAttribute("published", Boolean.TRUE.toString());
+
+			status = WorkflowConstants.STATUS_APPROVED;
+		}
+
+		updateLayout(
+			draftContentPageSpecification, draftLayout, draftLayoutStatus,
+			serviceContext);
+
+		return updateLayout(
+			publishedContentPageSpecification, layout, status, serviceContext);
 	}
 
 	public static Layout updateLayout(

@@ -12,8 +12,24 @@ import com.liferay.frontend.data.set.action.FDSCreationMenu;
 import com.liferay.frontend.data.set.action.FDSCreationMenuRegistry;
 import com.liferay.frontend.data.set.action.FDSItemsActions;
 import com.liferay.frontend.data.set.action.FDSItemsActionsRegistry;
+import com.liferay.frontend.data.set.action.util.FDSActionUtil;
 import com.liferay.frontend.data.set.admin.web.internal.constants.FDSAdminPortletKeys;
+import com.liferay.frontend.data.set.filter.BaseClientExtensionFDSFilter;
+import com.liferay.frontend.data.set.filter.BaseDateRangeFDSFilter;
+import com.liferay.frontend.data.set.filter.BaseSelectionFDSFilter;
+import com.liferay.frontend.data.set.filter.FDSFilter;
+import com.liferay.frontend.data.set.filter.FDSFilterRegistry;
 import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
+import com.liferay.frontend.data.set.model.FDSSortItem;
+import com.liferay.frontend.data.set.sort.FDSSorts;
+import com.liferay.frontend.data.set.sort.FDSSortsRegistry;
+import com.liferay.frontend.data.set.view.FDSView;
+import com.liferay.frontend.data.set.view.FDSViewRegistry;
+import com.liferay.frontend.data.set.view.cards.BaseCardsFDSView;
+import com.liferay.frontend.data.set.view.list.BaseListFDSView;
+import com.liferay.frontend.data.set.view.table.BaseTableFDSView;
+import com.liferay.frontend.data.set.view.table.FDSTableSchema;
+import com.liferay.frontend.data.set.view.table.FDSTableSchemaField;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.object.constants.ObjectEntryFolderConstants;
@@ -22,23 +38,34 @@ import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryService;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseTransactionalMVCResourceCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.Serializable;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
@@ -114,31 +141,269 @@ public class ImportSystemDataSetMVCResourceCommand
 
 		if (fdsCreationMenu != null) {
 			_addFDSCreationMenuObjectEntries(
-				objectEntry.getObjectEntryId(),
 				dataSetActionObjectDefinition.getDefaultLanguageId(),
 				fdsCreationMenu, _portal.getHttpServletRequest(resourceRequest),
-				dataSetActionObjectDefinition.getObjectDefinitionId());
+				dataSetActionObjectDefinition.getObjectDefinitionId(),
+				objectEntry);
 		}
+
+		_addFDSFiltersObjectEntries(
+			_fdsFilterRegistry.getFDSFilters(fdsName),
+			_portal.getHttpServletRequest(resourceRequest), objectEntry);
 
 		FDSItemsActions fdsItemsActions =
 			_fdsItemsActionsRegistry.getFDSItemsActions(fdsName);
 
 		if (fdsItemsActions != null) {
 			_addFDSItemsActionsObjectEntries(
-				objectEntry.getObjectEntryId(),
 				dataSetActionObjectDefinition.getDefaultLanguageId(),
 				fdsItemsActions, _portal.getHttpServletRequest(resourceRequest),
-				dataSetActionObjectDefinition.getObjectDefinitionId());
+				dataSetActionObjectDefinition.getObjectDefinitionId(),
+				objectEntry);
+		}
+
+		FDSSorts fdsSorts = _fdsSortsRegistry.getFDSSorts(fdsName);
+
+		if (fdsSorts != null) {
+			_addFDSSortsObjectEntries(
+				fdsSorts, _portal.getHttpServletRequest(resourceRequest),
+				objectEntry);
+		}
+
+		for (FDSView fdsView : _fdsViewRegistry.getFDSViews(fdsName)) {
+			if (fdsView instanceof BaseCardsFDSView) {
+				_addBaseCardsFDSViewObjectEntries(
+					(BaseCardsFDSView)fdsView,
+					_portal.getHttpServletRequest(resourceRequest),
+					objectEntry);
+			}
+
+			if (fdsView instanceof BaseListFDSView) {
+				_addBaseListFDSViewObjectEntries(
+					(BaseListFDSView)fdsView,
+					_portal.getHttpServletRequest(resourceRequest),
+					objectEntry);
+			}
+
+			if (fdsView instanceof BaseTableFDSView) {
+				_addBaseTableFDSViewObjectEntries(
+					(BaseTableFDSView)fdsView,
+					_portal.getHttpServletRequest(resourceRequest),
+					objectEntry);
+			}
 		}
 
 		JSONPortletResponseUtil.writeJSON(
 			resourceRequest, resourceResponse, objectEntry);
 	}
 
+	private void _addBaseCardsFDSViewObjectEntries(
+			BaseCardsFDSView baseCardsFDSView,
+			HttpServletRequest httpServletRequest, ObjectEntry objectEntry)
+		throws Exception {
+
+		ObjectDefinition objectDefinition =
+			_objectDefinitionLocalService.
+				fetchObjectDefinitionByExternalReferenceCode(
+					"L_DATA_SET_CARDS_SECTION",
+					_portal.getCompanyId(httpServletRequest));
+
+		Map<String, String> map = HashMapBuilder.put(
+			"description", baseCardsFDSView.getDescription()
+		).put(
+			"image", baseCardsFDSView.getImage()
+		).put(
+			"symbol", baseCardsFDSView.getSymbol()
+		).put(
+			"title", baseCardsFDSView.getTitle()
+		).build();
+
+		for (Map.Entry<String, String> entry : map.entrySet()) {
+			if (Validator.isNull(entry.getValue())) {
+				continue;
+			}
+
+			_objectEntryService.addObjectEntry(
+				0, objectDefinition.getObjectDefinitionId(),
+				ObjectEntryFolderConstants.
+					PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
+				null,
+				HashMapBuilder.<String, Serializable>put(
+					"fieldName", entry.getValue()
+				).put(
+					"name", entry.getKey()
+				).put(
+					"r_dataSetToDataSetCardsSections_l_dataSetId",
+					objectEntry.getObjectEntryId()
+				).build(),
+				new ServiceContext());
+		}
+
+		if (baseCardsFDSView.isDefault()) {
+			Map<String, Serializable> values = objectEntry.getValues();
+
+			values.put("defaultVisualizationMode", "cards");
+
+			_objectEntryService.updateObjectEntry(
+				objectEntry.getObjectEntryId(), values, new ServiceContext());
+		}
+	}
+
+	private void _addBaseListFDSViewObjectEntries(
+			BaseListFDSView baseListFDSView,
+			HttpServletRequest httpServletRequest, ObjectEntry objectEntry)
+		throws Exception {
+
+		ObjectDefinition objectDefinition =
+			_objectDefinitionLocalService.
+				fetchObjectDefinitionByExternalReferenceCode(
+					"L_DATA_SET_LIST_SECTION",
+					_portal.getCompanyId(httpServletRequest));
+
+		Map<String, String> map = HashMapBuilder.put(
+			"description", baseListFDSView.getDescription()
+		).put(
+			"image", baseListFDSView.getImage()
+		).put(
+			"symbol", baseListFDSView.getSymbol()
+		).put(
+			"title", baseListFDSView.getTitle()
+		).build();
+
+		for (Map.Entry<String, String> entry : map.entrySet()) {
+			if (Validator.isNull(entry.getValue())) {
+				continue;
+			}
+
+			_objectEntryService.addObjectEntry(
+				0, objectDefinition.getObjectDefinitionId(),
+				ObjectEntryFolderConstants.
+					PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
+				null,
+				HashMapBuilder.<String, Serializable>put(
+					"fieldName", entry.getValue()
+				).put(
+					"name", entry.getKey()
+				).put(
+					"r_dataSetToDataSetListSections_l_dataSetId",
+					objectEntry.getObjectEntryId()
+				).build(),
+				new ServiceContext());
+		}
+
+		if (baseListFDSView.isDefault()) {
+			Map<String, Serializable> values = objectEntry.getValues();
+
+			values.put("defaultVisualizationMode", "list");
+
+			_objectEntryService.updateObjectEntry(
+				objectEntry.getObjectEntryId(), values, new ServiceContext());
+		}
+	}
+
+	private void _addBaseTableFDSViewObjectEntries(
+			BaseTableFDSView baseTableFDSView,
+			HttpServletRequest httpServletRequest, ObjectEntry objectEntry)
+		throws Exception {
+
+		ObjectDefinition objectDefinition =
+			_objectDefinitionLocalService.
+				fetchObjectDefinitionByExternalReferenceCode(
+					"L_DATA_SET_TABLE_SECTION",
+					_portal.getCompanyId(httpServletRequest));
+
+		FDSTableSchema fdsTableSchema = baseTableFDSView.getFDSTableSchema(
+			_portal.getLocale(httpServletRequest));
+
+		Map<String, FDSTableSchemaField> map =
+			fdsTableSchema.getFDSTableSchemaFieldsMap();
+
+		for (FDSTableSchemaField fdsTableSchemaField : map.values()) {
+			_objectEntryService.addObjectEntry(
+				0, objectDefinition.getObjectDefinitionId(),
+				ObjectEntryFolderConstants.
+					PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
+				null,
+				HashMapBuilder.<String, Serializable>put(
+					"externalReferenceCode",
+					StringBundler.concat(
+						objectEntry.getExternalReferenceCode(), "_",
+						fdsTableSchemaField.getFieldName())
+				).put(
+					"fieldName",
+					StringUtil.removeLast(
+						fdsTableSchemaField.getFieldName(), ".LANG")
+				).put(
+					"label_i18n",
+					() -> {
+						String label = fdsTableSchemaField.getLabel();
+
+						if (fdsTableSchemaField.isLocalizeLabel()) {
+							return _getI18nMap(label);
+						}
+
+						return HashMapBuilder.put(
+							objectDefinition.getDefaultLanguageId(), label
+						).put(
+							LocaleUtil.toLanguageId(
+								_portal.getLocale(httpServletRequest)),
+							label
+						).build();
+					}
+				).put(
+					"r_dataSetToDataSetTableSections_l_dataSetId",
+					objectEntry.getObjectEntryId()
+				).put(
+					"renderer",
+					() -> {
+						if (fdsTableSchemaField.
+								isContentRendererClientExtension()) {
+
+							return null;
+						}
+
+						String contentRenderer =
+							fdsTableSchemaField.getContentRenderer();
+
+						if (Validator.isNotNull(contentRenderer)) {
+							return contentRenderer;
+						}
+
+						return "default";
+					}
+				).put(
+					"rendererType",
+					() -> {
+						if (fdsTableSchemaField.
+								isContentRendererClientExtension()) {
+
+							return "clientExtension";
+						}
+
+						return "internal";
+					}
+				).put(
+					"sortable", fdsTableSchemaField.isSortable()
+				).put(
+					"type", "string"
+				).build(),
+				new ServiceContext());
+		}
+
+		if (baseTableFDSView.isDefault()) {
+			Map<String, Serializable> values = objectEntry.getValues();
+
+			values.put("defaultVisualizationMode", "table");
+
+			_objectEntryService.updateObjectEntry(
+				objectEntry.getObjectEntryId(), values, new ServiceContext());
+		}
+	}
+
 	private void _addFDSCreationMenuObjectEntries(
-			long dataSetId, String defaultLanguageId,
-			FDSCreationMenu fdsCreationMenu,
-			HttpServletRequest httpServletRequest, long objectDefinitionId)
+			String defaultLanguageId, FDSCreationMenu fdsCreationMenu,
+			HttpServletRequest httpServletRequest, long objectDefinitionId,
+			ObjectEntry objectEntry)
 		throws Exception {
 
 		CreationMenu creationMenu = fdsCreationMenu.getCreationMenu(
@@ -162,7 +427,8 @@ public class ImportSystemDataSetMVCResourceCommand
 							defaultLanguageId,
 							_getOptionalValue(dropdownItem.get("label")))
 					).put(
-						"r_dataSetToDataSetActions_l_dataSetId", dataSetId
+						"r_dataSetToDataSetActions_l_dataSetId",
+						objectEntry.getObjectEntryId()
 					).put(
 						"target", String.valueOf(dropdownItem.get("target"))
 					).put(
@@ -227,7 +493,10 @@ public class ImportSystemDataSetMVCResourceCommand
 				}
 
 				_objectEntryService.addOrUpdateObjectEntry(
-					String.valueOf(id), 0, objectDefinitionId,
+					FDSActionUtil.getFDSCreationActionExternalReferenceCode(
+						objectEntry.getExternalReferenceCode(),
+						String.valueOf(id)),
+					0, objectDefinitionId,
 					ObjectEntryFolderConstants.
 						PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
 					HashMapBuilder.<String, Serializable>put(
@@ -239,7 +508,8 @@ public class ImportSystemDataSetMVCResourceCommand
 							defaultLanguageId,
 							_getOptionalValue(dropdownItem.get("label")))
 					).put(
-						"r_dataSetToDataSetActions_l_dataSetId", dataSetId
+						"r_dataSetToDataSetActions_l_dataSetId",
+						objectEntry.getObjectEntryId()
 					).put(
 						"target", FDSEntryItemImportPolicy.ITEM_PROXY
 					).put(
@@ -255,7 +525,8 @@ public class ImportSystemDataSetMVCResourceCommand
 					PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
 				null,
 				HashMapBuilder.<String, Serializable>put(
-					"r_dataSetToDataSetActions_l_dataSetId", dataSetId
+					"r_dataSetToDataSetActions_l_dataSetId",
+					objectEntry.getObjectEntryId()
 				).put(
 					"target", FDSEntryItemImportPolicy.GROUP_PROXY
 				).put(
@@ -265,10 +536,87 @@ public class ImportSystemDataSetMVCResourceCommand
 		}
 	}
 
+	private void _addFDSFiltersObjectEntries(
+			List<FDSFilter> fdsFilters, HttpServletRequest httpServletRequest,
+			ObjectEntry objectEntry)
+		throws Exception {
+
+		for (FDSFilter fdsFilter : fdsFilters) {
+			Map<String, Serializable> values =
+				HashMapBuilder.<String, Serializable>put(
+					"entityFieldType", fdsFilter.getEntityFieldType()
+				).put(
+					"fieldName", fdsFilter.getId()
+				).put(
+					"label_i18n", _getI18nMap(fdsFilter.getLabel())
+				).put(
+					"type", fdsFilter.getType()
+				).build();
+
+			String externalReferenceCode = StringPool.BLANK;
+
+			if (fdsFilter instanceof BaseClientExtensionFDSFilter) {
+				externalReferenceCode = "L_DATA_SET_CLIENT_EXTENSION_FILTER";
+
+				BaseClientExtensionFDSFilter clientExtensionFDSFilter =
+					(BaseClientExtensionFDSFilter)fdsFilter;
+
+				values.put(
+					"clientExtensionEntryERC",
+					clientExtensionFDSFilter.getCETExternalReferenceCode());
+
+				values.put(
+					"r_dataSetToDataSetClientExtensionFilters_l_dataSetId",
+					objectEntry.getObjectEntryId());
+			}
+			else if (fdsFilter instanceof BaseDateRangeFDSFilter) {
+				externalReferenceCode = "L_DATA_SET_DATE_FILTER";
+
+				JSONObject jsonObject = JSONUtil.put(
+					"preloadedData", fdsFilter.getPreloadedData());
+
+				values.put("from", jsonObject.getString("from"));
+
+				values.put(
+					"r_dataSetToDataSetDateFilters_l_dataSetId",
+					objectEntry.getObjectEntryId());
+				values.put("to", jsonObject.getString("to"));
+				values.put("type", fdsFilter.getEntityFieldType());
+			}
+			else if (fdsFilter instanceof BaseSelectionFDSFilter) {
+				externalReferenceCode = "L_DATA_SET_SELECTION_FILTER";
+
+				values.put("sourceType", FDSEntryItemImportPolicy.ITEM_PROXY);
+				values.put(
+					"r_dataSetToDataSetSelectionFilters_l_dataSetId",
+					objectEntry.getObjectEntryId());
+			}
+			else {
+				throw new IllegalArgumentException(
+					StringBundler.concat(
+						"FDSFilter is not an instance of ",
+						"BaseClientExtensionFDSFilter, ",
+						"BaseDateRangeFDSFilter, or BaseSelectionFDSFilter"));
+			}
+
+			ObjectDefinition objectDefinition =
+				_objectDefinitionLocalService.
+					getObjectDefinitionByExternalReferenceCode(
+						externalReferenceCode,
+						_portal.getCompanyId(httpServletRequest));
+
+			_objectEntryService.addObjectEntry(
+				0, objectDefinition.getObjectDefinitionId(),
+				ObjectEntryFolderConstants.
+					PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
+				null, values, new ServiceContext());
+		}
+	}
+
 	private void _addFDSItemsActionsObjectEntries(
-			long dataSetId, String defaultLanguageId,
-			FDSItemsActions fdsItemsActions,
-			HttpServletRequest httpServletRequest, long objectDefinitionId)
+			String defaultLanguageId, FDSItemsActions fdsItemsActions,
+			HttpServletRequest httpServletRequest, long objectDefinitionId,
+			ObjectEntry objectEntry)
 		throws Exception {
 
 		List<FDSActionDropdownItem> fdsActionDropdownItems =
@@ -284,11 +632,19 @@ public class ImportSystemDataSetMVCResourceCommand
 				Map<String, Object> data =
 					(Map<String, Object>)fdsActionDropdownItem.get("data");
 
-				_objectEntryService.addObjectEntry(
+				Object id = data.get("id");
+
+				if (id == null) {
+					continue;
+				}
+
+				_objectEntryService.addOrUpdateObjectEntry(
+					FDSActionUtil.getFDSItemActionExternalReferenceCode(
+						objectEntry.getExternalReferenceCode(),
+						String.valueOf(id)),
 					0, objectDefinitionId,
 					ObjectEntryFolderConstants.
 						PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
-					null,
 					HashMapBuilder.<String, Serializable>put(
 						"confirmationMessage_i18n",
 						() -> _getLocalizeableValue(
@@ -322,7 +678,8 @@ public class ImportSystemDataSetMVCResourceCommand
 						"permissionKey",
 						() -> _getOptionalValue(data.get("permissionKey"))
 					).put(
-						"r_dataSetToDataSetActions_l_dataSetId", dataSetId
+						"r_dataSetToDataSetActions_l_dataSetId",
+						objectEntry.getObjectEntryId()
 					).put(
 						"requestBody",
 						() -> _getOptionalValue(data.get("requestBody"))
@@ -365,7 +722,10 @@ public class ImportSystemDataSetMVCResourceCommand
 				}
 
 				_objectEntryService.addOrUpdateObjectEntry(
-					String.valueOf(id), 0, objectDefinitionId,
+					FDSActionUtil.getFDSItemActionExternalReferenceCode(
+						objectEntry.getExternalReferenceCode(),
+						String.valueOf(id)),
+					0, objectDefinitionId,
 					ObjectEntryFolderConstants.
 						PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
 					HashMapBuilder.<String, Serializable>put(
@@ -379,7 +739,8 @@ public class ImportSystemDataSetMVCResourceCommand
 							_getOptionalValue(
 								fdsActionDropdownItem.get("label")))
 					).put(
-						"r_dataSetToDataSetActions_l_dataSetId", dataSetId
+						"r_dataSetToDataSetActions_l_dataSetId",
+						objectEntry.getObjectEntryId()
 					).put(
 						"target", FDSEntryItemImportPolicy.ITEM_PROXY
 					).put(
@@ -395,7 +756,8 @@ public class ImportSystemDataSetMVCResourceCommand
 					PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
 				null,
 				HashMapBuilder.<String, Serializable>put(
-					"r_dataSetToDataSetActions_l_dataSetId", dataSetId
+					"r_dataSetToDataSetActions_l_dataSetId",
+					objectEntry.getObjectEntryId()
 				).put(
 					"target", FDSEntryItemImportPolicy.GROUP_PROXY
 				).put(
@@ -403,6 +765,106 @@ public class ImportSystemDataSetMVCResourceCommand
 				).build(),
 				new ServiceContext());
 		}
+	}
+
+	private void _addFDSSortsObjectEntries(
+			FDSSorts fdsSorts, HttpServletRequest httpServletRequest,
+			ObjectEntry objectEntry)
+		throws Exception {
+
+		List<FDSSortItem> fdsSortItems = fdsSorts.getFDSSortItems(
+			httpServletRequest);
+
+		if (ListUtil.isEmpty(fdsSortItems)) {
+			return;
+		}
+
+		ObjectDefinition objectDefinition =
+			_objectDefinitionLocalService.
+				fetchObjectDefinitionByExternalReferenceCode(
+					"L_DATA_SET_SORT",
+					_portal.getCompanyId(httpServletRequest));
+
+		if (fdsSorts.getFDSEntryItemImportPolicy() ==
+				FDSEntryItemImportPolicy.GROUP_PROXY) {
+
+			_objectEntryService.addObjectEntry(
+				0, objectDefinition.getObjectDefinitionId(),
+				ObjectEntryFolderConstants.
+					PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
+				null,
+				HashMapBuilder.<String, Serializable>put(
+					"default", false
+				).put(
+					"fieldName", "*"
+				).put(
+					"label_i18n",
+					() -> _getLocalizeableValue(
+						objectDefinition.getDefaultLanguageId(), "*")
+				).put(
+					"orderType", FDSEntryItemImportPolicy.GROUP_PROXY
+				).put(
+					"r_dataSetToDataSetSorts_l_dataSetId",
+					objectEntry.getObjectEntryId()
+				).build(),
+				new ServiceContext());
+
+			return;
+		}
+
+		for (FDSSortItem fdsSortItem : fdsSortItems) {
+			_objectEntryService.addObjectEntry(
+				0, objectDefinition.getObjectDefinitionId(),
+				ObjectEntryFolderConstants.
+					PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
+				null,
+				HashMapBuilder.<String, Serializable>put(
+					"default",
+					() -> _getOptionalValue(fdsSortItem.get("active"))
+				).put(
+					"fieldName", () -> _getOptionalValue(fdsSortItem.get("key"))
+				).put(
+					"label_i18n",
+					() -> _getLocalizeableValue(
+						objectDefinition.getDefaultLanguageId(),
+						_getOptionalValue(fdsSortItem.get("label")))
+				).put(
+					"orderType",
+					() -> {
+						if (fdsSorts.getFDSEntryItemImportPolicy() ==
+								FDSEntryItemImportPolicy.DETACHED) {
+
+							return _getOptionalValue(
+								fdsSortItem.get("direction"));
+						}
+
+						return FDSEntryItemImportPolicy.ITEM_PROXY;
+					}
+				).put(
+					"r_dataSetToDataSetSorts_l_dataSetId",
+					objectEntry.getObjectEntryId()
+				).build(),
+				new ServiceContext());
+		}
+	}
+
+	private HashMap<String, String> _getI18nMap(String key) {
+		HashMap<String, String> labels = new HashMap<>();
+
+		for (Locale locale : LanguageUtil.getAvailableLocales()) {
+			ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
+				"content.Language", locale, getClass());
+
+			String label = LanguageUtil.get(resourceBundle, key);
+
+			if (Validator.isNull(label)) {
+				label = StringPool.BLANK;
+			}
+
+			labels.put(LocaleUtil.toLanguageId(locale), label);
+		}
+
+		return labels;
 	}
 
 	private Serializable _getLocalizeableValue(
@@ -429,7 +891,16 @@ public class ImportSystemDataSetMVCResourceCommand
 	private FDSCreationMenuRegistry _fdsCreationMenuRegistry;
 
 	@Reference
+	private FDSFilterRegistry _fdsFilterRegistry;
+
+	@Reference
 	private FDSItemsActionsRegistry _fdsItemsActionsRegistry;
+
+	@Reference
+	private FDSSortsRegistry _fdsSortsRegistry;
+
+	@Reference
+	private FDSViewRegistry _fdsViewRegistry;
 
 	@Reference
 	private JSONFactory _jsonFactory;

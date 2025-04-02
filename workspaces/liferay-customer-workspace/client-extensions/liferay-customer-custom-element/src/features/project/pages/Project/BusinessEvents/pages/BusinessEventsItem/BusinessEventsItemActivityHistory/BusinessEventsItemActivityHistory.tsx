@@ -6,7 +6,7 @@
 import {Nav} from '@clayui/core';
 import ClayIcon from '@clayui/icon';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
-import ClayModal, {useModal} from '@clayui/modal';
+import {useModal} from '@clayui/modal';
 import NavigationBar from '@clayui/navigation-bar';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {Link, useNavigate, useParams} from 'react-router-dom';
@@ -33,7 +33,7 @@ import './BusinessEventsItemActivityHistory.css';
 import {getUserAccount} from '~/services/liferay/graphql/queries';
 
 import Avatar from '../../../../TeamMembers/components/TeamMembersTable/components/columns/NameColumn/components/Avatar';
-import CancelEventForm from '../../../components/CancelEventForm';
+import ManageEventModal from '../../../components/ManageEventModal';
 import useHasAllEventsPermissions from '../../../hooks/useHasAllEventsPermissions';
 
 const BusinessEventsItemActivityHistory = () => {
@@ -51,6 +51,7 @@ const BusinessEventsItemActivityHistory = () => {
 
 	const {hasAllEventsPermissions} = useHasAllEventsPermissions();
 
+	const [modalType, setModalType] = useState('');
 	const [loading, setLoading] = useState(true);
 	const {observer, onOpenChange, open} = useModal();
 
@@ -74,11 +75,22 @@ const BusinessEventsItemActivityHistory = () => {
 		}
 	}, [id]);
 
-	const handleEventCanceled = useCallback(() => {
+	const handleOnCancel = useCallback(() => {
 		fetchBusinessEvent();
 
 		Liferay.Util.openToast({
 			message: i18n.translate('business-event-canceled-successfully'),
+			type: 'success',
+		});
+	}, [fetchBusinessEvent]);
+
+	const handleOnCompleted = useCallback(() => {
+		fetchBusinessEvent();
+
+		Liferay.Util.openToast({
+			message: i18n.translate(
+				'business-event-actual-go-live-date-recorded-successfully'
+			),
 			type: 'success',
 		});
 	}, [fetchBusinessEvent]);
@@ -94,7 +106,7 @@ const BusinessEventsItemActivityHistory = () => {
 
 		if (id) {
 			queryParams.push(
-				`r_businessEventtoBusinesssEventVersions_c_businessEventId eq '${id}'`
+				`r_businessEventToBusinessEventVersions_c_businessEventId eq '${id}'`
 			);
 		}
 
@@ -239,13 +251,17 @@ const BusinessEventsItemActivityHistory = () => {
 			customOptionStyle: 'pr-5',
 			icon: <ClayIcon symbol="check-circle" />,
 			label: i18n.translate('record-actual-go-live'),
-			onClick: () => {},
+			onClick: () => {
+				setModalType('goLiveEvent');
+				onOpenChange(true);
+			},
 		},
 		{
 			customOptionStyle: 'cancel-event-option pr-5',
 			icon: <ClayIcon symbol="trash" />,
 			label: i18n.translate('cancel-event'),
 			onClick: () => {
+				setModalType('cancelEvent');
 				onOpenChange(true);
 			},
 		},
@@ -310,6 +326,7 @@ const BusinessEventsItemActivityHistory = () => {
 
 			<div className="mb-4">
 				<NavigationBar
+					fluidSize={false}
 					triggerLabel={i18n.translate('activity-history')}
 				>
 					<Nav.Item
@@ -340,15 +357,16 @@ const BusinessEventsItemActivityHistory = () => {
 			<div className="mt-4"></div>
 
 			{businessEvent && open && (
-				<ClayModal center disableAutoClose observer={observer}>
-					<CancelEventForm
-						accountExternalReferenceCode={accountKey || ''}
-						businessEvent={businessEvent}
-						client={client}
-						closeFunction={onOpenChange}
-						onCancel={handleEventCanceled}
-					/>
-				</ClayModal>
+				<ManageEventModal
+					accountExternalReferenceCode={accountKey || ''}
+					businessEvent={businessEvent}
+					client={client}
+					closeFunction={onOpenChange}
+					modalType={modalType}
+					observer={observer}
+					onCancel={handleOnCancel}
+					onCompleted={handleOnCompleted}
+				/>
 			)}
 
 			<div className="">

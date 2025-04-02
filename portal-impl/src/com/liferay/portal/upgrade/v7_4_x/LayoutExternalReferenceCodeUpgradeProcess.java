@@ -18,4 +18,9 @@ public class LayoutExternalReferenceCodeUpgradeProcess
 		return new String[][] {{"Layout", "plid"}};
 	}
 
+	@Override
+	protected boolean useUUID(String tableName) {
+		return false;
+	}
+
 }

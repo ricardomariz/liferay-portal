@@ -2638,7 +2638,7 @@
 					"type": "array"
 				},
 				"headers": {
-					"default": "Access-Control-Allow-Credentials: true|Access-Control-Allow-Headers: *|Access-Control-Allow-Methods: *|Access-Control-Allow-Origin: *",
+					"default": "Access-Control-Allow-Credentials: true|Access-Control-Allow-Headers: *|Access-Control-Allow-Methods: *|Access-Control-Allow-Origin: http://localhost:8080 http://127.0.0.1:8080 ::1",
 					"description": "Set the headers to be sent in response to CORS requests in the form of \"Name: Value\".",
 					"items": {
 						"type": "string"

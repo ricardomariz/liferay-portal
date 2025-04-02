@@ -40,25 +40,34 @@ import com.liferay.journal.util.JournalConverter;
 import com.liferay.layout.test.util.ContentLayoutTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.io.unsync.UnsyncByteArrayInputStream;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.repository.LocalRepository;
 import com.liferay.portal.kernel.repository.RepositoryProviderUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
+import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.TestInfo;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -73,6 +82,10 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.test.log.LogCapture;
+import com.liferay.portal.test.log.LogEntry;
+import com.liferay.portal.test.log.LoggerTestUtil;
+import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -88,6 +101,7 @@ import java.time.format.FormatStyle;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 
 import org.junit.Assert;
@@ -650,6 +664,35 @@ public class FragmentEntryProcessorHelperTest {
 				LocaleUtil.US));
 	}
 
+	@FeatureFlags("LPD-19955")
+	@Test
+	@TestInfo({"LPD-12834", "LPD-52354"})
+	public void testHasViewPermission() throws Exception {
+		JournalArticle journalArticle = JournalTestUtil.addArticle(
+			_group.getGroupId(), 0L);
+
+		JSONObject editableValueJSONObject = JSONUtil.put(
+			"className", JournalArticle.class.getName()
+		).put(
+			"classNameId",
+			_portal.getClassNameId(JournalArticle.class.getName())
+		).put(
+			"classPK", journalArticle.getResourcePrimKey()
+		).put(
+			"fieldId", RandomTestUtil.randomString()
+		);
+
+		_testHasViewPermission(editableValueJSONObject, Boolean.TRUE);
+
+		RoleTestUtil.removeResourcePermission(
+			RoleConstants.GUEST, JournalArticle.class.getName(),
+			ResourceConstants.SCOPE_INDIVIDUAL,
+			String.valueOf(journalArticle.getResourcePrimKey()),
+			ActionKeys.VIEW);
+
+		_testHasViewPermission(editableValueJSONObject, Boolean.FALSE);
+	}
+
 	private DDMStructure _addDDMStructure(String content) throws Exception {
 		DDMStructureTestHelper ddmStructureTestHelper =
 			new DDMStructureTestHelper(
@@ -873,6 +916,51 @@ public class FragmentEntryProcessorHelperTest {
 		return jsonObject.toString();
 	}
 
+	private void _testHasViewPermission(
+			JSONObject editableValueJSONObject, boolean expected)
+		throws Exception {
+
+		MockHttpServletRequest mockHttpServletRequest =
+			new MockHttpServletRequest();
+
+		mockHttpServletRequest.setAttribute(WebKeys.LAYOUT, _layout);
+
+		User user = _userLocalService.getGuestUser(
+			TestPropsValues.getCompanyId());
+
+		_themeDisplay.setPermissionChecker(
+			PermissionCheckerFactoryUtil.create(user));
+		_themeDisplay.setRealUser(user);
+		_themeDisplay.setUser(user);
+
+		mockHttpServletRequest.setAttribute(
+			WebKeys.THEME_DISPLAY, _themeDisplay);
+
+		FragmentEntryProcessorContext fragmentEntryProcessorContext =
+			new DefaultFragmentEntryProcessorContext(
+				mockHttpServletRequest, new MockHttpServletResponse(),
+				FragmentEntryLinkConstants.EDIT,
+				_portal.getSiteDefaultLocale(_group));
+
+		try (SafeCloseable safeCloseable =
+				CompanyThreadLocal.setCompanyIdWithSafeCloseable(
+					CompanyConstants.SYSTEM);
+			LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"com.liferay.feature.flag.web.internal.feature.flag." +
+					"FeatureFlagsBag",
+				LoggerTestUtil.ERROR)) {
+
+			Assert.assertEquals(
+				expected,
+				_fragmentEntryProcessorHelper.hasViewPermission(
+					editableValueJSONObject, fragmentEntryProcessorContext));
+
+			List<LogEntry> logEntries = logCapture.getLogEntries();
+
+			Assert.assertTrue(logEntries.isEmpty());
+		}
+	}
+
 	private String _toJSON(FileEntry fileEntry) {
 		return JSONUtil.put(
 			"alt", StringPool.BLANK
@@ -931,5 +1019,8 @@ public class FragmentEntryProcessorHelperTest {
 	private Portal _portal;
 
 	private ThemeDisplay _themeDisplay;
+
+	@Inject
+	private UserLocalService _userLocalService;
 
 }

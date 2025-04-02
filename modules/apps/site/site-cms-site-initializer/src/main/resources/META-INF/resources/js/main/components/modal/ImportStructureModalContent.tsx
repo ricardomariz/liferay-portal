@@ -6,22 +6,66 @@
 import ClayAlert from '@clayui/alert';
 import ClayButton from '@clayui/button';
 import ClayModal from '@clayui/modal';
+import {openToast} from 'frontend-js-components-web';
 import React, {useState} from 'react';
 
+import {postFormData} from '../../../api/api';
 import {FieldFile} from '../forms';
 
 const JSON_EXTENSION = '.json';
 
 export default function ImportStructureModalContent({
 	closeModal,
+	importURL,
+	loadData,
+	objectFolderExternalReferenceCode,
 }: {
 	closeModal: () => void;
+	importURL: string;
+	loadData?: () => {};
+	objectFolderExternalReferenceCode: string;
 }) {
 	const [warning, setWarning] = useState(true);
 	const [jsonFile, setJsonFile] = useState<File | null>(null);
+	const [errorMessage, setErrorMessage] = useState('');
 
 	const onFileChange = (file: File | null) => {
+		if (!file) {
+			setErrorMessage('');
+		}
+
 		setJsonFile(file);
+	};
+
+	const onImportButtonClick = async () => {
+		const formData = new FormData();
+
+		formData.append(
+			'objectFolderExternalReferenceCode',
+			objectFolderExternalReferenceCode
+		);
+
+		if (jsonFile) {
+			formData.append('objectDefinitionJSON', new Blob([jsonFile]));
+		}
+
+		const {errorMessage, success} = await postFormData(formData, importURL);
+
+		if (success) {
+			closeModal();
+
+			openToast({
+				message: Liferay.Language.get(
+					'the-structure-was-successfully-imported-and-the-existing-structure-was-overwritten'
+				),
+				type: 'success',
+			});
+
+			loadData?.();
+		}
+		else if (errorMessage) {
+			setErrorMessage(errorMessage);
+		}
 	};
 
 	return (
@@ -47,6 +91,7 @@ export default function ImportStructureModalContent({
 
 			<ClayModal.Body>
 				<FieldFile
+					errorMessage={errorMessage}
 					fieldId="jsonFileId"
 					label={Liferay.Language.get('json-file')}
 					onFileChange={onFileChange}
@@ -65,7 +110,11 @@ export default function ImportStructureModalContent({
 							{Liferay.Language.get('cancel')}
 						</ClayButton>
 
-						<ClayButton disabled={!jsonFile} displayType="primary">
+						<ClayButton
+							disabled={!jsonFile || !!errorMessage}
+							displayType="primary"
+							onClick={onImportButtonClick}
+						>
 							{Liferay.Language.get('import-and-override')}
 						</ClayButton>
 					</ClayButton.Group>

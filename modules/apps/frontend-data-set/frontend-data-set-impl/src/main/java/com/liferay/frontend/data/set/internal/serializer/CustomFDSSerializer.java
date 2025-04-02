@@ -8,8 +8,11 @@ package com.liferay.frontend.data.set.internal.serializer;
 import com.liferay.client.extension.type.FDSCellRendererCET;
 import com.liferay.client.extension.type.FDSFilterCET;
 import com.liferay.client.extension.type.manager.CETManager;
+import com.liferay.frontend.data.set.FDSEntryItemImportPolicy;
+import com.liferay.frontend.data.set.action.util.FDSActionUtil;
 import com.liferay.frontend.data.set.constants.FDSEntityFieldTypes;
 import com.liferay.frontend.data.set.filter.FDSFilter;
+import com.liferay.frontend.data.set.filter.FDSFilterRegistry;
 import com.liferay.frontend.data.set.internal.url.FDSAPIURLBuilder;
 import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
 import com.liferay.frontend.data.set.model.FDSSortItem;
@@ -180,7 +183,14 @@ public class CustomFDSSerializer
 
 		CreationMenu creationMenu = new CreationMenu();
 
-		List<DropdownItem> dropdownItems = TransformUtil.transform(
+		CreationMenu systemCreationMenu =
+			_systemFDSSerializer.serializeCreationMenu(
+				fdsName, httpServletRequest);
+
+		List<DropdownItem> systemDropdownItems =
+			(List<DropdownItem>)systemCreationMenu.get("primaryItems");
+
+		List<DropdownItem> customDropdownItems = TransformUtil.transform(
 			getSortedRelatedObjectEntries(
 				fdsName, httpServletRequest,
 				(ObjectEntry objectEntry) ->
@@ -194,7 +204,8 @@ public class CustomFDSSerializer
 					new FDSActionDropdownItem(
 						String.valueOf(properties.get("url")),
 						String.valueOf(properties.get("icon")),
-						objectEntry.getExternalReferenceCode(),
+						FDSActionUtil.getFDSCreationActionId(
+							objectEntry.getExternalReferenceCode()),
 						String.valueOf(properties.get("label")), null,
 						String.valueOf(properties.get("permissionKey")),
 						String.valueOf(properties.get("target")));
@@ -209,8 +220,30 @@ public class CustomFDSSerializer
 				return fdsActionDropdownItem;
 			});
 
-		for (DropdownItem dropdownItem : dropdownItems) {
-			creationMenu.addPrimaryDropdownItem(dropdownItem);
+		for (DropdownItem customDropdownItem : customDropdownItems) {
+			if (Objects.equals(
+					customDropdownItem.get("target"),
+					FDSEntryItemImportPolicy.GROUP_PROXY.toString())) {
+
+				for (DropdownItem systemDropdownItem : systemDropdownItems) {
+					creationMenu.addPrimaryDropdownItem(systemDropdownItem);
+				}
+			}
+			else if (Objects.equals(
+						customDropdownItem.get("target"),
+						FDSEntryItemImportPolicy.ITEM_PROXY.toString())) {
+
+				for (DropdownItem systemDropdownItem : systemDropdownItems) {
+					if (systemDropdownItem.hasSameDataId(customDropdownItem)) {
+						creationMenu.addPrimaryDropdownItem(systemDropdownItem);
+
+						break;
+					}
+				}
+			}
+			else {
+				creationMenu.addPrimaryDropdownItem(customDropdownItem);
+			}
 		}
 
 		return creationMenu;
@@ -242,44 +275,87 @@ public class CustomFDSSerializer
 	public List<FDSActionDropdownItem> serializeItemsActions(
 		String fdsName, HttpServletRequest httpServletRequest) {
 
-		return TransformUtil.transform(
-			getSortedRelatedObjectEntries(
-				fdsName, httpServletRequest,
-				(ObjectEntry objectEntry) ->
-					Objects.equals(_getType(objectEntry), "item") &&
-					_isActive(objectEntry),
-				"itemActionsOrder", "dataSetToDataSetActions"),
-			objectEntry -> {
-				Map<String, Object> properties = objectEntry.getProperties();
+		List<FDSActionDropdownItem> fdsActionDropdownItems = new ArrayList<>();
 
-				FDSActionDropdownItem fdsActionDropdownItem =
-					new FDSActionDropdownItem(
-						String.valueOf(properties.get("confirmationMessage")),
-						String.valueOf(properties.get("url")),
-						String.valueOf(properties.get("icon")),
-						objectEntry.getExternalReferenceCode(),
-						String.valueOf(properties.get("label")),
-						String.valueOf(properties.get("method")),
-						String.valueOf(properties.get("permissionKey")),
-						String.valueOf(properties.get("target")));
+		List<FDSActionDropdownItem> systemFDSActionDropdownItems =
+			_systemFDSSerializer.serializeItemsActions(
+				fdsName, httpServletRequest);
 
-				fdsActionDropdownItem.putData(
-					"disableHeader",
-					(boolean)Validator.isNull(properties.get("title")));
-				fdsActionDropdownItem.putData(
-					"errorMessage", properties.get("errorMessage"));
-				fdsActionDropdownItem.putData(
-					"requestBody", properties.get("requestBody"));
-				fdsActionDropdownItem.putData(
-					"size", properties.get("modalSize"));
-				fdsActionDropdownItem.putData(
-					"status", properties.get("confirmationMessageType"));
-				fdsActionDropdownItem.putData(
-					"successMessage", properties.get("successMessage"));
-				fdsActionDropdownItem.putData("title", properties.get("title"));
+		List<FDSActionDropdownItem> customFDSActionDropdownItems =
+			TransformUtil.transform(
+				getSortedRelatedObjectEntries(
+					fdsName, httpServletRequest,
+					(ObjectEntry objectEntry) ->
+						Objects.equals(_getType(objectEntry), "item") &&
+						_isActive(objectEntry),
+					"itemActionsOrder", "dataSetToDataSetActions"),
+				objectEntry -> {
+					Map<String, Object> properties =
+						objectEntry.getProperties();
 
-				return fdsActionDropdownItem;
-			});
+					FDSActionDropdownItem fdsActionDropdownItem =
+						new FDSActionDropdownItem(
+							String.valueOf(
+								properties.get("confirmationMessage")),
+							String.valueOf(properties.get("url")),
+							String.valueOf(properties.get("icon")),
+							FDSActionUtil.getFDSItemActionId(
+								objectEntry.getExternalReferenceCode()),
+							String.valueOf(properties.get("label")),
+							String.valueOf(properties.get("method")),
+							String.valueOf(properties.get("permissionKey")),
+							String.valueOf(properties.get("target")));
+
+					fdsActionDropdownItem.putData(
+						"disableHeader",
+						(boolean)Validator.isNull(properties.get("title")));
+					fdsActionDropdownItem.putData(
+						"errorMessage", properties.get("errorMessage"));
+					fdsActionDropdownItem.putData(
+						"requestBody", properties.get("requestBody"));
+					fdsActionDropdownItem.putData(
+						"size", properties.get("modalSize"));
+					fdsActionDropdownItem.putData(
+						"status", properties.get("confirmationMessageType"));
+					fdsActionDropdownItem.putData(
+						"successMessage", properties.get("successMessage"));
+					fdsActionDropdownItem.putData(
+						"title", properties.get("title"));
+
+					return fdsActionDropdownItem;
+				});
+
+		for (FDSActionDropdownItem customFDSActionDropdownItem :
+				customFDSActionDropdownItems) {
+
+			if (Objects.equals(
+					customFDSActionDropdownItem.get("target"),
+					FDSEntryItemImportPolicy.GROUP_PROXY.toString())) {
+
+				fdsActionDropdownItems.addAll(systemFDSActionDropdownItems);
+			}
+			else if (Objects.equals(
+						customFDSActionDropdownItem.get("target"),
+						FDSEntryItemImportPolicy.ITEM_PROXY.toString())) {
+
+				for (FDSActionDropdownItem systemFDSActionDropdownItem :
+						systemFDSActionDropdownItems) {
+
+					if (systemFDSActionDropdownItem.hasSameDataId(
+							customFDSActionDropdownItem)) {
+
+						fdsActionDropdownItems.add(systemFDSActionDropdownItem);
+
+						break;
+					}
+				}
+			}
+			else {
+				fdsActionDropdownItems.add(customFDSActionDropdownItem);
+			}
+		}
+
+		return fdsActionDropdownItems;
 	}
 
 	@Override
@@ -343,7 +419,12 @@ public class CustomFDSSerializer
 	public List<FDSSortItem> serializeSorts(
 		String fdsName, HttpServletRequest httpServletRequest) {
 
-		return TransformUtil.transform(
+		List<FDSSortItem> fdsSortItems = new ArrayList<>();
+
+		List<FDSSortItem> systemFDSSortItems =
+			_systemFDSSerializer.serializeSorts(fdsName, httpServletRequest);
+
+		List<FDSSortItem> customFDSSortItems = TransformUtil.transform(
 			getSortedRelatedObjectEntries(
 				fdsName, httpServletRequest,
 				(ObjectEntry objectEntry) -> _isActive(objectEntry),
@@ -371,6 +452,37 @@ public class CustomFDSSerializer
 					label
 				).build();
 			});
+
+		for (FDSSortItem customFDSSortItem : customFDSSortItems) {
+			if (Objects.equals(
+					customFDSSortItem.get("direction"),
+					FDSEntryItemImportPolicy.GROUP_PROXY.toString())) {
+
+				fdsSortItems.addAll(
+					_systemFDSSerializer.serializeSorts(
+						fdsName, httpServletRequest));
+			}
+			else if (Objects.equals(
+						customFDSSortItem.get("direction"),
+						FDSEntryItemImportPolicy.ITEM_PROXY.toString())) {
+
+				for (FDSSortItem systemFDSSortItem : systemFDSSortItems) {
+					if (Objects.equals(
+							systemFDSSortItem.get("key"),
+							customFDSSortItem.get("key"))) {
+
+						fdsSortItems.add(systemFDSSortItem);
+
+						break;
+					}
+				}
+			}
+			else {
+				fdsSortItems.add(customFDSSortItem);
+			}
+		}
+
+		return fdsSortItems;
 	}
 
 	@Override
@@ -470,10 +582,28 @@ public class CustomFDSSerializer
 							return jsonObject;
 						}
 
+						String externalReferenceCode = String.valueOf(
+							properties.get("renderer"));
+
 						FDSCellRendererCET fdsCellRendererCET =
 							(FDSCellRendererCET)cetManager.getCET(
 								PortalUtil.getCompanyId(httpServletRequest),
-								String.valueOf(properties.get("renderer")));
+								externalReferenceCode);
+
+						if (fdsCellRendererCET == null) {
+							if (_log.isWarnEnabled()) {
+								_log.warn(
+									"No frontend data set cell renderer " +
+										"client extension type found for " +
+											externalReferenceCode);
+							}
+
+							return jsonObject.put(
+								"contentRenderer", "default"
+							).put(
+								"contentRendererClientExtension", false
+							);
+						}
 
 						return jsonObject.put(
 							"contentRendererClientExtension", true
@@ -492,12 +622,9 @@ public class CustomFDSSerializer
 				).put(
 					"name", "table"
 				).put(
-					"schema",
-					JSONUtil.put(
-						"fields", fieldsJSONArray
-					).put(
-						"thumbnail", "table"
-					)
+					"schema", JSONUtil.put("fields", fieldsJSONArray)
+				).put(
+					"thumbnail", "table"
 				);
 			}
 		);
@@ -566,6 +693,9 @@ public class CustomFDSSerializer
 
 	@Reference
 	protected CETManager cetManager;
+
+	@Reference
+	protected FDSFilterRegistry fdsFilterRegistry;
 
 	private JSONObject _getDateJSONObject(Object object) {
 		if (object == null) {
@@ -711,11 +841,11 @@ public class CustomFDSSerializer
 			return _serializeFilterDateOrDateTime(fieldName, properties, type);
 		}
 
-		String source = MapUtil.getString(properties, "source");
+		String sourceType = MapUtil.getString(properties, "sourceType");
 
-		if (Validator.isNotNull(source)) {
+		if (Validator.isNotNull(sourceType)) {
 			return _serializeFilterSelection(
-				fieldName, httpServletRequest, properties, source);
+				fieldName, httpServletRequest, properties, sourceType);
 		}
 
 		return null;
@@ -809,10 +939,26 @@ public class CustomFDSSerializer
 
 	private JSONObject _serializeFilterSelection(
 			String fieldName, HttpServletRequest httpServletRequest,
-			Map<String, Object> properties, String source)
+			Map<String, Object> properties, String sourceType)
 		throws Exception {
 
-		String sourceType = MapUtil.getString(properties, "sourceType");
+		if (Objects.equals(
+				sourceType, FDSEntryItemImportPolicy.ITEM_PROXY.toString())) {
+
+			JSONArray jsonArray = _systemFDSSerializer.serializeFilters(
+				MapUtil.getString(
+					properties,
+					"r_dataSetToDataSetSelectionFilters_l_dataSetERC"),
+				httpServletRequest);
+
+			for (int i = 0; i < jsonArray.length(); i++) {
+				JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+				if (Objects.equals(fieldName, jsonObject.getString("id"))) {
+					return jsonObject;
+				}
+			}
+		}
 
 		JSONObject jsonObject = JSONUtil.put(
 			"autocompleteEnabled", true
@@ -821,7 +967,7 @@ public class CustomFDSSerializer
 		).put(
 			"id",
 			() -> {
-				if (Objects.equals(sourceType, "API_REST_APPLICATION")) {
+				if (!Objects.equals(sourceType, "OBJECT_PICKLIST")) {
 					return fieldName;
 				}
 
@@ -842,9 +988,9 @@ public class CustomFDSSerializer
 			"type", "selection"
 		);
 
-		if (Validator.isNotNull(sourceType) &&
-			Objects.equals(sourceType, "API_REST_APPLICATION")) {
+		String source = MapUtil.getString(properties, "source");
 
+		if (Objects.equals(sourceType, "API_REST_APPLICATION")) {
 			return jsonObject.put(
 				"apiURL", source
 			).put(
@@ -873,14 +1019,14 @@ public class CustomFDSSerializer
 			);
 		}
 
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
+		if (!Objects.equals(sourceType, "OBJECT_PICKLIST")) {
+			return null;
+		}
 
 		ListTypeDefinition listTypeDefinition =
 			_listTypeDefinitionLocalService.
 				getListTypeDefinitionByExternalReferenceCode(
-					source, themeDisplay.getCompanyId());
+					source, PortalUtil.getCompanyId(httpServletRequest));
 
 		List<ListTypeEntry> listTypeEntries =
 			_listTypeEntryLocalService.getListTypeEntries(
@@ -893,7 +1039,9 @@ public class CustomFDSSerializer
 				listTypeEntry -> JSONUtil.put(
 					"key", listTypeEntry.getKey()
 				).put(
-					"label", listTypeEntry.getName(themeDisplay.getLocale())
+					"label",
+					listTypeEntry.getName(
+						PortalUtil.getLocale(httpServletRequest))
 				).put(
 					"value", listTypeEntry.getKey()
 				))
@@ -923,7 +1071,8 @@ public class CustomFDSSerializer
 						selectedItemsJSONArray.put(
 							JSONUtil.put(
 								"label",
-								listTypeEntry.getName(themeDisplay.getLocale())
+								listTypeEntry.getName(
+									PortalUtil.getLocale(httpServletRequest))
 							).put(
 								"value", listTypeEntry.getKey()
 							));
@@ -979,6 +1128,11 @@ public class CustomFDSSerializer
 
 	@Reference
 	private ObjectEntryManagerRegistry _objectEntryManagerRegistry;
+
+	@Reference(
+		target = "(frontend.data.set.serializer.type=" + FDSSerializer.TYPE_SYSTEM + ")"
+	)
+	private FDSSerializer _systemFDSSerializer;
 
 	private static class ObjectEntryComparator
 		implements Comparator<ObjectEntry> {

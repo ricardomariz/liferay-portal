@@ -29,7 +29,7 @@ public interface PortalCORSConfiguration {
 
 	@Meta.AD(
 		description = "portal-cors-name-description", id = "configuration.name",
-		name = "portal-cors-name", required = false
+		name = "name", required = false
 	)
 	public String name();
 
@@ -42,7 +42,7 @@ public interface PortalCORSConfiguration {
 	public String[] filterMappingURLPatterns();
 
 	@Meta.AD(
-		deflt = "Access-Control-Allow-Credentials: true|Access-Control-Allow-Headers: *|Access-Control-Allow-Methods: *|Access-Control-Allow-Origin: *",
+		deflt = "Access-Control-Allow-Credentials: true|Access-Control-Allow-Headers: *|Access-Control-Allow-Methods: *|Access-Control-Allow-Origin: http://localhost:8080 http://127.0.0.1:8080 ::1",
 		description = "cors-configuration-cors-headers-description",
 		id = "headers", name = "cors-configuration-cors-headers",
 		required = false

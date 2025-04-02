@@ -7,7 +7,16 @@ import React from 'react';
 
 import OrderableTable from '../../../components/OrderableTable';
 import Toggle from '../../../components/Toggle';
-import {EFilterType, IFilter, IFilterTypeProps} from '../../../utils/types';
+import {
+	EFilterType,
+	ESelectionFilterSourceType,
+	IFilter,
+	IFilterTypeProps,
+} from '../../../utils/types';
+
+const isVisible = ({item}: {item: any}): boolean => {
+	return item?.sourceType !== ESelectionFilterSourceType.ITEM_PROXY;
+};
 
 const FilterList = ({
 	createFilter,
@@ -33,11 +42,13 @@ const FilterList = ({
 			actions={[
 				{
 					icon: 'pencil',
+					isVisible,
 					label: Liferay.Language.get('edit'),
 					onClick: editFilter,
 				},
 				{
 					icon: 'trash',
+					isVisible,
 					label: Liferay.Language.get('delete'),
 					onClick: deleteFilter,
 				},

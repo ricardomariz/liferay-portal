@@ -22,8 +22,11 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
+
+import java.util.Map;
 
 /**
  * @author Eudaldo Alonso
@@ -56,19 +59,20 @@ public class ObjectEntryInfoItemFieldValuesUpdater
 	@Override
 	public ObjectEntry updateFromInfoItemFieldValues(
 			ObjectEntry objectEntry, InfoItemFieldValues infoItemFieldValues,
-			int status)
+			int statusInt)
 		throws InfoFormException {
+
+		ObjectEntryManager objectEntryManager =
+			_objectEntryManagerRegistry.getObjectEntryManager(
+				_objectDefinition.getStorageType());
 
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
 		ThemeDisplay themeDisplay = serviceContext.getThemeDisplay();
 
-		ObjectEntryManager objectEntryManager =
-			_objectEntryManagerRegistry.getObjectEntryManager(
-				_objectDefinition.getStorageType());
-
-		int objectEntryStatus = status;
+		Map<String, Object> curProperties = ObjectEntryUtil.toProperties(
+			infoItemFieldValues);
 
 		try {
 			return ObjectEntryUtil.toObjectEntry(
@@ -81,14 +85,19 @@ public class ObjectEntryInfoItemFieldValuesUpdater
 					objectEntry.getExternalReferenceCode(), _objectDefinition,
 					new com.liferay.object.rest.dto.v1_0.ObjectEntry() {
 						{
+							setFriendlyUrlPath(
+								() -> GetterUtil.getString(
+									curProperties.get("objectEntryFriendlyURL"),
+									null));
+							setFriendlyUrlPath_i18n(
+								() -> (Map<String, String>)curProperties.get(
+									"objectEntryFriendlyURL_i18n"));
 							setKeywords(serviceContext::getAssetTagNames);
-							setProperties(
-								() -> ObjectEntryUtil.toProperties(
-									infoItemFieldValues));
+							setProperties(() -> curProperties);
 							setStatus(
 								() -> new Status() {
 									{
-										setCode(() -> objectEntryStatus);
+										setCode(() -> statusInt);
 									}
 								});
 							setTaxonomyCategoryIds(

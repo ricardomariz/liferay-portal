@@ -1,7 +1,7 @@
 <#if importClasses??>
 	<#list importClasses?sort as import>
 		<#if import?lower_case != modelName?lower_case>
-			import {${import}} from './${import?uncap_first}';
+			import {${import}} from './${import}';
 		</#if>
 	</#list>
 </#if>
@@ -25,12 +25,12 @@
 <#else>
 	export class ${modelName} <#if parentClass??>extends ${parentClass} </#if>{
 		<#list properties as property>
-			'${property.name}'?: ${property.dataType};
+			"${property.name}"?: ${property.dataType};
 		</#list>
 
-		static 'discriminator': string | undefined = <#if discriminator??>"${discriminator}"<#else>undefined</#if>;
+		static "discriminator": string | undefined = <#if discriminator??>"${discriminator}"<#else>undefined</#if>;
 
-	static 'attributeTypeMap': Array<{
+	static "attributeTypeMap": Array<{
 		baseName: string;
 		name: string;
 		type: string;

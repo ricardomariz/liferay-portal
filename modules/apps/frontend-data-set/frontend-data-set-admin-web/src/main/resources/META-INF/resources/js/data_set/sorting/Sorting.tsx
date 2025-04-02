@@ -473,6 +473,10 @@ const EditFDSSortModalContent = ({
 	);
 };
 
+const isVisible = ({item}: {item: any}): boolean =>
+	item?.orderType === ORDER_TYPE.ASCENDING.value ||
+	item?.orderType === ORDER_TYPE.DESCENDING.value;
+
 const Sorting = ({
 	dataSet,
 	fieldTreeItems,
@@ -696,11 +700,13 @@ const Sorting = ({
 						actions={[
 							{
 								icon: 'pencil',
+								isVisible,
 								label: Liferay.Language.get('edit'),
 								onClick: handleEdit,
 							},
 							{
 								icon: 'trash',
+								isVisible,
 								label: Liferay.Language.get('delete'),
 								onClick: handleDelete,
 							},

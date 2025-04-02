@@ -4,14 +4,22 @@
  */
 
 import {FrontendDataSet} from '@liferay/frontend-data-set-web';
+import {navigate} from 'frontend-js-web';
 import React from 'react';
 
 import CategorizationToolbar from '../CategorizationToolbar';
+import {AssetType} from '../types/AssetType';
 
 export default function ViewVocabularies({
+	addVocabularyURL,
+	assetTypes,
+	siteId,
 	tagsURL,
 	vocabulariesURL,
 }: {
+	addVocabularyURL: string;
+	assetTypes: AssetType[];
+	siteId: number;
 	tagsURL: string;
 	vocabulariesURL: string;
 }) {
@@ -19,9 +27,20 @@ export default function ViewVocabularies({
 		primaryItems: [
 			{
 				label: Liferay.Language.get('add-vocabulary'),
+				onClick: () => navigate(addVocabularyURL),
 			},
 		],
 	};
+
+	const filters = [
+		{
+			id: 'assetTypes',
+			items: assetTypes,
+			label: 'Asset Types',
+			multiple: true,
+			type: 'selection',
+		},
+	];
 
 	const views = [
 		{
@@ -29,6 +48,30 @@ export default function ViewVocabularies({
 			default: true,
 			label: Liferay.Language.get('table'),
 			name: 'table',
+			schema: {
+				fields: [
+					{
+						fieldName: 'name',
+						label: Liferay.Language.get('title'),
+						sortable: true,
+					},
+					{
+						fieldName: 'numberOfTaxonomyCategories',
+						label: Liferay.Language.get('categories'),
+						sortable: true,
+					},
+					{
+						fieldName: 'assetTypes.type',
+						label: Liferay.Language.get('type'),
+						sortable: true,
+					},
+					{
+						fieldName: 'dateModified',
+						label: Liferay.Language.get('modified'),
+						sortable: true,
+					},
+				],
+			},
 			thumbnail: 'table',
 		},
 	];
@@ -50,11 +93,13 @@ export default function ViewVocabularies({
 			/>
 
 			<FrontendDataSet
+				apiURL={`/o/headless-admin-taxonomy/v1.0/sites/${siteId}/taxonomy-vocabularies`}
 				creationMenu={creationMenu}
 				emptyState={emptyState}
+				filters={filters}
 				id="ViewVocabularies"
-				showManagementBar={false}
-				showSearch={false}
+				showManagementBar={true}
+				showSearch={true}
 				views={views}
 			/>
 		</div>

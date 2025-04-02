@@ -38,6 +38,9 @@ import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.PropsValues;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.servlet.http.HttpSession;
 
 import org.junit.AfterClass;
@@ -64,14 +67,17 @@ public class SetupAdminAutoLoginTest {
 
 	@BeforeClass
 	public static void setUpClass() throws Exception {
-		_safeCloseable = PropsValuesTestUtil.swapWithSafeCloseable(
-			"DEFAULT_ADMIN_PASSWORD", "");
+		_safeCloseables.add(
+			PropsValuesTestUtil.swapWithSafeCloseable(
+				"DEFAULT_ADMIN_PASSWORD", ""));
 
 		_company = CompanyTestUtil.addCompany();
 
 		_originalCompanyId = CompanyThreadLocal.getCompanyId();
 
-		CompanyThreadLocal.setCompanyId(_company.getCompanyId());
+		_safeCloseables.add(
+			CompanyThreadLocal.setCompanyIdWithSafeCloseable(
+				_company.getCompanyId()));
 
 		try {
 			_emailAdressAdminUser =
@@ -90,9 +96,9 @@ public class SetupAdminAutoLoginTest {
 
 	@AfterClass
 	public static void tearDownClass() {
-		_safeCloseable.close();
-
-		CompanyThreadLocal.setCompanyId(_originalCompanyId);
+		for (SafeCloseable safeCloseable : _safeCloseables) {
+			safeCloseable.close();
+		}
 	}
 
 	@Test
@@ -186,7 +192,8 @@ public class SetupAdminAutoLoginTest {
 	private static Company _company;
 	private static String _emailAdressAdminUser;
 	private static long _originalCompanyId;
-	private static SafeCloseable _safeCloseable;
+	private static final List<SafeCloseable> _safeCloseables =
+		new ArrayList<>();
 	private static User _user;
 
 	@Inject(

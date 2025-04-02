@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {ObjectDefinitionApi} from '@liferay/object-admin-rest-client-js';
+import {ObjectDefinitionAPI} from '@liferay/object-admin-rest-client-js';
 import {Locator, Page, expect} from '@playwright/test';
 
 import {ApiHelpers} from '../../../helpers/ApiHelpers';
@@ -115,7 +115,7 @@ export class StructureBuilderPage {
 		}
 
 		if (picklist !== undefined) {
-			const labelInput = this.page.getByLabel('Select Picklist');
+			const labelInput = this.page.getByLabel('Picklist');
 
 			await labelInput.click();
 			await this.page.getByRole('option', {name: picklist}).click();
@@ -206,13 +206,13 @@ export class StructureBuilderPage {
 	async deleteStructure(id: number) {
 		const apiHelpers = new ApiHelpers(this.page);
 
-		const APIClient = await apiHelpers.buildRestClient(ObjectDefinitionApi);
+		const APIClient = await apiHelpers.buildRestClient(ObjectDefinitionAPI);
 
 		const {
-			response: {statusCode},
+			response: {status},
 		} = await APIClient.deleteObjectDefinition(id);
 
-		expect(statusCode).toBe(204);
+		expect(status).toBe(204);
 	}
 
 	async enableForAllSpaces() {
