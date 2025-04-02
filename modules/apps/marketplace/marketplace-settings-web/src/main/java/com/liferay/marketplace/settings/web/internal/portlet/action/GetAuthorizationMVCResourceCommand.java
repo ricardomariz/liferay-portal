@@ -30,7 +30,7 @@ import org.osgi.service.component.annotations.Component;
 @Component(
 	property = {
 		"javax.portlet.name=" + ConfigurationAdminPortletKeys.INSTANCE_SETTINGS,
-		"javax.portlet.name=" + "com_liferay_commerce_channel_web_internal_portlet_CommerceChannelsPortlet",
+		"javax.portlet.name=com_liferay_commerce_channel_web_internal_portlet_CommerceChannelsPortlet",
 		"mvc.command.name=/marketplace_settings/get_authorization"
 	},
 	service = MVCResourceCommand.class
