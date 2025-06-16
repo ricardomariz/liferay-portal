@@ -31,18 +31,16 @@ public class UpgradeServiceComponent extends UpgradeProcess {
 
 	@Override
 	protected void doUpgrade() throws Exception {
-		String sql = StringBundler.concat(
-			"select buildNamespace, buildNumber, data_ from ServiceComponent ",
-			"where buildNamespace like 'com.liferay%' and buildNumber = ",
-			"(select max(buildNumber) from ServiceComponent TEMP_TABLE where ",
-			"ServiceComponent.buildNamespace = TEMP_TABLE.buildNamespace)");
-
-		String updateSQL =
-			"update ServiceComponent set data_ = ? where buildNamespace = ? " +
-				"and buildNumber = ?";
-
 		processConcurrently(
-			SQLTransformer.transform(sql), updateSQL,
+			SQLTransformer.transform(
+			StringBundler.concat(
+				"select buildNamespace, buildNumber, data_ from ",
+				"ServiceComponent where buildNamespace like 'com.liferay%' ",
+				"and buildNumber = (select max(buildNumber) from ",
+				"ServiceComponent TEMP_TABLE where ServiceComponent.",
+				"buildNamespace = TEMP_TABLE.buildNamespace)")),
+			"update ServiceComponent set data_ = ? where buildNamespace = ? " +
+				"and buildNumber = ?",
 			resultSet -> new Object[] {
 				resultSet.getString("buildNamespace"),
 				resultSet.getLong("buildNumber"), resultSet.getString("data_")
