@@ -215,6 +215,7 @@ public class PageSpecificationsTestUtil {
 			Assert.assertEquals(
 				externalReferenceCode,
 				pageSpecification.getExternalReferenceCode());
+
 			Assert.assertEquals(
 				PageSpecification.Status.APPROVED,
 				pageSpecification.getStatus());
