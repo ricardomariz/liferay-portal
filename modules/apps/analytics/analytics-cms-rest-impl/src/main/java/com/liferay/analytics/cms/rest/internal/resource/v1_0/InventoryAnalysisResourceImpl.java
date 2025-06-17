@@ -287,6 +287,66 @@ public class InventoryAnalysisResourceImpl
 		return groupIds;
 	}
 
+	private Predicate _getPredicate(
+		Long categoryId, Long[] groupIds, String languageId, String rangeEnd,
+		Integer rangeKey, String rangeStart, Long structureId, Long tagId,
+		Long vocabularyId) {
+
+		Predicate predicate =
+			ObjectFolderTable.INSTANCE.externalReferenceCode.eq(
+				"L_CMS_CONTENT_STRUCTURES");
+
+		predicate = predicate.and(
+			ObjectEntryTable.INSTANCE.status.neq(
+				WorkflowConstants.STATUS_IN_TRASH));
+
+		if (categoryId != null) {
+			predicate = predicate.and(
+				AssetEntryAssetCategoryRelTable.INSTANCE.assetCategoryId.eq(
+					categoryId));
+		}
+
+		if (ArrayUtil.isNotEmpty(groupIds)) {
+			predicate = predicate.and(
+				ObjectEntryTable.INSTANCE.groupId.in(groupIds));
+		}
+
+		if (!Validator.isBlank(languageId)) {
+			predicate = predicate.and(
+				AssetEntryTable.INSTANCE.title.like(
+					"%language-id=\"" + languageId + "\"%"));
+		}
+
+		predicate = predicate.and(
+			ObjectEntryTable.INSTANCE.createDate.gte(
+				_getStartDate(rangeKey, rangeStart)));
+
+		if (Validator.isNotNull(rangeEnd)) {
+			predicate = predicate.and(
+				ObjectEntryTable.INSTANCE.createDate.lte(
+					_getEndDate(rangeEnd)));
+		}
+
+		if (structureId != null) {
+			predicate = predicate.and(
+				AssetEntryAssetCategoryRelTable.INSTANCE.assetCategoryId.eq(
+					categoryId));
+		}
+
+		if (tagId != null) {
+			predicate = predicate.and(
+				AssetTagGroupRelTable.INSTANCE.tagId.eq(tagId));
+		}
+
+		if (vocabularyId != null) {
+			predicate = predicate.and(
+				AssetVocabularyGroupRelTable.INSTANCE.vocabularyId.eq(
+					vocabularyId));
+		}
+
+		return predicate;
+	}
+
 	private Expression<?>[] _getSelectExpressions(String groupBy) {
 		if (StringUtil.equalsIgnoreCase(groupBy, "category")) {
 			return new Expression[] {
@@ -394,66 +454,6 @@ public class InventoryAnalysisResourceImpl
 			});
 
 		return depotEntries;
-	}
-
-	private Predicate _getPredicate(
-		Long categoryId, Long[] groupIds, String languageId, String rangeEnd,
-		Integer rangeKey, String rangeStart, Long structureId, Long tagId,
-		Long vocabularyId) {
-
-		Predicate predicate =
-			ObjectFolderTable.INSTANCE.externalReferenceCode.eq(
-				"L_CMS_CONTENT_STRUCTURES");
-
-		predicate = predicate.and(
-			ObjectEntryTable.INSTANCE.status.neq(
-				WorkflowConstants.STATUS_IN_TRASH));
-
-		if (categoryId != null) {
-			predicate = predicate.and(
-				AssetEntryAssetCategoryRelTable.INSTANCE.assetCategoryId.eq(
-					categoryId));
-		}
-
-		if (ArrayUtil.isNotEmpty(groupIds)) {
-			predicate = predicate.and(
-				ObjectEntryTable.INSTANCE.groupId.in(groupIds));
-		}
-
-		if (!Validator.isBlank(languageId)) {
-			predicate = predicate.and(
-				AssetEntryTable.INSTANCE.title.like(
-					"%language-id=\"" + languageId + "\"%"));
-		}
-
-		predicate = predicate.and(
-			ObjectEntryTable.INSTANCE.createDate.gte(
-				_getStartDate(rangeKey, rangeStart)));
-
-		if (Validator.isNotNull(rangeEnd)) {
-			predicate = predicate.and(
-				ObjectEntryTable.INSTANCE.createDate.lte(
-					_getEndDate(rangeEnd)));
-		}
-
-		if (structureId != null) {
-			predicate = predicate.and(
-				AssetEntryAssetCategoryRelTable.INSTANCE.assetCategoryId.eq(
-					categoryId));
-		}
-
-		if (tagId != null) {
-			predicate = predicate.and(
-				AssetTagGroupRelTable.INSTANCE.tagId.eq(tagId));
-		}
-
-		if (vocabularyId != null) {
-			predicate = predicate.and(
-				AssetVocabularyGroupRelTable.INSTANCE.vocabularyId.eq(
-					vocabularyId));
-		}
-
-		return predicate;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
