@@ -24,36 +24,36 @@ public class PreupgradeVerifyDatabasePrivileges
 		DBInspector dbInspector = new DBInspector(connection);
 
 		try {
-			if (dbInspector.hasTable("temp_permission_check")) {
-				db.runSQL("drop table temp_permission_check");
+			if (dbInspector.hasTable("TEMP_TABLE")) {
+				db.runSQL("drop table TEMP_TABLE");
 			}
 
 			db.runSQL(
-				"create table temp_permission_check (column1 int not null)");
+				"create table TEMP_TABLE (column1 int not null)");
 
 			db.updateIndexes(
-				connection, "temp_permission_check",
-				"create index ix_temp on temp_permission_check (column1)",
+				connection, "TEMP_TABLE",
+				"create index ix_temp on TEMP_TABLE (column1)",
 				true);
 
-			alterTableAddColumn("temp_permission_check", "column2", "int");
+			alterTableAddColumn("TEMP_TABLE", "column2", "int");
 
 			db.runSQL(
-				"insert into temp_permission_check(column1, column2) values " +
+				"insert into TEMP_TABLE(column1, column2) values " +
 					"(1,1)");
 
 			db.runSQL(
-				"update temp_permission_check set column2 = 2 where column1 " +
+				"update TEMP_TABLE set column2 = 2 where column1 " +
 					"= 1");
 
 			PreparedStatement preparedStatement = connection.prepareStatement(
-				"select 1 from temp_permission_check where column1 = 1");
+				"select 1 from TEMP_TABLE where column1 = 1");
 
 			preparedStatement.executeQuery();
 
-			db.runSQL("delete from temp_permission_check where column1 = 1");
+			db.runSQL("delete from TEMP_TABLE where column1 = 1");
 
-			db.runSQL("drop table temp_permission_check");
+			db.runSQL("drop table TEMP_TABLE");
 		}
 		catch (Exception exception) {
 			throw new VerifyException(
