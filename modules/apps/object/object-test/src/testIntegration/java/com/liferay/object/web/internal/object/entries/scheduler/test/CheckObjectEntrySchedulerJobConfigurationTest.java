@@ -179,11 +179,11 @@ public class CheckObjectEntrySchedulerJobConfigurationTest {
 	}
 
 	private void _setObjectEntryExpirationDate(
-		ObjectEntry objectEntry2, Date date) {
+		ObjectEntry objectEntry, Date date) {
 
-		objectEntry2.setExpirationDate(date);
+		objectEntry.setExpirationDate(date);
 
-		_objectEntryLocalService.updateObjectEntry(objectEntry2);
+		_objectEntryLocalService.updateObjectEntry(objectEntry);
 	}
 
 	private static final String _OBJECT_FIELD_NAME =
