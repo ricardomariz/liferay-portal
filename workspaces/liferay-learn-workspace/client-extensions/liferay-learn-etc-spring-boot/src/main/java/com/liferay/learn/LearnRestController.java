@@ -113,7 +113,7 @@ public class LearnRestController extends BaseRestController {
 					).build(
 					).toUri());
 
-				String audioBase64 = new JSONObject(
+				String audioContent = new JSONObject(
 					response
 				).getString(
 					"audioContent"
@@ -122,16 +122,16 @@ public class LearnRestController extends BaseRestController {
 				byteArrayOutputStream.write(
 					Base64.getDecoder(
 					).decode(
-						audioBase64
+						audioContent
 					));
 			}
 
-			String finalBase64 = Base64.getEncoder(
+			String audioContentBase64 = Base64.getEncoder(
 			).encodeToString(
 				byteArrayOutputStream.toByteArray()
 			);
 
-			return ResponseEntity.ok(finalBase64);
+			return ResponseEntity.ok(audioContentBase64);
 		}
 		catch (Exception exception) {
 			return ResponseEntity.status(
