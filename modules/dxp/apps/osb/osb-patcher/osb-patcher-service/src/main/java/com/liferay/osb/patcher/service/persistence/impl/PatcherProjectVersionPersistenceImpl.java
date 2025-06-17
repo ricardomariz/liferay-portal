@@ -21,11 +21,13 @@ import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Query;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
@@ -538,6 +540,358 @@ public class PatcherProjectVersionPersistenceImpl
 	}
 
 	/**
+	 * Returns all the patcher project versions that the user has permission to view where patcherProductVersionId = &#63;.
+	 *
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @return the matching patcher project versions that the user has permission to view
+	 */
+	@Override
+	public List<PatcherProjectVersion> filterFindByPatcherProductVersionId(
+		long patcherProductVersionId) {
+
+		return filterFindByPatcherProductVersionId(
+			patcherProductVersionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			null);
+	}
+
+	/**
+	 * Returns a range of all the patcher project versions that the user has permission to view where patcherProductVersionId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherProjectVersionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param start the lower bound of the range of patcher project versions
+	 * @param end the upper bound of the range of patcher project versions (not inclusive)
+	 * @return the range of matching patcher project versions that the user has permission to view
+	 */
+	@Override
+	public List<PatcherProjectVersion> filterFindByPatcherProductVersionId(
+		long patcherProductVersionId, int start, int end) {
+
+		return filterFindByPatcherProductVersionId(
+			patcherProductVersionId, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher project versions that the user has permissions to view where patcherProductVersionId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherProjectVersionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param start the lower bound of the range of patcher project versions
+	 * @param end the upper bound of the range of patcher project versions (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher project versions that the user has permission to view
+	 */
+	@Override
+	public List<PatcherProjectVersion> filterFindByPatcherProductVersionId(
+		long patcherProductVersionId, int start, int end,
+		OrderByComparator<PatcherProjectVersion> orderByComparator) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByPatcherProductVersionId(
+				patcherProductVersionId, start, end, orderByComparator);
+		}
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				3 + (orderByComparator.getOrderByFields().length * 2));
+		}
+		else {
+			sb = new StringBundler(4);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(
+			_FINDER_COLUMN_PATCHERPRODUCTVERSIONID_PATCHERPRODUCTVERSIONID_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			if (getDB().isSupportsInlineDistinct()) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+			}
+			else {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(
+					PatcherProjectVersionModelImpl.
+						ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherProjectVersionModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherProjectVersion.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			if (getDB().isSupportsInlineDistinct()) {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_ALIAS, PatcherProjectVersionImpl.class);
+			}
+			else {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_TABLE, PatcherProjectVersionImpl.class);
+			}
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(patcherProductVersionId);
+
+			return (List<PatcherProjectVersion>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
+	 * Returns the patcher project versions before and after the current patcher project version in the ordered set of patcher project versions that the user has permission to view where patcherProductVersionId = &#63;.
+	 *
+	 * @param patcherProjectVersionId the primary key of the current patcher project version
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher project version
+	 * @throws NoSuchPatcherProjectVersionException if a patcher project version with the primary key could not be found
+	 */
+	@Override
+	public PatcherProjectVersion[]
+			filterFindByPatcherProductVersionId_PrevAndNext(
+				long patcherProjectVersionId, long patcherProductVersionId,
+				OrderByComparator<PatcherProjectVersion> orderByComparator)
+		throws NoSuchPatcherProjectVersionException {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByPatcherProductVersionId_PrevAndNext(
+				patcherProjectVersionId, patcherProductVersionId,
+				orderByComparator);
+		}
+
+		PatcherProjectVersion patcherProjectVersion = findByPrimaryKey(
+			patcherProjectVersionId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			PatcherProjectVersion[] array = new PatcherProjectVersionImpl[3];
+
+			array[0] = filterGetByPatcherProductVersionId_PrevAndNext(
+				session, patcherProjectVersion, patcherProductVersionId,
+				orderByComparator, true);
+
+			array[1] = patcherProjectVersion;
+
+			array[2] = filterGetByPatcherProductVersionId_PrevAndNext(
+				session, patcherProjectVersion, patcherProductVersionId,
+				orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected PatcherProjectVersion
+		filterGetByPatcherProductVersionId_PrevAndNext(
+			Session session, PatcherProjectVersion patcherProjectVersion,
+			long patcherProductVersionId,
+			OrderByComparator<PatcherProjectVersion> orderByComparator,
+			boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(4);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(
+			_FINDER_COLUMN_PATCHERPRODUCTVERSIONID_PATCHERPRODUCTVERSIONID_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i],
+							true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i],
+							true));
+				}
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
+				}
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(
+					PatcherProjectVersionModelImpl.
+						ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherProjectVersionModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherProjectVersion.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+		sqlQuery.setFirstResult(0);
+		sqlQuery.setMaxResults(2);
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sqlQuery.addEntity(
+				_FILTER_ENTITY_ALIAS, PatcherProjectVersionImpl.class);
+		}
+		else {
+			sqlQuery.addEntity(
+				_FILTER_ENTITY_TABLE, PatcherProjectVersionImpl.class);
+		}
+
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+		queryPos.add(patcherProductVersionId);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(
+						patcherProjectVersion)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<PatcherProjectVersion> list = sqlQuery.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
 	 * Removes all the patcher project versions where patcherProductVersionId = &#63; from the database.
 	 *
 	 * @param patcherProductVersionId the patcher product version ID
@@ -601,6 +955,57 @@ public class PatcherProjectVersionPersistenceImpl
 		}
 
 		return count.intValue();
+	}
+
+	/**
+	 * Returns the number of patcher project versions that the user has permission to view where patcherProductVersionId = &#63;.
+	 *
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @return the number of matching patcher project versions that the user has permission to view
+	 */
+	@Override
+	public int filterCountByPatcherProductVersionId(
+		long patcherProductVersionId) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return countByPatcherProductVersionId(patcherProductVersionId);
+		}
+
+		StringBundler sb = new StringBundler(2);
+
+		sb.append(_FILTER_SQL_COUNT_PATCHERPROJECTVERSION_WHERE);
+
+		sb.append(
+			_FINDER_COLUMN_PATCHERPRODUCTVERSIONID_PATCHERPRODUCTVERSIONID_2);
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherProjectVersion.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(
+				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(patcherProductVersionId);
+
+			Long count = (Long)sqlQuery.uniqueResult();
+
+			return count.intValue();
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
 	}
 
 	private static final String
@@ -1066,6 +1471,358 @@ public class PatcherProjectVersionPersistenceImpl
 	}
 
 	/**
+	 * Returns all the patcher project versions that the user has permission to view where rootPatcherProjectVersionId = &#63;.
+	 *
+	 * @param rootPatcherProjectVersionId the root patcher project version ID
+	 * @return the matching patcher project versions that the user has permission to view
+	 */
+	@Override
+	public List<PatcherProjectVersion> filterFindByRootPatcherProjectVersionId(
+		long rootPatcherProjectVersionId) {
+
+		return filterFindByRootPatcherProjectVersionId(
+			rootPatcherProjectVersionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			null);
+	}
+
+	/**
+	 * Returns a range of all the patcher project versions that the user has permission to view where rootPatcherProjectVersionId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherProjectVersionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param rootPatcherProjectVersionId the root patcher project version ID
+	 * @param start the lower bound of the range of patcher project versions
+	 * @param end the upper bound of the range of patcher project versions (not inclusive)
+	 * @return the range of matching patcher project versions that the user has permission to view
+	 */
+	@Override
+	public List<PatcherProjectVersion> filterFindByRootPatcherProjectVersionId(
+		long rootPatcherProjectVersionId, int start, int end) {
+
+		return filterFindByRootPatcherProjectVersionId(
+			rootPatcherProjectVersionId, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher project versions that the user has permissions to view where rootPatcherProjectVersionId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherProjectVersionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param rootPatcherProjectVersionId the root patcher project version ID
+	 * @param start the lower bound of the range of patcher project versions
+	 * @param end the upper bound of the range of patcher project versions (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher project versions that the user has permission to view
+	 */
+	@Override
+	public List<PatcherProjectVersion> filterFindByRootPatcherProjectVersionId(
+		long rootPatcherProjectVersionId, int start, int end,
+		OrderByComparator<PatcherProjectVersion> orderByComparator) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByRootPatcherProjectVersionId(
+				rootPatcherProjectVersionId, start, end, orderByComparator);
+		}
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				3 + (orderByComparator.getOrderByFields().length * 2));
+		}
+		else {
+			sb = new StringBundler(4);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(
+			_FINDER_COLUMN_ROOTPATCHERPROJECTVERSIONID_ROOTPATCHERPROJECTVERSIONID_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			if (getDB().isSupportsInlineDistinct()) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+			}
+			else {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(
+					PatcherProjectVersionModelImpl.
+						ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherProjectVersionModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherProjectVersion.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			if (getDB().isSupportsInlineDistinct()) {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_ALIAS, PatcherProjectVersionImpl.class);
+			}
+			else {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_TABLE, PatcherProjectVersionImpl.class);
+			}
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(rootPatcherProjectVersionId);
+
+			return (List<PatcherProjectVersion>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
+	 * Returns the patcher project versions before and after the current patcher project version in the ordered set of patcher project versions that the user has permission to view where rootPatcherProjectVersionId = &#63;.
+	 *
+	 * @param patcherProjectVersionId the primary key of the current patcher project version
+	 * @param rootPatcherProjectVersionId the root patcher project version ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher project version
+	 * @throws NoSuchPatcherProjectVersionException if a patcher project version with the primary key could not be found
+	 */
+	@Override
+	public PatcherProjectVersion[]
+			filterFindByRootPatcherProjectVersionId_PrevAndNext(
+				long patcherProjectVersionId, long rootPatcherProjectVersionId,
+				OrderByComparator<PatcherProjectVersion> orderByComparator)
+		throws NoSuchPatcherProjectVersionException {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByRootPatcherProjectVersionId_PrevAndNext(
+				patcherProjectVersionId, rootPatcherProjectVersionId,
+				orderByComparator);
+		}
+
+		PatcherProjectVersion patcherProjectVersion = findByPrimaryKey(
+			patcherProjectVersionId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			PatcherProjectVersion[] array = new PatcherProjectVersionImpl[3];
+
+			array[0] = filterGetByRootPatcherProjectVersionId_PrevAndNext(
+				session, patcherProjectVersion, rootPatcherProjectVersionId,
+				orderByComparator, true);
+
+			array[1] = patcherProjectVersion;
+
+			array[2] = filterGetByRootPatcherProjectVersionId_PrevAndNext(
+				session, patcherProjectVersion, rootPatcherProjectVersionId,
+				orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected PatcherProjectVersion
+		filterGetByRootPatcherProjectVersionId_PrevAndNext(
+			Session session, PatcherProjectVersion patcherProjectVersion,
+			long rootPatcherProjectVersionId,
+			OrderByComparator<PatcherProjectVersion> orderByComparator,
+			boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(4);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(
+			_FINDER_COLUMN_ROOTPATCHERPROJECTVERSIONID_ROOTPATCHERPROJECTVERSIONID_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i],
+							true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i],
+							true));
+				}
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
+				}
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(
+					PatcherProjectVersionModelImpl.
+						ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherProjectVersionModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherProjectVersion.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+		sqlQuery.setFirstResult(0);
+		sqlQuery.setMaxResults(2);
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sqlQuery.addEntity(
+				_FILTER_ENTITY_ALIAS, PatcherProjectVersionImpl.class);
+		}
+		else {
+			sqlQuery.addEntity(
+				_FILTER_ENTITY_TABLE, PatcherProjectVersionImpl.class);
+		}
+
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+		queryPos.add(rootPatcherProjectVersionId);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(
+						patcherProjectVersion)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<PatcherProjectVersion> list = sqlQuery.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
 	 * Removes all the patcher project versions where rootPatcherProjectVersionId = &#63; from the database.
 	 *
 	 * @param rootPatcherProjectVersionId the root patcher project version ID
@@ -1133,6 +1890,58 @@ public class PatcherProjectVersionPersistenceImpl
 		}
 
 		return count.intValue();
+	}
+
+	/**
+	 * Returns the number of patcher project versions that the user has permission to view where rootPatcherProjectVersionId = &#63;.
+	 *
+	 * @param rootPatcherProjectVersionId the root patcher project version ID
+	 * @return the number of matching patcher project versions that the user has permission to view
+	 */
+	@Override
+	public int filterCountByRootPatcherProjectVersionId(
+		long rootPatcherProjectVersionId) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return countByRootPatcherProjectVersionId(
+				rootPatcherProjectVersionId);
+		}
+
+		StringBundler sb = new StringBundler(2);
+
+		sb.append(_FILTER_SQL_COUNT_PATCHERPROJECTVERSION_WHERE);
+
+		sb.append(
+			_FINDER_COLUMN_ROOTPATCHERPROJECTVERSIONID_ROOTPATCHERPROJECTVERSIONID_2);
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherProjectVersion.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(
+				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(rootPatcherProjectVersionId);
+
+			Long count = (Long)sqlQuery.uniqueResult();
+
+			return count.intValue();
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
 	}
 
 	private static final String
@@ -1996,6 +2805,371 @@ public class PatcherProjectVersionPersistenceImpl
 	}
 
 	/**
+	 * Returns all the patcher project versions that the user has permission to view where patcherProductVersionId = &#63; and rootPatcherProjectVersionId = &#63;.
+	 *
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param rootPatcherProjectVersionId the root patcher project version ID
+	 * @return the matching patcher project versions that the user has permission to view
+	 */
+	@Override
+	public List<PatcherProjectVersion> filterFindByP_R(
+		long patcherProductVersionId, long rootPatcherProjectVersionId) {
+
+		return filterFindByP_R(
+			patcherProductVersionId, rootPatcherProjectVersionId,
+			QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the patcher project versions that the user has permission to view where patcherProductVersionId = &#63; and rootPatcherProjectVersionId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherProjectVersionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param rootPatcherProjectVersionId the root patcher project version ID
+	 * @param start the lower bound of the range of patcher project versions
+	 * @param end the upper bound of the range of patcher project versions (not inclusive)
+	 * @return the range of matching patcher project versions that the user has permission to view
+	 */
+	@Override
+	public List<PatcherProjectVersion> filterFindByP_R(
+		long patcherProductVersionId, long rootPatcherProjectVersionId,
+		int start, int end) {
+
+		return filterFindByP_R(
+			patcherProductVersionId, rootPatcherProjectVersionId, start, end,
+			null);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher project versions that the user has permissions to view where patcherProductVersionId = &#63; and rootPatcherProjectVersionId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherProjectVersionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param rootPatcherProjectVersionId the root patcher project version ID
+	 * @param start the lower bound of the range of patcher project versions
+	 * @param end the upper bound of the range of patcher project versions (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher project versions that the user has permission to view
+	 */
+	@Override
+	public List<PatcherProjectVersion> filterFindByP_R(
+		long patcherProductVersionId, long rootPatcherProjectVersionId,
+		int start, int end,
+		OrderByComparator<PatcherProjectVersion> orderByComparator) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByP_R(
+				patcherProductVersionId, rootPatcherProjectVersionId, start,
+				end, orderByComparator);
+		}
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				4 + (orderByComparator.getOrderByFields().length * 2));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(_FINDER_COLUMN_P_R_PATCHERPRODUCTVERSIONID_2);
+
+		sb.append(_FINDER_COLUMN_P_R_ROOTPATCHERPROJECTVERSIONID_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			if (getDB().isSupportsInlineDistinct()) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+			}
+			else {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(
+					PatcherProjectVersionModelImpl.
+						ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherProjectVersionModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherProjectVersion.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			if (getDB().isSupportsInlineDistinct()) {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_ALIAS, PatcherProjectVersionImpl.class);
+			}
+			else {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_TABLE, PatcherProjectVersionImpl.class);
+			}
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(patcherProductVersionId);
+
+			queryPos.add(rootPatcherProjectVersionId);
+
+			return (List<PatcherProjectVersion>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
+	 * Returns the patcher project versions before and after the current patcher project version in the ordered set of patcher project versions that the user has permission to view where patcherProductVersionId = &#63; and rootPatcherProjectVersionId = &#63;.
+	 *
+	 * @param patcherProjectVersionId the primary key of the current patcher project version
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param rootPatcherProjectVersionId the root patcher project version ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher project version
+	 * @throws NoSuchPatcherProjectVersionException if a patcher project version with the primary key could not be found
+	 */
+	@Override
+	public PatcherProjectVersion[] filterFindByP_R_PrevAndNext(
+			long patcherProjectVersionId, long patcherProductVersionId,
+			long rootPatcherProjectVersionId,
+			OrderByComparator<PatcherProjectVersion> orderByComparator)
+		throws NoSuchPatcherProjectVersionException {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByP_R_PrevAndNext(
+				patcherProjectVersionId, patcherProductVersionId,
+				rootPatcherProjectVersionId, orderByComparator);
+		}
+
+		PatcherProjectVersion patcherProjectVersion = findByPrimaryKey(
+			patcherProjectVersionId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			PatcherProjectVersion[] array = new PatcherProjectVersionImpl[3];
+
+			array[0] = filterGetByP_R_PrevAndNext(
+				session, patcherProjectVersion, patcherProductVersionId,
+				rootPatcherProjectVersionId, orderByComparator, true);
+
+			array[1] = patcherProjectVersion;
+
+			array[2] = filterGetByP_R_PrevAndNext(
+				session, patcherProjectVersion, patcherProductVersionId,
+				rootPatcherProjectVersionId, orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected PatcherProjectVersion filterGetByP_R_PrevAndNext(
+		Session session, PatcherProjectVersion patcherProjectVersion,
+		long patcherProductVersionId, long rootPatcherProjectVersionId,
+		OrderByComparator<PatcherProjectVersion> orderByComparator,
+		boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(_FINDER_COLUMN_P_R_PATCHERPRODUCTVERSIONID_2);
+
+		sb.append(_FINDER_COLUMN_P_R_ROOTPATCHERPROJECTVERSIONID_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i],
+							true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i],
+							true));
+				}
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
+				}
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(
+					PatcherProjectVersionModelImpl.
+						ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherProjectVersionModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherProjectVersion.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+		sqlQuery.setFirstResult(0);
+		sqlQuery.setMaxResults(2);
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sqlQuery.addEntity(
+				_FILTER_ENTITY_ALIAS, PatcherProjectVersionImpl.class);
+		}
+		else {
+			sqlQuery.addEntity(
+				_FILTER_ENTITY_TABLE, PatcherProjectVersionImpl.class);
+		}
+
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+		queryPos.add(patcherProductVersionId);
+
+		queryPos.add(rootPatcherProjectVersionId);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(
+						patcherProjectVersion)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<PatcherProjectVersion> list = sqlQuery.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
 	 * Removes all the patcher project versions where patcherProductVersionId = &#63; and rootPatcherProjectVersionId = &#63; from the database.
 	 *
 	 * @param patcherProductVersionId the patcher product version ID
@@ -2070,6 +3244,62 @@ public class PatcherProjectVersionPersistenceImpl
 		}
 
 		return count.intValue();
+	}
+
+	/**
+	 * Returns the number of patcher project versions that the user has permission to view where patcherProductVersionId = &#63; and rootPatcherProjectVersionId = &#63;.
+	 *
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param rootPatcherProjectVersionId the root patcher project version ID
+	 * @return the number of matching patcher project versions that the user has permission to view
+	 */
+	@Override
+	public int filterCountByP_R(
+		long patcherProductVersionId, long rootPatcherProjectVersionId) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return countByP_R(
+				patcherProductVersionId, rootPatcherProjectVersionId);
+		}
+
+		StringBundler sb = new StringBundler(3);
+
+		sb.append(_FILTER_SQL_COUNT_PATCHERPROJECTVERSION_WHERE);
+
+		sb.append(_FINDER_COLUMN_P_R_PATCHERPRODUCTVERSIONID_2);
+
+		sb.append(_FINDER_COLUMN_P_R_ROOTPATCHERPROJECTVERSIONID_2);
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherProjectVersion.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(
+				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(patcherProductVersionId);
+
+			queryPos.add(rootPatcherProjectVersionId);
+
+			Long count = (Long)sqlQuery.uniqueResult();
+
+			return count.intValue();
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
 	}
 
 	private static final String _FINDER_COLUMN_P_R_PATCHERPRODUCTVERSIONID_2 =
@@ -2585,6 +3815,395 @@ public class PatcherProjectVersionPersistenceImpl
 	}
 
 	/**
+	 * Returns all the patcher project versions that the user has permission to view where patcherProductVersionId = &#63; and repositoryName = &#63;.
+	 *
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param repositoryName the repository name
+	 * @return the matching patcher project versions that the user has permission to view
+	 */
+	@Override
+	public List<PatcherProjectVersion> filterFindByP_RN(
+		long patcherProductVersionId, String repositoryName) {
+
+		return filterFindByP_RN(
+			patcherProductVersionId, repositoryName, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the patcher project versions that the user has permission to view where patcherProductVersionId = &#63; and repositoryName = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherProjectVersionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param repositoryName the repository name
+	 * @param start the lower bound of the range of patcher project versions
+	 * @param end the upper bound of the range of patcher project versions (not inclusive)
+	 * @return the range of matching patcher project versions that the user has permission to view
+	 */
+	@Override
+	public List<PatcherProjectVersion> filterFindByP_RN(
+		long patcherProductVersionId, String repositoryName, int start,
+		int end) {
+
+		return filterFindByP_RN(
+			patcherProductVersionId, repositoryName, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher project versions that the user has permissions to view where patcherProductVersionId = &#63; and repositoryName = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherProjectVersionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param repositoryName the repository name
+	 * @param start the lower bound of the range of patcher project versions
+	 * @param end the upper bound of the range of patcher project versions (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher project versions that the user has permission to view
+	 */
+	@Override
+	public List<PatcherProjectVersion> filterFindByP_RN(
+		long patcherProductVersionId, String repositoryName, int start, int end,
+		OrderByComparator<PatcherProjectVersion> orderByComparator) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByP_RN(
+				patcherProductVersionId, repositoryName, start, end,
+				orderByComparator);
+		}
+
+		repositoryName = Objects.toString(repositoryName, "");
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				4 + (orderByComparator.getOrderByFields().length * 2));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(_FINDER_COLUMN_P_RN_PATCHERPRODUCTVERSIONID_2);
+
+		boolean bindRepositoryName = false;
+
+		if (repositoryName.isEmpty()) {
+			sb.append(_FINDER_COLUMN_P_RN_REPOSITORYNAME_3);
+		}
+		else {
+			bindRepositoryName = true;
+
+			sb.append(_FINDER_COLUMN_P_RN_REPOSITORYNAME_2);
+		}
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			if (getDB().isSupportsInlineDistinct()) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+			}
+			else {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(
+					PatcherProjectVersionModelImpl.
+						ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherProjectVersionModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherProjectVersion.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			if (getDB().isSupportsInlineDistinct()) {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_ALIAS, PatcherProjectVersionImpl.class);
+			}
+			else {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_TABLE, PatcherProjectVersionImpl.class);
+			}
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(patcherProductVersionId);
+
+			if (bindRepositoryName) {
+				queryPos.add(repositoryName);
+			}
+
+			return (List<PatcherProjectVersion>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
+	 * Returns the patcher project versions before and after the current patcher project version in the ordered set of patcher project versions that the user has permission to view where patcherProductVersionId = &#63; and repositoryName = &#63;.
+	 *
+	 * @param patcherProjectVersionId the primary key of the current patcher project version
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param repositoryName the repository name
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher project version
+	 * @throws NoSuchPatcherProjectVersionException if a patcher project version with the primary key could not be found
+	 */
+	@Override
+	public PatcherProjectVersion[] filterFindByP_RN_PrevAndNext(
+			long patcherProjectVersionId, long patcherProductVersionId,
+			String repositoryName,
+			OrderByComparator<PatcherProjectVersion> orderByComparator)
+		throws NoSuchPatcherProjectVersionException {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByP_RN_PrevAndNext(
+				patcherProjectVersionId, patcherProductVersionId,
+				repositoryName, orderByComparator);
+		}
+
+		repositoryName = Objects.toString(repositoryName, "");
+
+		PatcherProjectVersion patcherProjectVersion = findByPrimaryKey(
+			patcherProjectVersionId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			PatcherProjectVersion[] array = new PatcherProjectVersionImpl[3];
+
+			array[0] = filterGetByP_RN_PrevAndNext(
+				session, patcherProjectVersion, patcherProductVersionId,
+				repositoryName, orderByComparator, true);
+
+			array[1] = patcherProjectVersion;
+
+			array[2] = filterGetByP_RN_PrevAndNext(
+				session, patcherProjectVersion, patcherProductVersionId,
+				repositoryName, orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected PatcherProjectVersion filterGetByP_RN_PrevAndNext(
+		Session session, PatcherProjectVersion patcherProjectVersion,
+		long patcherProductVersionId, String repositoryName,
+		OrderByComparator<PatcherProjectVersion> orderByComparator,
+		boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(_FINDER_COLUMN_P_RN_PATCHERPRODUCTVERSIONID_2);
+
+		boolean bindRepositoryName = false;
+
+		if (repositoryName.isEmpty()) {
+			sb.append(_FINDER_COLUMN_P_RN_REPOSITORYNAME_3);
+		}
+		else {
+			bindRepositoryName = true;
+
+			sb.append(_FINDER_COLUMN_P_RN_REPOSITORYNAME_2);
+		}
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i],
+							true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i],
+							true));
+				}
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
+				}
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(
+					PatcherProjectVersionModelImpl.
+						ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherProjectVersionModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherProjectVersion.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+		sqlQuery.setFirstResult(0);
+		sqlQuery.setMaxResults(2);
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sqlQuery.addEntity(
+				_FILTER_ENTITY_ALIAS, PatcherProjectVersionImpl.class);
+		}
+		else {
+			sqlQuery.addEntity(
+				_FILTER_ENTITY_TABLE, PatcherProjectVersionImpl.class);
+		}
+
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+		queryPos.add(patcherProductVersionId);
+
+		if (bindRepositoryName) {
+			queryPos.add(repositoryName);
+		}
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(
+						patcherProjectVersion)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<PatcherProjectVersion> list = sqlQuery.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
 	 * Removes all the patcher project versions where patcherProductVersionId = &#63; and repositoryName = &#63; from the database.
 	 *
 	 * @param patcherProductVersionId the patcher product version ID
@@ -2672,6 +4291,74 @@ public class PatcherProjectVersionPersistenceImpl
 		}
 
 		return count.intValue();
+	}
+
+	/**
+	 * Returns the number of patcher project versions that the user has permission to view where patcherProductVersionId = &#63; and repositoryName = &#63;.
+	 *
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param repositoryName the repository name
+	 * @return the number of matching patcher project versions that the user has permission to view
+	 */
+	@Override
+	public int filterCountByP_RN(
+		long patcherProductVersionId, String repositoryName) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return countByP_RN(patcherProductVersionId, repositoryName);
+		}
+
+		repositoryName = Objects.toString(repositoryName, "");
+
+		StringBundler sb = new StringBundler(3);
+
+		sb.append(_FILTER_SQL_COUNT_PATCHERPROJECTVERSION_WHERE);
+
+		sb.append(_FINDER_COLUMN_P_RN_PATCHERPRODUCTVERSIONID_2);
+
+		boolean bindRepositoryName = false;
+
+		if (repositoryName.isEmpty()) {
+			sb.append(_FINDER_COLUMN_P_RN_REPOSITORYNAME_3);
+		}
+		else {
+			bindRepositoryName = true;
+
+			sb.append(_FINDER_COLUMN_P_RN_REPOSITORYNAME_2);
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherProjectVersion.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(
+				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(patcherProductVersionId);
+
+			if (bindRepositoryName) {
+				queryPos.add(repositoryName);
+			}
+
+			Long count = (Long)sqlQuery.uniqueResult();
+
+			return count.intValue();
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
 	}
 
 	private static final String _FINDER_COLUMN_P_RN_PATCHERPRODUCTVERSIONID_2 =
@@ -3434,8 +5121,31 @@ public class PatcherProjectVersionPersistenceImpl
 	private static final String _SQL_COUNT_PATCHERPROJECTVERSION_WHERE =
 		"SELECT COUNT(patcherProjectVersion) FROM PatcherProjectVersion patcherProjectVersion WHERE ";
 
+	private static final String _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN =
+		"patcherProjectVersion.patcherProjectVersionId";
+
+	private static final String _FILTER_SQL_SELECT_PATCHERPROJECTVERSION_WHERE =
+		"SELECT DISTINCT {patcherProjectVersion.*} FROM PProjectVersion patcherProjectVersion WHERE ";
+
+	private static final String
+		_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_NO_INLINE_DISTINCT_WHERE_1 =
+			"SELECT {PProjectVersion.*} FROM (SELECT DISTINCT patcherProjectVersion.patcherProjectVersionId FROM PProjectVersion patcherProjectVersion WHERE ";
+
+	private static final String
+		_FILTER_SQL_SELECT_PATCHERPROJECTVERSION_NO_INLINE_DISTINCT_WHERE_2 =
+			") TEMP_TABLE INNER JOIN PProjectVersion ON TEMP_TABLE.patcherProjectVersionId = PProjectVersion.patcherProjectVersionId";
+
+	private static final String _FILTER_SQL_COUNT_PATCHERPROJECTVERSION_WHERE =
+		"SELECT COUNT(DISTINCT patcherProjectVersion.patcherProjectVersionId) AS COUNT_VALUE FROM PProjectVersion patcherProjectVersion WHERE ";
+
+	private static final String _FILTER_ENTITY_ALIAS = "patcherProjectVersion";
+
+	private static final String _FILTER_ENTITY_TABLE = "PProjectVersion";
+
 	private static final String _ORDER_BY_ENTITY_ALIAS =
 		"patcherProjectVersion.";
+
+	private static final String _ORDER_BY_ENTITY_TABLE = "PProjectVersion.";
 
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY =
 		"No PatcherProjectVersion exists with the primary key ";

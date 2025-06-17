@@ -264,6 +264,76 @@ public class PatcherBuildUtil {
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where patcherFixId = &#63;.
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByPatcherFixId(
+		long patcherFixId) {
+
+		return getPersistence().filterFindByPatcherFixId(patcherFixId);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where patcherFixId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByPatcherFixId(
+		long patcherFixId, int start, int end) {
+
+		return getPersistence().filterFindByPatcherFixId(
+			patcherFixId, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where patcherFixId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByPatcherFixId(
+		long patcherFixId, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		return getPersistence().filterFindByPatcherFixId(
+			patcherFixId, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where patcherFixId = &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param patcherFixId the patcher fix ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	public static PatcherBuild[] filterFindByPatcherFixId_PrevAndNext(
+			long patcherBuildId, long patcherFixId,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws com.liferay.osb.patcher.exception.NoSuchPatcherBuildException {
+
+		return getPersistence().filterFindByPatcherFixId_PrevAndNext(
+			patcherBuildId, patcherFixId, orderByComparator);
+	}
+
+	/**
 	 * Removes all the patcher builds where patcherFixId = &#63; from the database.
 	 *
 	 * @param patcherFixId the patcher fix ID
@@ -280,6 +350,16 @@ public class PatcherBuildUtil {
 	 */
 	public static int countByPatcherFixId(long patcherFixId) {
 		return getPersistence().countByPatcherFixId(patcherFixId);
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where patcherFixId = &#63;.
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	public static int filterCountByPatcherFixId(long patcherFixId) {
+		return getPersistence().filterCountByPatcherFixId(patcherFixId);
 	}
 
 	/**
@@ -442,6 +522,78 @@ public class PatcherBuildUtil {
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where patcherProjectVersionId = &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByPatcherProjectVersionId(
+		long patcherProjectVersionId) {
+
+		return getPersistence().filterFindByPatcherProjectVersionId(
+			patcherProjectVersionId);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where patcherProjectVersionId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByPatcherProjectVersionId(
+		long patcherProjectVersionId, int start, int end) {
+
+		return getPersistence().filterFindByPatcherProjectVersionId(
+			patcherProjectVersionId, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where patcherProjectVersionId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByPatcherProjectVersionId(
+		long patcherProjectVersionId, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		return getPersistence().filterFindByPatcherProjectVersionId(
+			patcherProjectVersionId, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where patcherProjectVersionId = &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	public static PatcherBuild[]
+			filterFindByPatcherProjectVersionId_PrevAndNext(
+				long patcherBuildId, long patcherProjectVersionId,
+				OrderByComparator<PatcherBuild> orderByComparator)
+		throws com.liferay.osb.patcher.exception.NoSuchPatcherBuildException {
+
+		return getPersistence().filterFindByPatcherProjectVersionId_PrevAndNext(
+			patcherBuildId, patcherProjectVersionId, orderByComparator);
+	}
+
+	/**
 	 * Removes all the patcher builds where patcherProjectVersionId = &#63; from the database.
 	 *
 	 * @param patcherProjectVersionId the patcher project version ID
@@ -463,6 +615,19 @@ public class PatcherBuildUtil {
 		long patcherProjectVersionId) {
 
 		return getPersistence().countByPatcherProjectVersionId(
+			patcherProjectVersionId);
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where patcherProjectVersionId = &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	public static int filterCountByPatcherProjectVersionId(
+		long patcherProjectVersionId) {
+
+		return getPersistence().filterCountByPatcherProjectVersionId(
 			patcherProjectVersionId);
 	}
 
@@ -610,6 +775,73 @@ public class PatcherBuildUtil {
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where key = &#63;.
+	 *
+	 * @param key the key
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByKey(String key) {
+		return getPersistence().filterFindByKey(key);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where key = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByKey(
+		String key, int start, int end) {
+
+		return getPersistence().filterFindByKey(key, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where key = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByKey(
+		String key, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		return getPersistence().filterFindByKey(
+			key, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where key = &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param key the key
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	public static PatcherBuild[] filterFindByKey_PrevAndNext(
+			long patcherBuildId, String key,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws com.liferay.osb.patcher.exception.NoSuchPatcherBuildException {
+
+		return getPersistence().filterFindByKey_PrevAndNext(
+			patcherBuildId, key, orderByComparator);
+	}
+
+	/**
 	 * Removes all the patcher builds where key = &#63; from the database.
 	 *
 	 * @param key the key
@@ -626,6 +858,16 @@ public class PatcherBuildUtil {
 	 */
 	public static int countByKey(String key) {
 		return getPersistence().countByKey(key);
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where key = &#63;.
+	 *
+	 * @param key the key
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	public static int filterCountByKey(String key) {
+		return getPersistence().filterCountByKey(key);
 	}
 
 	/**
@@ -801,6 +1043,85 @@ public class PatcherBuildUtil {
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where patcherAccountId = &#63; and patcherProductVersionId = &#63;.
+	 *
+	 * @param patcherAccountId the patcher account ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByP_P(
+		long patcherAccountId, long patcherProductVersionId) {
+
+		return getPersistence().filterFindByP_P(
+			patcherAccountId, patcherProductVersionId);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where patcherAccountId = &#63; and patcherProductVersionId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherAccountId the patcher account ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByP_P(
+		long patcherAccountId, long patcherProductVersionId, int start,
+		int end) {
+
+		return getPersistence().filterFindByP_P(
+			patcherAccountId, patcherProductVersionId, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where patcherAccountId = &#63; and patcherProductVersionId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherAccountId the patcher account ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByP_P(
+		long patcherAccountId, long patcherProductVersionId, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		return getPersistence().filterFindByP_P(
+			patcherAccountId, patcherProductVersionId, start, end,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where patcherAccountId = &#63; and patcherProductVersionId = &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param patcherAccountId the patcher account ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	public static PatcherBuild[] filterFindByP_P_PrevAndNext(
+			long patcherBuildId, long patcherAccountId,
+			long patcherProductVersionId,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws com.liferay.osb.patcher.exception.NoSuchPatcherBuildException {
+
+		return getPersistence().filterFindByP_P_PrevAndNext(
+			patcherBuildId, patcherAccountId, patcherProductVersionId,
+			orderByComparator);
+	}
+
+	/**
 	 * Removes all the patcher builds where patcherAccountId = &#63; and patcherProductVersionId = &#63; from the database.
 	 *
 	 * @param patcherAccountId the patcher account ID
@@ -823,6 +1144,20 @@ public class PatcherBuildUtil {
 		long patcherAccountId, long patcherProductVersionId) {
 
 		return getPersistence().countByP_P(
+			patcherAccountId, patcherProductVersionId);
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where patcherAccountId = &#63; and patcherProductVersionId = &#63;.
+	 *
+	 * @param patcherAccountId the patcher account ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	public static int filterCountByP_P(
+		long patcherAccountId, long patcherProductVersionId) {
+
+		return getPersistence().filterCountByP_P(
 			patcherAccountId, patcherProductVersionId);
 	}
 
@@ -993,6 +1328,80 @@ public class PatcherBuildUtil {
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where patcherFixId = &#63; and childBuild = &#63;.
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param childBuild the child build
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByP_C(
+		long patcherFixId, boolean childBuild) {
+
+		return getPersistence().filterFindByP_C(patcherFixId, childBuild);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where patcherFixId = &#63; and childBuild = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param childBuild the child build
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByP_C(
+		long patcherFixId, boolean childBuild, int start, int end) {
+
+		return getPersistence().filterFindByP_C(
+			patcherFixId, childBuild, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where patcherFixId = &#63; and childBuild = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param childBuild the child build
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByP_C(
+		long patcherFixId, boolean childBuild, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		return getPersistence().filterFindByP_C(
+			patcherFixId, childBuild, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where patcherFixId = &#63; and childBuild = &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param patcherFixId the patcher fix ID
+	 * @param childBuild the child build
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	public static PatcherBuild[] filterFindByP_C_PrevAndNext(
+			long patcherBuildId, long patcherFixId, boolean childBuild,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws com.liferay.osb.patcher.exception.NoSuchPatcherBuildException {
+
+		return getPersistence().filterFindByP_C_PrevAndNext(
+			patcherBuildId, patcherFixId, childBuild, orderByComparator);
+	}
+
+	/**
 	 * Removes all the patcher builds where patcherFixId = &#63; and childBuild = &#63; from the database.
 	 *
 	 * @param patcherFixId the patcher fix ID
@@ -1011,6 +1420,17 @@ public class PatcherBuildUtil {
 	 */
 	public static int countByP_C(long patcherFixId, boolean childBuild) {
 		return getPersistence().countByP_C(patcherFixId, childBuild);
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where patcherFixId = &#63; and childBuild = &#63;.
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param childBuild the child build
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	public static int filterCountByP_C(long patcherFixId, boolean childBuild) {
+		return getPersistence().filterCountByP_C(patcherFixId, childBuild);
 	}
 
 	/**
@@ -1242,6 +1662,79 @@ public class PatcherBuildUtil {
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where key = &#63; and keyVersion &gt; &#63;.
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByK_GtKV(
+		String key, double keyVersion) {
+
+		return getPersistence().filterFindByK_GtKV(key, keyVersion);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where key = &#63; and keyVersion &gt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByK_GtKV(
+		String key, double keyVersion, int start, int end) {
+
+		return getPersistence().filterFindByK_GtKV(key, keyVersion, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where key = &#63; and keyVersion &gt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByK_GtKV(
+		String key, double keyVersion, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		return getPersistence().filterFindByK_GtKV(
+			key, keyVersion, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where key = &#63; and keyVersion &gt; &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	public static PatcherBuild[] filterFindByK_GtKV_PrevAndNext(
+			long patcherBuildId, String key, double keyVersion,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws com.liferay.osb.patcher.exception.NoSuchPatcherBuildException {
+
+		return getPersistence().filterFindByK_GtKV_PrevAndNext(
+			patcherBuildId, key, keyVersion, orderByComparator);
+	}
+
+	/**
 	 * Removes all the patcher builds where key = &#63; and keyVersion &gt; &#63; from the database.
 	 *
 	 * @param key the key
@@ -1260,6 +1753,17 @@ public class PatcherBuildUtil {
 	 */
 	public static int countByK_GtKV(String key, double keyVersion) {
 		return getPersistence().countByK_GtKV(key, keyVersion);
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where key = &#63; and keyVersion &gt; &#63;.
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	public static int filterCountByK_GtKV(String key, double keyVersion) {
+		return getPersistence().filterCountByK_GtKV(key, keyVersion);
 	}
 
 	/**
@@ -1428,6 +1932,79 @@ public class PatcherBuildUtil {
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where key = &#63; and keyVersion &lt; &#63;.
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByK_LtKV(
+		String key, double keyVersion) {
+
+		return getPersistence().filterFindByK_LtKV(key, keyVersion);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where key = &#63; and keyVersion &lt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByK_LtKV(
+		String key, double keyVersion, int start, int end) {
+
+		return getPersistence().filterFindByK_LtKV(key, keyVersion, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where key = &#63; and keyVersion &lt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByK_LtKV(
+		String key, double keyVersion, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		return getPersistence().filterFindByK_LtKV(
+			key, keyVersion, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where key = &#63; and keyVersion &lt; &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	public static PatcherBuild[] filterFindByK_LtKV_PrevAndNext(
+			long patcherBuildId, String key, double keyVersion,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws com.liferay.osb.patcher.exception.NoSuchPatcherBuildException {
+
+		return getPersistence().filterFindByK_LtKV_PrevAndNext(
+			patcherBuildId, key, keyVersion, orderByComparator);
+	}
+
+	/**
 	 * Removes all the patcher builds where key = &#63; and keyVersion &lt; &#63; from the database.
 	 *
 	 * @param key the key
@@ -1446,6 +2023,17 @@ public class PatcherBuildUtil {
 	 */
 	public static int countByK_LtKV(String key, double keyVersion) {
 		return getPersistence().countByK_LtKV(key, keyVersion);
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where key = &#63; and keyVersion &lt; &#63;.
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	public static int filterCountByK_LtKV(String key, double keyVersion) {
+		return getPersistence().filterCountByK_LtKV(key, keyVersion);
 	}
 
 	/**
@@ -1614,6 +2202,80 @@ public class PatcherBuildUtil {
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where key = &#63; and latestKeyBuild = &#63;.
+	 *
+	 * @param key the key
+	 * @param latestKeyBuild the latest key build
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByK_L(
+		String key, boolean latestKeyBuild) {
+
+		return getPersistence().filterFindByK_L(key, latestKeyBuild);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where key = &#63; and latestKeyBuild = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param latestKeyBuild the latest key build
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByK_L(
+		String key, boolean latestKeyBuild, int start, int end) {
+
+		return getPersistence().filterFindByK_L(
+			key, latestKeyBuild, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where key = &#63; and latestKeyBuild = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param latestKeyBuild the latest key build
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByK_L(
+		String key, boolean latestKeyBuild, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		return getPersistence().filterFindByK_L(
+			key, latestKeyBuild, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where key = &#63; and latestKeyBuild = &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param key the key
+	 * @param latestKeyBuild the latest key build
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	public static PatcherBuild[] filterFindByK_L_PrevAndNext(
+			long patcherBuildId, String key, boolean latestKeyBuild,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws com.liferay.osb.patcher.exception.NoSuchPatcherBuildException {
+
+		return getPersistence().filterFindByK_L_PrevAndNext(
+			patcherBuildId, key, latestKeyBuild, orderByComparator);
+	}
+
+	/**
 	 * Removes all the patcher builds where key = &#63; and latestKeyBuild = &#63; from the database.
 	 *
 	 * @param key the key
@@ -1632,6 +2294,17 @@ public class PatcherBuildUtil {
 	 */
 	public static int countByK_L(String key, boolean latestKeyBuild) {
 		return getPersistence().countByK_L(key, latestKeyBuild);
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where key = &#63; and latestKeyBuild = &#63;.
+	 *
+	 * @param key the key
+	 * @param latestKeyBuild the latest key build
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	public static int filterCountByK_L(String key, boolean latestKeyBuild) {
+		return getPersistence().filterCountByK_L(key, latestKeyBuild);
 	}
 
 	/**
@@ -1807,6 +2480,85 @@ public class PatcherBuildUtil {
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where latestSupportTicketBuild = &#63; and supportTicket = &#63;.
+	 *
+	 * @param latestSupportTicketBuild the latest support ticket build
+	 * @param supportTicket the support ticket
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByL_S(
+		boolean latestSupportTicketBuild, String supportTicket) {
+
+		return getPersistence().filterFindByL_S(
+			latestSupportTicketBuild, supportTicket);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where latestSupportTicketBuild = &#63; and supportTicket = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param latestSupportTicketBuild the latest support ticket build
+	 * @param supportTicket the support ticket
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByL_S(
+		boolean latestSupportTicketBuild, String supportTicket, int start,
+		int end) {
+
+		return getPersistence().filterFindByL_S(
+			latestSupportTicketBuild, supportTicket, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where latestSupportTicketBuild = &#63; and supportTicket = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param latestSupportTicketBuild the latest support ticket build
+	 * @param supportTicket the support ticket
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByL_S(
+		boolean latestSupportTicketBuild, String supportTicket, int start,
+		int end, OrderByComparator<PatcherBuild> orderByComparator) {
+
+		return getPersistence().filterFindByL_S(
+			latestSupportTicketBuild, supportTicket, start, end,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where latestSupportTicketBuild = &#63; and supportTicket = &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param latestSupportTicketBuild the latest support ticket build
+	 * @param supportTicket the support ticket
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	public static PatcherBuild[] filterFindByL_S_PrevAndNext(
+			long patcherBuildId, boolean latestSupportTicketBuild,
+			String supportTicket,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws com.liferay.osb.patcher.exception.NoSuchPatcherBuildException {
+
+		return getPersistence().filterFindByL_S_PrevAndNext(
+			patcherBuildId, latestSupportTicketBuild, supportTicket,
+			orderByComparator);
+	}
+
+	/**
 	 * Removes all the patcher builds where latestSupportTicketBuild = &#63; and supportTicket = &#63; from the database.
 	 *
 	 * @param latestSupportTicketBuild the latest support ticket build
@@ -1829,6 +2581,20 @@ public class PatcherBuildUtil {
 		boolean latestSupportTicketBuild, String supportTicket) {
 
 		return getPersistence().countByL_S(
+			latestSupportTicketBuild, supportTicket);
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where latestSupportTicketBuild = &#63; and supportTicket = &#63;.
+	 *
+	 * @param latestSupportTicketBuild the latest support ticket build
+	 * @param supportTicket the support ticket
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	public static int filterCountByL_S(
+		boolean latestSupportTicketBuild, String supportTicket) {
+
+		return getPersistence().filterCountByL_S(
 			latestSupportTicketBuild, supportTicket);
 	}
 
@@ -2003,6 +2769,83 @@ public class PatcherBuildUtil {
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where supportTicket = &#63; and supportTicketVersion &gt; &#63;.
+	 *
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByS_GtS(
+		String supportTicket, double supportTicketVersion) {
+
+		return getPersistence().filterFindByS_GtS(
+			supportTicket, supportTicketVersion);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where supportTicket = &#63; and supportTicketVersion &gt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByS_GtS(
+		String supportTicket, double supportTicketVersion, int start, int end) {
+
+		return getPersistence().filterFindByS_GtS(
+			supportTicket, supportTicketVersion, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where supportTicket = &#63; and supportTicketVersion &gt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByS_GtS(
+		String supportTicket, double supportTicketVersion, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		return getPersistence().filterFindByS_GtS(
+			supportTicket, supportTicketVersion, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where supportTicket = &#63; and supportTicketVersion &gt; &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	public static PatcherBuild[] filterFindByS_GtS_PrevAndNext(
+			long patcherBuildId, String supportTicket,
+			double supportTicketVersion,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws com.liferay.osb.patcher.exception.NoSuchPatcherBuildException {
+
+		return getPersistence().filterFindByS_GtS_PrevAndNext(
+			patcherBuildId, supportTicket, supportTicketVersion,
+			orderByComparator);
+	}
+
+	/**
 	 * Removes all the patcher builds where supportTicket = &#63; and supportTicketVersion &gt; &#63; from the database.
 	 *
 	 * @param supportTicket the support ticket
@@ -2025,6 +2868,20 @@ public class PatcherBuildUtil {
 		String supportTicket, double supportTicketVersion) {
 
 		return getPersistence().countByS_GtS(
+			supportTicket, supportTicketVersion);
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where supportTicket = &#63; and supportTicketVersion &gt; &#63;.
+	 *
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	public static int filterCountByS_GtS(
+		String supportTicket, double supportTicketVersion) {
+
+		return getPersistence().filterCountByS_GtS(
 			supportTicket, supportTicketVersion);
 	}
 
@@ -2199,6 +3056,83 @@ public class PatcherBuildUtil {
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where supportTicket = &#63; and supportTicketVersion &lt; &#63;.
+	 *
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByS_LtS(
+		String supportTicket, double supportTicketVersion) {
+
+		return getPersistence().filterFindByS_LtS(
+			supportTicket, supportTicketVersion);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where supportTicket = &#63; and supportTicketVersion &lt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByS_LtS(
+		String supportTicket, double supportTicketVersion, int start, int end) {
+
+		return getPersistence().filterFindByS_LtS(
+			supportTicket, supportTicketVersion, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where supportTicket = &#63; and supportTicketVersion &lt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByS_LtS(
+		String supportTicket, double supportTicketVersion, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		return getPersistence().filterFindByS_LtS(
+			supportTicket, supportTicketVersion, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where supportTicket = &#63; and supportTicketVersion &lt; &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	public static PatcherBuild[] filterFindByS_LtS_PrevAndNext(
+			long patcherBuildId, String supportTicket,
+			double supportTicketVersion,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws com.liferay.osb.patcher.exception.NoSuchPatcherBuildException {
+
+		return getPersistence().filterFindByS_LtS_PrevAndNext(
+			patcherBuildId, supportTicket, supportTicketVersion,
+			orderByComparator);
+	}
+
+	/**
 	 * Removes all the patcher builds where supportTicket = &#63; and supportTicketVersion &lt; &#63; from the database.
 	 *
 	 * @param supportTicket the support ticket
@@ -2221,6 +3155,20 @@ public class PatcherBuildUtil {
 		String supportTicket, double supportTicketVersion) {
 
 		return getPersistence().countByS_LtS(
+			supportTicket, supportTicketVersion);
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where supportTicket = &#63; and supportTicketVersion &lt; &#63;.
+	 *
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	public static int filterCountByS_LtS(
+		String supportTicket, double supportTicketVersion) {
+
+		return getPersistence().filterCountByS_LtS(
 			supportTicket, supportTicketVersion);
 	}
 
@@ -2401,6 +3349,145 @@ public class PatcherBuildUtil {
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and status = &#63;.
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param status the status
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByLtM_N_S(
+		Date modifiedDate, boolean notified, int status) {
+
+		return getPersistence().filterFindByLtM_N_S(
+			modifiedDate, notified, status);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param status the status
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByLtM_N_S(
+		Date modifiedDate, boolean notified, int status, int start, int end) {
+
+		return getPersistence().filterFindByLtM_N_S(
+			modifiedDate, notified, status, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where modifiedDate &lt; &#63; and notified = &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param status the status
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByLtM_N_S(
+		Date modifiedDate, boolean notified, int status, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		return getPersistence().filterFindByLtM_N_S(
+			modifiedDate, notified, status, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and status = &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	public static PatcherBuild[] filterFindByLtM_N_S_PrevAndNext(
+			long patcherBuildId, Date modifiedDate, boolean notified,
+			int status, OrderByComparator<PatcherBuild> orderByComparator)
+		throws com.liferay.osb.patcher.exception.NoSuchPatcherBuildException {
+
+		return getPersistence().filterFindByLtM_N_S_PrevAndNext(
+			patcherBuildId, modifiedDate, notified, status, orderByComparator);
+	}
+
+	/**
+	 * Returns all the patcher builds that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and status = any &#63;.
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param statuses the statuses
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByLtM_N_S(
+		Date modifiedDate, boolean notified, int[] statuses) {
+
+		return getPersistence().filterFindByLtM_N_S(
+			modifiedDate, notified, statuses);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and status = any &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param statuses the statuses
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByLtM_N_S(
+		Date modifiedDate, boolean notified, int[] statuses, int start,
+		int end) {
+
+		return getPersistence().filterFindByLtM_N_S(
+			modifiedDate, notified, statuses, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and status = any &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param statuses the statuses
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByLtM_N_S(
+		Date modifiedDate, boolean notified, int[] statuses, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		return getPersistence().filterFindByLtM_N_S(
+			modifiedDate, notified, statuses, start, end, orderByComparator);
+	}
+
+	/**
 	 * Returns all the patcher builds where modifiedDate &lt; &#63; and notified = &#63; and status = any &#63;.
 	 *
 	 * <p>
@@ -2528,6 +3615,36 @@ public class PatcherBuildUtil {
 		Date modifiedDate, boolean notified, int[] statuses) {
 
 		return getPersistence().countByLtM_N_S(
+			modifiedDate, notified, statuses);
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and status = &#63;.
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param status the status
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	public static int filterCountByLtM_N_S(
+		Date modifiedDate, boolean notified, int status) {
+
+		return getPersistence().filterCountByLtM_N_S(
+			modifiedDate, notified, status);
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and status = any &#63;.
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param statuses the statuses
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	public static int filterCountByLtM_N_S(
+		Date modifiedDate, boolean notified, int[] statuses) {
+
+		return getPersistence().filterCountByLtM_N_S(
 			modifiedDate, notified, statuses);
 	}
 
@@ -2730,6 +3847,96 @@ public class PatcherBuildUtil {
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where patcherFixId = &#63; and patcherProductVersionId &ne; &#63; and childBuild = &#63; and type &ne; &#63;.
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param childBuild the child build
+	 * @param type the type
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByP_NotP_C_NotT(
+		long patcherFixId, long patcherProductVersionId, boolean childBuild,
+		int type) {
+
+		return getPersistence().filterFindByP_NotP_C_NotT(
+			patcherFixId, patcherProductVersionId, childBuild, type);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where patcherFixId = &#63; and patcherProductVersionId &ne; &#63; and childBuild = &#63; and type &ne; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param childBuild the child build
+	 * @param type the type
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByP_NotP_C_NotT(
+		long patcherFixId, long patcherProductVersionId, boolean childBuild,
+		int type, int start, int end) {
+
+		return getPersistence().filterFindByP_NotP_C_NotT(
+			patcherFixId, patcherProductVersionId, childBuild, type, start,
+			end);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where patcherFixId = &#63; and patcherProductVersionId &ne; &#63; and childBuild = &#63; and type &ne; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param childBuild the child build
+	 * @param type the type
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByP_NotP_C_NotT(
+		long patcherFixId, long patcherProductVersionId, boolean childBuild,
+		int type, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		return getPersistence().filterFindByP_NotP_C_NotT(
+			patcherFixId, patcherProductVersionId, childBuild, type, start, end,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where patcherFixId = &#63; and patcherProductVersionId &ne; &#63; and childBuild = &#63; and type &ne; &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param patcherFixId the patcher fix ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param childBuild the child build
+	 * @param type the type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	public static PatcherBuild[] filterFindByP_NotP_C_NotT_PrevAndNext(
+			long patcherBuildId, long patcherFixId,
+			long patcherProductVersionId, boolean childBuild, int type,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws com.liferay.osb.patcher.exception.NoSuchPatcherBuildException {
+
+		return getPersistence().filterFindByP_NotP_C_NotT_PrevAndNext(
+			patcherBuildId, patcherFixId, patcherProductVersionId, childBuild,
+			type, orderByComparator);
+	}
+
+	/**
 	 * Removes all the patcher builds where patcherFixId = &#63; and patcherProductVersionId &ne; &#63; and childBuild = &#63; and type &ne; &#63; from the database.
 	 *
 	 * @param patcherFixId the patcher fix ID
@@ -2759,6 +3966,23 @@ public class PatcherBuildUtil {
 		int type) {
 
 		return getPersistence().countByP_NotP_C_NotT(
+			patcherFixId, patcherProductVersionId, childBuild, type);
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where patcherFixId = &#63; and patcherProductVersionId &ne; &#63; and childBuild = &#63; and type &ne; &#63;.
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param childBuild the child build
+	 * @param type the type
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	public static int filterCountByP_NotP_C_NotT(
+		long patcherFixId, long patcherProductVersionId, boolean childBuild,
+		int type) {
+
+		return getPersistence().filterCountByP_NotP_C_NotT(
 			patcherFixId, patcherProductVersionId, childBuild, type);
 	}
 
@@ -2965,6 +4189,96 @@ public class PatcherBuildUtil {
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where patcherProjectVersionId = &#63; and accountEntryCode = &#63; and latestKeyBuild = &#63; and name = &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param accountEntryCode the account entry code
+	 * @param latestKeyBuild the latest key build
+	 * @param name the name
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByP_N_L_A(
+		long patcherProjectVersionId, String accountEntryCode,
+		boolean latestKeyBuild, String name) {
+
+		return getPersistence().filterFindByP_N_L_A(
+			patcherProjectVersionId, accountEntryCode, latestKeyBuild, name);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where patcherProjectVersionId = &#63; and accountEntryCode = &#63; and latestKeyBuild = &#63; and name = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param accountEntryCode the account entry code
+	 * @param latestKeyBuild the latest key build
+	 * @param name the name
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByP_N_L_A(
+		long patcherProjectVersionId, String accountEntryCode,
+		boolean latestKeyBuild, String name, int start, int end) {
+
+		return getPersistence().filterFindByP_N_L_A(
+			patcherProjectVersionId, accountEntryCode, latestKeyBuild, name,
+			start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where patcherProjectVersionId = &#63; and accountEntryCode = &#63; and latestKeyBuild = &#63; and name = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param accountEntryCode the account entry code
+	 * @param latestKeyBuild the latest key build
+	 * @param name the name
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	public static List<PatcherBuild> filterFindByP_N_L_A(
+		long patcherProjectVersionId, String accountEntryCode,
+		boolean latestKeyBuild, String name, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		return getPersistence().filterFindByP_N_L_A(
+			patcherProjectVersionId, accountEntryCode, latestKeyBuild, name,
+			start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where patcherProjectVersionId = &#63; and accountEntryCode = &#63; and latestKeyBuild = &#63; and name = &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param accountEntryCode the account entry code
+	 * @param latestKeyBuild the latest key build
+	 * @param name the name
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	public static PatcherBuild[] filterFindByP_N_L_A_PrevAndNext(
+			long patcherBuildId, long patcherProjectVersionId,
+			String accountEntryCode, boolean latestKeyBuild, String name,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws com.liferay.osb.patcher.exception.NoSuchPatcherBuildException {
+
+		return getPersistence().filterFindByP_N_L_A_PrevAndNext(
+			patcherBuildId, patcherProjectVersionId, accountEntryCode,
+			latestKeyBuild, name, orderByComparator);
+	}
+
+	/**
 	 * Removes all the patcher builds where patcherProjectVersionId = &#63; and accountEntryCode = &#63; and latestKeyBuild = &#63; and name = &#63; from the database.
 	 *
 	 * @param patcherProjectVersionId the patcher project version ID
@@ -2994,6 +4308,23 @@ public class PatcherBuildUtil {
 		boolean latestKeyBuild, String name) {
 
 		return getPersistence().countByP_N_L_A(
+			patcherProjectVersionId, accountEntryCode, latestKeyBuild, name);
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where patcherProjectVersionId = &#63; and accountEntryCode = &#63; and latestKeyBuild = &#63; and name = &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param accountEntryCode the account entry code
+	 * @param latestKeyBuild the latest key build
+	 * @param name the name
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	public static int filterCountByP_N_L_A(
+		long patcherProjectVersionId, String accountEntryCode,
+		boolean latestKeyBuild, String name) {
+
+		return getPersistence().filterCountByP_N_L_A(
 			patcherProjectVersionId, accountEntryCode, latestKeyBuild, name);
 	}
 

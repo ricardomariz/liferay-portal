@@ -340,6 +340,81 @@ public class PatcherAccountUtil {
 	}
 
 	/**
+	 * Returns all the patcher accounts that the user has permission to view where companyId = &#63; and accountEntryCode LIKE &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param accountEntryCode the account entry code
+	 * @return the matching patcher accounts that the user has permission to view
+	 */
+	public static List<PatcherAccount> filterFindByC_LikeA(
+		long companyId, String accountEntryCode) {
+
+		return getPersistence().filterFindByC_LikeA(
+			companyId, accountEntryCode);
+	}
+
+	/**
+	 * Returns a range of all the patcher accounts that the user has permission to view where companyId = &#63; and accountEntryCode LIKE &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherAccountModelImpl</code>.
+	 * </p>
+	 *
+	 * @param companyId the company ID
+	 * @param accountEntryCode the account entry code
+	 * @param start the lower bound of the range of patcher accounts
+	 * @param end the upper bound of the range of patcher accounts (not inclusive)
+	 * @return the range of matching patcher accounts that the user has permission to view
+	 */
+	public static List<PatcherAccount> filterFindByC_LikeA(
+		long companyId, String accountEntryCode, int start, int end) {
+
+		return getPersistence().filterFindByC_LikeA(
+			companyId, accountEntryCode, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher accounts that the user has permissions to view where companyId = &#63; and accountEntryCode LIKE &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherAccountModelImpl</code>.
+	 * </p>
+	 *
+	 * @param companyId the company ID
+	 * @param accountEntryCode the account entry code
+	 * @param start the lower bound of the range of patcher accounts
+	 * @param end the upper bound of the range of patcher accounts (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher accounts that the user has permission to view
+	 */
+	public static List<PatcherAccount> filterFindByC_LikeA(
+		long companyId, String accountEntryCode, int start, int end,
+		OrderByComparator<PatcherAccount> orderByComparator) {
+
+		return getPersistence().filterFindByC_LikeA(
+			companyId, accountEntryCode, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns the patcher accounts before and after the current patcher account in the ordered set of patcher accounts that the user has permission to view where companyId = &#63; and accountEntryCode LIKE &#63;.
+	 *
+	 * @param patcherAccountId the primary key of the current patcher account
+	 * @param companyId the company ID
+	 * @param accountEntryCode the account entry code
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher account
+	 * @throws NoSuchPatcherAccountException if a patcher account with the primary key could not be found
+	 */
+	public static PatcherAccount[] filterFindByC_LikeA_PrevAndNext(
+			long patcherAccountId, long companyId, String accountEntryCode,
+			OrderByComparator<PatcherAccount> orderByComparator)
+		throws com.liferay.osb.patcher.exception.NoSuchPatcherAccountException {
+
+		return getPersistence().filterFindByC_LikeA_PrevAndNext(
+			patcherAccountId, companyId, accountEntryCode, orderByComparator);
+	}
+
+	/**
 	 * Removes all the patcher accounts where companyId = &#63; and accountEntryCode LIKE &#63; from the database.
 	 *
 	 * @param companyId the company ID
@@ -360,6 +435,20 @@ public class PatcherAccountUtil {
 	 */
 	public static int countByC_LikeA(long companyId, String accountEntryCode) {
 		return getPersistence().countByC_LikeA(companyId, accountEntryCode);
+	}
+
+	/**
+	 * Returns the number of patcher accounts that the user has permission to view where companyId = &#63; and accountEntryCode LIKE &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param accountEntryCode the account entry code
+	 * @return the number of matching patcher accounts that the user has permission to view
+	 */
+	public static int filterCountByC_LikeA(
+		long companyId, String accountEntryCode) {
+
+		return getPersistence().filterCountByC_LikeA(
+			companyId, accountEntryCode);
 	}
 
 	/**

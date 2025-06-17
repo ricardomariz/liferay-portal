@@ -162,6 +162,63 @@ public interface PatcherProductVersionPersistence
 		throws NoSuchPatcherProductVersionException;
 
 	/**
+	 * Returns all the patcher product versions that the user has permission to view where fixDeliveryMethod = &#63;.
+	 *
+	 * @param fixDeliveryMethod the fix delivery method
+	 * @return the matching patcher product versions that the user has permission to view
+	 */
+	public java.util.List<PatcherProductVersion> filterFindByFixDeliveryMethod(
+		int fixDeliveryMethod);
+
+	/**
+	 * Returns a range of all the patcher product versions that the user has permission to view where fixDeliveryMethod = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherProductVersionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param fixDeliveryMethod the fix delivery method
+	 * @param start the lower bound of the range of patcher product versions
+	 * @param end the upper bound of the range of patcher product versions (not inclusive)
+	 * @return the range of matching patcher product versions that the user has permission to view
+	 */
+	public java.util.List<PatcherProductVersion> filterFindByFixDeliveryMethod(
+		int fixDeliveryMethod, int start, int end);
+
+	/**
+	 * Returns an ordered range of all the patcher product versions that the user has permissions to view where fixDeliveryMethod = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherProductVersionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param fixDeliveryMethod the fix delivery method
+	 * @param start the lower bound of the range of patcher product versions
+	 * @param end the upper bound of the range of patcher product versions (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher product versions that the user has permission to view
+	 */
+	public java.util.List<PatcherProductVersion> filterFindByFixDeliveryMethod(
+		int fixDeliveryMethod, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<PatcherProductVersion>
+			orderByComparator);
+
+	/**
+	 * Returns the patcher product versions before and after the current patcher product version in the ordered set of patcher product versions that the user has permission to view where fixDeliveryMethod = &#63;.
+	 *
+	 * @param patcherProductVersionId the primary key of the current patcher product version
+	 * @param fixDeliveryMethod the fix delivery method
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher product version
+	 * @throws NoSuchPatcherProductVersionException if a patcher product version with the primary key could not be found
+	 */
+	public PatcherProductVersion[] filterFindByFixDeliveryMethod_PrevAndNext(
+			long patcherProductVersionId, int fixDeliveryMethod,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<PatcherProductVersion> orderByComparator)
+		throws NoSuchPatcherProductVersionException;
+
+	/**
 	 * Removes all the patcher product versions where fixDeliveryMethod = &#63; from the database.
 	 *
 	 * @param fixDeliveryMethod the fix delivery method
@@ -175,6 +232,14 @@ public interface PatcherProductVersionPersistence
 	 * @return the number of matching patcher product versions
 	 */
 	public int countByFixDeliveryMethod(int fixDeliveryMethod);
+
+	/**
+	 * Returns the number of patcher product versions that the user has permission to view where fixDeliveryMethod = &#63;.
+	 *
+	 * @param fixDeliveryMethod the fix delivery method
+	 * @return the number of matching patcher product versions that the user has permission to view
+	 */
+	public int filterCountByFixDeliveryMethod(int fixDeliveryMethod);
 
 	/**
 	 * Returns the patcher product version where name = &#63; or throws a <code>NoSuchPatcherProductVersionException</code> if it could not be found.

@@ -163,6 +163,63 @@ public interface PatcherFixPersistence extends BasePersistence<PatcherFix> {
 		throws NoSuchPatcherFixException;
 
 	/**
+	 * Returns all the patcher fixes that the user has permission to view where patcherProjectVersionId = &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @return the matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByPatcherProjectVersionId(
+		long patcherProjectVersionId);
+
+	/**
+	 * Returns a range of all the patcher fixes that the user has permission to view where patcherProjectVersionId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @return the range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByPatcherProjectVersionId(
+		long patcherProjectVersionId, int start, int end);
+
+	/**
+	 * Returns an ordered range of all the patcher fixes that the user has permissions to view where patcherProjectVersionId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByPatcherProjectVersionId(
+		long patcherProjectVersionId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<PatcherFix>
+			orderByComparator);
+
+	/**
+	 * Returns the patcher fixes before and after the current patcher fix in the ordered set of patcher fixes that the user has permission to view where patcherProjectVersionId = &#63;.
+	 *
+	 * @param patcherFixId the primary key of the current patcher fix
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher fix
+	 * @throws NoSuchPatcherFixException if a patcher fix with the primary key could not be found
+	 */
+	public PatcherFix[] filterFindByPatcherProjectVersionId_PrevAndNext(
+			long patcherFixId, long patcherProjectVersionId,
+			com.liferay.portal.kernel.util.OrderByComparator<PatcherFix>
+				orderByComparator)
+		throws NoSuchPatcherFixException;
+
+	/**
 	 * Removes all the patcher fixes where patcherProjectVersionId = &#63; from the database.
 	 *
 	 * @param patcherProjectVersionId the patcher project version ID
@@ -176,6 +233,15 @@ public interface PatcherFixPersistence extends BasePersistence<PatcherFix> {
 	 * @return the number of matching patcher fixes
 	 */
 	public int countByPatcherProjectVersionId(long patcherProjectVersionId);
+
+	/**
+	 * Returns the number of patcher fixes that the user has permission to view where patcherProjectVersionId = &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @return the number of matching patcher fixes that the user has permission to view
+	 */
+	public int filterCountByPatcherProjectVersionId(
+		long patcherProjectVersionId);
 
 	/**
 	 * Returns all the patcher fixes where patcherProjectVersionId = &#63; and latestFix = &#63; and type = &#63;.
@@ -329,6 +395,74 @@ public interface PatcherFixPersistence extends BasePersistence<PatcherFix> {
 		throws NoSuchPatcherFixException;
 
 	/**
+	 * Returns all the patcher fixes that the user has permission to view where patcherProjectVersionId = &#63; and latestFix = &#63; and type = &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @return the matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByP_L_T(
+		long patcherProjectVersionId, boolean latestFix, int type);
+
+	/**
+	 * Returns a range of all the patcher fixes that the user has permission to view where patcherProjectVersionId = &#63; and latestFix = &#63; and type = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @return the range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByP_L_T(
+		long patcherProjectVersionId, boolean latestFix, int type, int start,
+		int end);
+
+	/**
+	 * Returns an ordered range of all the patcher fixes that the user has permissions to view where patcherProjectVersionId = &#63; and latestFix = &#63; and type = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByP_L_T(
+		long patcherProjectVersionId, boolean latestFix, int type, int start,
+		int end,
+		com.liferay.portal.kernel.util.OrderByComparator<PatcherFix>
+			orderByComparator);
+
+	/**
+	 * Returns the patcher fixes before and after the current patcher fix in the ordered set of patcher fixes that the user has permission to view where patcherProjectVersionId = &#63; and latestFix = &#63; and type = &#63;.
+	 *
+	 * @param patcherFixId the primary key of the current patcher fix
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher fix
+	 * @throws NoSuchPatcherFixException if a patcher fix with the primary key could not be found
+	 */
+	public PatcherFix[] filterFindByP_L_T_PrevAndNext(
+			long patcherFixId, long patcherProjectVersionId, boolean latestFix,
+			int type,
+			com.liferay.portal.kernel.util.OrderByComparator<PatcherFix>
+				orderByComparator)
+		throws NoSuchPatcherFixException;
+
+	/**
 	 * Removes all the patcher fixes where patcherProjectVersionId = &#63; and latestFix = &#63; and type = &#63; from the database.
 	 *
 	 * @param patcherProjectVersionId the patcher project version ID
@@ -347,6 +481,17 @@ public interface PatcherFixPersistence extends BasePersistence<PatcherFix> {
 	 * @return the number of matching patcher fixes
 	 */
 	public int countByP_L_T(
+		long patcherProjectVersionId, boolean latestFix, int type);
+
+	/**
+	 * Returns the number of patcher fixes that the user has permission to view where patcherProjectVersionId = &#63; and latestFix = &#63; and type = &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @return the number of matching patcher fixes that the user has permission to view
+	 */
+	public int filterCountByP_L_T(
 		long patcherProjectVersionId, boolean latestFix, int type);
 
 	/**
@@ -501,6 +646,74 @@ public interface PatcherFixPersistence extends BasePersistence<PatcherFix> {
 		throws NoSuchPatcherFixException;
 
 	/**
+	 * Returns all the patcher fixes that the user has permission to view where patcherProjectVersionId = &#63; and latestFix = &#63; and type &ne; &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @return the matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByP_L_NotT(
+		long patcherProjectVersionId, boolean latestFix, int type);
+
+	/**
+	 * Returns a range of all the patcher fixes that the user has permission to view where patcherProjectVersionId = &#63; and latestFix = &#63; and type &ne; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @return the range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByP_L_NotT(
+		long patcherProjectVersionId, boolean latestFix, int type, int start,
+		int end);
+
+	/**
+	 * Returns an ordered range of all the patcher fixes that the user has permissions to view where patcherProjectVersionId = &#63; and latestFix = &#63; and type &ne; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByP_L_NotT(
+		long patcherProjectVersionId, boolean latestFix, int type, int start,
+		int end,
+		com.liferay.portal.kernel.util.OrderByComparator<PatcherFix>
+			orderByComparator);
+
+	/**
+	 * Returns the patcher fixes before and after the current patcher fix in the ordered set of patcher fixes that the user has permission to view where patcherProjectVersionId = &#63; and latestFix = &#63; and type &ne; &#63;.
+	 *
+	 * @param patcherFixId the primary key of the current patcher fix
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher fix
+	 * @throws NoSuchPatcherFixException if a patcher fix with the primary key could not be found
+	 */
+	public PatcherFix[] filterFindByP_L_NotT_PrevAndNext(
+			long patcherFixId, long patcherProjectVersionId, boolean latestFix,
+			int type,
+			com.liferay.portal.kernel.util.OrderByComparator<PatcherFix>
+				orderByComparator)
+		throws NoSuchPatcherFixException;
+
+	/**
 	 * Removes all the patcher fixes where patcherProjectVersionId = &#63; and latestFix = &#63; and type &ne; &#63; from the database.
 	 *
 	 * @param patcherProjectVersionId the patcher project version ID
@@ -519,6 +732,17 @@ public interface PatcherFixPersistence extends BasePersistence<PatcherFix> {
 	 * @return the number of matching patcher fixes
 	 */
 	public int countByP_L_NotT(
+		long patcherProjectVersionId, boolean latestFix, int type);
+
+	/**
+	 * Returns the number of patcher fixes that the user has permission to view where patcherProjectVersionId = &#63; and latestFix = &#63; and type &ne; &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @return the number of matching patcher fixes that the user has permission to view
+	 */
+	public int filterCountByP_L_NotT(
 		long patcherProjectVersionId, boolean latestFix, int type);
 
 	/**
@@ -669,6 +893,71 @@ public interface PatcherFixPersistence extends BasePersistence<PatcherFix> {
 		throws NoSuchPatcherFixException;
 
 	/**
+	 * Returns all the patcher fixes that the user has permission to view where key = &#63; and keyVersion &gt; &#63; and type &ne; &#63;.
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param type the type
+	 * @return the matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByK_GtKV_NotT(
+		String key, double keyVersion, int type);
+
+	/**
+	 * Returns a range of all the patcher fixes that the user has permission to view where key = &#63; and keyVersion &gt; &#63; and type &ne; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param type the type
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @return the range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByK_GtKV_NotT(
+		String key, double keyVersion, int type, int start, int end);
+
+	/**
+	 * Returns an ordered range of all the patcher fixes that the user has permissions to view where key = &#63; and keyVersion &gt; &#63; and type &ne; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param type the type
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByK_GtKV_NotT(
+		String key, double keyVersion, int type, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<PatcherFix>
+			orderByComparator);
+
+	/**
+	 * Returns the patcher fixes before and after the current patcher fix in the ordered set of patcher fixes that the user has permission to view where key = &#63; and keyVersion &gt; &#63; and type &ne; &#63;.
+	 *
+	 * @param patcherFixId the primary key of the current patcher fix
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param type the type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher fix
+	 * @throws NoSuchPatcherFixException if a patcher fix with the primary key could not be found
+	 */
+	public PatcherFix[] filterFindByK_GtKV_NotT_PrevAndNext(
+			long patcherFixId, String key, double keyVersion, int type,
+			com.liferay.portal.kernel.util.OrderByComparator<PatcherFix>
+				orderByComparator)
+		throws NoSuchPatcherFixException;
+
+	/**
 	 * Removes all the patcher fixes where key = &#63; and keyVersion &gt; &#63; and type &ne; &#63; from the database.
 	 *
 	 * @param key the key
@@ -686,6 +975,17 @@ public interface PatcherFixPersistence extends BasePersistence<PatcherFix> {
 	 * @return the number of matching patcher fixes
 	 */
 	public int countByK_GtKV_NotT(String key, double keyVersion, int type);
+
+	/**
+	 * Returns the number of patcher fixes that the user has permission to view where key = &#63; and keyVersion &gt; &#63; and type &ne; &#63;.
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param type the type
+	 * @return the number of matching patcher fixes that the user has permission to view
+	 */
+	public int filterCountByK_GtKV_NotT(
+		String key, double keyVersion, int type);
 
 	/**
 	 * Returns all the patcher fixes where key = &#63; and keyVersion &lt; &#63; and type &ne; &#63;.
@@ -835,6 +1135,71 @@ public interface PatcherFixPersistence extends BasePersistence<PatcherFix> {
 		throws NoSuchPatcherFixException;
 
 	/**
+	 * Returns all the patcher fixes that the user has permission to view where key = &#63; and keyVersion &lt; &#63; and type &ne; &#63;.
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param type the type
+	 * @return the matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByK_LtKV_NotT(
+		String key, double keyVersion, int type);
+
+	/**
+	 * Returns a range of all the patcher fixes that the user has permission to view where key = &#63; and keyVersion &lt; &#63; and type &ne; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param type the type
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @return the range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByK_LtKV_NotT(
+		String key, double keyVersion, int type, int start, int end);
+
+	/**
+	 * Returns an ordered range of all the patcher fixes that the user has permissions to view where key = &#63; and keyVersion &lt; &#63; and type &ne; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param type the type
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByK_LtKV_NotT(
+		String key, double keyVersion, int type, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<PatcherFix>
+			orderByComparator);
+
+	/**
+	 * Returns the patcher fixes before and after the current patcher fix in the ordered set of patcher fixes that the user has permission to view where key = &#63; and keyVersion &lt; &#63; and type &ne; &#63;.
+	 *
+	 * @param patcherFixId the primary key of the current patcher fix
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param type the type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher fix
+	 * @throws NoSuchPatcherFixException if a patcher fix with the primary key could not be found
+	 */
+	public PatcherFix[] filterFindByK_LtKV_NotT_PrevAndNext(
+			long patcherFixId, String key, double keyVersion, int type,
+			com.liferay.portal.kernel.util.OrderByComparator<PatcherFix>
+				orderByComparator)
+		throws NoSuchPatcherFixException;
+
+	/**
 	 * Removes all the patcher fixes where key = &#63; and keyVersion &lt; &#63; and type &ne; &#63; from the database.
 	 *
 	 * @param key the key
@@ -852,6 +1217,17 @@ public interface PatcherFixPersistence extends BasePersistence<PatcherFix> {
 	 * @return the number of matching patcher fixes
 	 */
 	public int countByK_LtKV_NotT(String key, double keyVersion, int type);
+
+	/**
+	 * Returns the number of patcher fixes that the user has permission to view where key = &#63; and keyVersion &lt; &#63; and type &ne; &#63;.
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param type the type
+	 * @return the number of matching patcher fixes that the user has permission to view
+	 */
+	public int filterCountByK_LtKV_NotT(
+		String key, double keyVersion, int type);
 
 	/**
 	 * Returns all the patcher fixes where key = &#63; and latestFix = &#63; and type &ne; &#63;.
@@ -1001,6 +1377,71 @@ public interface PatcherFixPersistence extends BasePersistence<PatcherFix> {
 		throws NoSuchPatcherFixException;
 
 	/**
+	 * Returns all the patcher fixes that the user has permission to view where key = &#63; and latestFix = &#63; and type &ne; &#63;.
+	 *
+	 * @param key the key
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @return the matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByK_L_NotT(
+		String key, boolean latestFix, int type);
+
+	/**
+	 * Returns a range of all the patcher fixes that the user has permission to view where key = &#63; and latestFix = &#63; and type &ne; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @return the range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByK_L_NotT(
+		String key, boolean latestFix, int type, int start, int end);
+
+	/**
+	 * Returns an ordered range of all the patcher fixes that the user has permissions to view where key = &#63; and latestFix = &#63; and type &ne; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByK_L_NotT(
+		String key, boolean latestFix, int type, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<PatcherFix>
+			orderByComparator);
+
+	/**
+	 * Returns the patcher fixes before and after the current patcher fix in the ordered set of patcher fixes that the user has permission to view where key = &#63; and latestFix = &#63; and type &ne; &#63;.
+	 *
+	 * @param patcherFixId the primary key of the current patcher fix
+	 * @param key the key
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher fix
+	 * @throws NoSuchPatcherFixException if a patcher fix with the primary key could not be found
+	 */
+	public PatcherFix[] filterFindByK_L_NotT_PrevAndNext(
+			long patcherFixId, String key, boolean latestFix, int type,
+			com.liferay.portal.kernel.util.OrderByComparator<PatcherFix>
+				orderByComparator)
+		throws NoSuchPatcherFixException;
+
+	/**
 	 * Removes all the patcher fixes where key = &#63; and latestFix = &#63; and type &ne; &#63; from the database.
 	 *
 	 * @param key the key
@@ -1018,6 +1459,16 @@ public interface PatcherFixPersistence extends BasePersistence<PatcherFix> {
 	 * @return the number of matching patcher fixes
 	 */
 	public int countByK_L_NotT(String key, boolean latestFix, int type);
+
+	/**
+	 * Returns the number of patcher fixes that the user has permission to view where key = &#63; and latestFix = &#63; and type &ne; &#63;.
+	 *
+	 * @param key the key
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @return the number of matching patcher fixes that the user has permission to view
+	 */
+	public int filterCountByK_L_NotT(String key, boolean latestFix, int type);
 
 	/**
 	 * Returns all the patcher fixes where modifiedDate &lt; &#63; and notified = &#63; and type = &#63; and status = &#63;.
@@ -1180,6 +1631,131 @@ public interface PatcherFixPersistence extends BasePersistence<PatcherFix> {
 		throws NoSuchPatcherFixException;
 
 	/**
+	 * Returns all the patcher fixes that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and type = &#63; and status = &#63;.
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param type the type
+	 * @param status the status
+	 * @return the matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByLtM_N_T_S(
+		Date modifiedDate, boolean notified, int type, int status);
+
+	/**
+	 * Returns a range of all the patcher fixes that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and type = &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param type the type
+	 * @param status the status
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @return the range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByLtM_N_T_S(
+		Date modifiedDate, boolean notified, int type, int status, int start,
+		int end);
+
+	/**
+	 * Returns an ordered range of all the patcher fixes that the user has permissions to view where modifiedDate &lt; &#63; and notified = &#63; and type = &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param type the type
+	 * @param status the status
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByLtM_N_T_S(
+		Date modifiedDate, boolean notified, int type, int status, int start,
+		int end,
+		com.liferay.portal.kernel.util.OrderByComparator<PatcherFix>
+			orderByComparator);
+
+	/**
+	 * Returns the patcher fixes before and after the current patcher fix in the ordered set of patcher fixes that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and type = &#63; and status = &#63;.
+	 *
+	 * @param patcherFixId the primary key of the current patcher fix
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param type the type
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher fix
+	 * @throws NoSuchPatcherFixException if a patcher fix with the primary key could not be found
+	 */
+	public PatcherFix[] filterFindByLtM_N_T_S_PrevAndNext(
+			long patcherFixId, Date modifiedDate, boolean notified, int type,
+			int status,
+			com.liferay.portal.kernel.util.OrderByComparator<PatcherFix>
+				orderByComparator)
+		throws NoSuchPatcherFixException;
+
+	/**
+	 * Returns all the patcher fixes that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and type = any &#63; and status = &#63;.
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param types the types
+	 * @param status the status
+	 * @return the matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByLtM_N_T_S(
+		Date modifiedDate, boolean notified, int[] types, int status);
+
+	/**
+	 * Returns a range of all the patcher fixes that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and type = any &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param types the types
+	 * @param status the status
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @return the range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByLtM_N_T_S(
+		Date modifiedDate, boolean notified, int[] types, int status, int start,
+		int end);
+
+	/**
+	 * Returns an ordered range of all the patcher fixes that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and type = any &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param types the types
+	 * @param status the status
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByLtM_N_T_S(
+		Date modifiedDate, boolean notified, int[] types, int status, int start,
+		int end,
+		com.liferay.portal.kernel.util.OrderByComparator<PatcherFix>
+			orderByComparator);
+
+	/**
 	 * Returns all the patcher fixes where modifiedDate &lt; &#63; and notified = &#63; and type = any &#63; and status = &#63;.
 	 *
 	 * <p>
@@ -1293,6 +1869,30 @@ public interface PatcherFixPersistence extends BasePersistence<PatcherFix> {
 	 * @return the number of matching patcher fixes
 	 */
 	public int countByLtM_N_T_S(
+		Date modifiedDate, boolean notified, int[] types, int status);
+
+	/**
+	 * Returns the number of patcher fixes that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and type = &#63; and status = &#63;.
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param type the type
+	 * @param status the status
+	 * @return the number of matching patcher fixes that the user has permission to view
+	 */
+	public int filterCountByLtM_N_T_S(
+		Date modifiedDate, boolean notified, int type, int status);
+
+	/**
+	 * Returns the number of patcher fixes that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and type = any &#63; and status = &#63;.
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param types the types
+	 * @param status the status
+	 * @return the number of matching patcher fixes that the user has permission to view
+	 */
+	public int filterCountByLtM_N_T_S(
 		Date modifiedDate, boolean notified, int[] types, int status);
 
 	/**
@@ -1458,6 +2058,78 @@ public interface PatcherFixPersistence extends BasePersistence<PatcherFix> {
 		throws NoSuchPatcherFixException;
 
 	/**
+	 * Returns all the patcher fixes that the user has permission to view where patcherProjectVersionId = &#63; and latestFix = &#63; and name = &#63; and type &ne; &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param name the name
+	 * @param type the type
+	 * @return the matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByP_L_N_NotT(
+		long patcherProjectVersionId, boolean latestFix, String name, int type);
+
+	/**
+	 * Returns a range of all the patcher fixes that the user has permission to view where patcherProjectVersionId = &#63; and latestFix = &#63; and name = &#63; and type &ne; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param name the name
+	 * @param type the type
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @return the range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByP_L_N_NotT(
+		long patcherProjectVersionId, boolean latestFix, String name, int type,
+		int start, int end);
+
+	/**
+	 * Returns an ordered range of all the patcher fixes that the user has permissions to view where patcherProjectVersionId = &#63; and latestFix = &#63; and name = &#63; and type &ne; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param name the name
+	 * @param type the type
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByP_L_N_NotT(
+		long patcherProjectVersionId, boolean latestFix, String name, int type,
+		int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<PatcherFix>
+			orderByComparator);
+
+	/**
+	 * Returns the patcher fixes before and after the current patcher fix in the ordered set of patcher fixes that the user has permission to view where patcherProjectVersionId = &#63; and latestFix = &#63; and name = &#63; and type &ne; &#63;.
+	 *
+	 * @param patcherFixId the primary key of the current patcher fix
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param name the name
+	 * @param type the type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher fix
+	 * @throws NoSuchPatcherFixException if a patcher fix with the primary key could not be found
+	 */
+	public PatcherFix[] filterFindByP_L_N_NotT_PrevAndNext(
+			long patcherFixId, long patcherProjectVersionId, boolean latestFix,
+			String name, int type,
+			com.liferay.portal.kernel.util.OrderByComparator<PatcherFix>
+				orderByComparator)
+		throws NoSuchPatcherFixException;
+
+	/**
 	 * Removes all the patcher fixes where patcherProjectVersionId = &#63; and latestFix = &#63; and name = &#63; and type &ne; &#63; from the database.
 	 *
 	 * @param patcherProjectVersionId the patcher project version ID
@@ -1478,6 +2150,18 @@ public interface PatcherFixPersistence extends BasePersistence<PatcherFix> {
 	 * @return the number of matching patcher fixes
 	 */
 	public int countByP_L_N_NotT(
+		long patcherProjectVersionId, boolean latestFix, String name, int type);
+
+	/**
+	 * Returns the number of patcher fixes that the user has permission to view where patcherProjectVersionId = &#63; and latestFix = &#63; and name = &#63; and type &ne; &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param name the name
+	 * @param type the type
+	 * @return the number of matching patcher fixes that the user has permission to view
+	 */
+	public int filterCountByP_L_N_NotT(
 		long patcherProjectVersionId, boolean latestFix, String name, int type);
 
 	/**
@@ -1643,6 +2327,78 @@ public interface PatcherFixPersistence extends BasePersistence<PatcherFix> {
 		throws NoSuchPatcherFixException;
 
 	/**
+	 * Returns all the patcher fixes that the user has permission to view where patcherProjectVersionId = &#63; and latestFix = &#63; and type &ne; &#63; and status = &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @param status the status
+	 * @return the matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByP_L_NotT_S(
+		long patcherProjectVersionId, boolean latestFix, int type, int status);
+
+	/**
+	 * Returns a range of all the patcher fixes that the user has permission to view where patcherProjectVersionId = &#63; and latestFix = &#63; and type &ne; &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @param status the status
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @return the range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByP_L_NotT_S(
+		long patcherProjectVersionId, boolean latestFix, int type, int status,
+		int start, int end);
+
+	/**
+	 * Returns an ordered range of all the patcher fixes that the user has permissions to view where patcherProjectVersionId = &#63; and latestFix = &#63; and type &ne; &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @param status the status
+	 * @param start the lower bound of the range of patcher fixes
+	 * @param end the upper bound of the range of patcher fixes (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher fixes that the user has permission to view
+	 */
+	public java.util.List<PatcherFix> filterFindByP_L_NotT_S(
+		long patcherProjectVersionId, boolean latestFix, int type, int status,
+		int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<PatcherFix>
+			orderByComparator);
+
+	/**
+	 * Returns the patcher fixes before and after the current patcher fix in the ordered set of patcher fixes that the user has permission to view where patcherProjectVersionId = &#63; and latestFix = &#63; and type &ne; &#63; and status = &#63;.
+	 *
+	 * @param patcherFixId the primary key of the current patcher fix
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher fix
+	 * @throws NoSuchPatcherFixException if a patcher fix with the primary key could not be found
+	 */
+	public PatcherFix[] filterFindByP_L_NotT_S_PrevAndNext(
+			long patcherFixId, long patcherProjectVersionId, boolean latestFix,
+			int type, int status,
+			com.liferay.portal.kernel.util.OrderByComparator<PatcherFix>
+				orderByComparator)
+		throws NoSuchPatcherFixException;
+
+	/**
 	 * Removes all the patcher fixes where patcherProjectVersionId = &#63; and latestFix = &#63; and type &ne; &#63; and status = &#63; from the database.
 	 *
 	 * @param patcherProjectVersionId the patcher project version ID
@@ -1663,6 +2419,18 @@ public interface PatcherFixPersistence extends BasePersistence<PatcherFix> {
 	 * @return the number of matching patcher fixes
 	 */
 	public int countByP_L_NotT_S(
+		long patcherProjectVersionId, boolean latestFix, int type, int status);
+
+	/**
+	 * Returns the number of patcher fixes that the user has permission to view where patcherProjectVersionId = &#63; and latestFix = &#63; and type &ne; &#63; and status = &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param latestFix the latest fix
+	 * @param type the type
+	 * @param status the status
+	 * @return the number of matching patcher fixes that the user has permission to view
+	 */
+	public int filterCountByP_L_NotT_S(
 		long patcherProjectVersionId, boolean latestFix, int type, int status);
 
 	/**

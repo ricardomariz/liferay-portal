@@ -207,6 +207,63 @@ public interface PatcherFixPackPersistence
 		throws NoSuchPatcherFixPackException;
 
 	/**
+	 * Returns all the patcher fix packs that the user has permission to view where patcherFixComponentId = &#63;.
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @return the matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByPatcherFixComponentId(
+		long patcherFixComponentId);
+
+	/**
+	 * Returns a range of all the patcher fix packs that the user has permission to view where patcherFixComponentId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixPackModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param start the lower bound of the range of patcher fix packs
+	 * @param end the upper bound of the range of patcher fix packs (not inclusive)
+	 * @return the range of matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByPatcherFixComponentId(
+		long patcherFixComponentId, int start, int end);
+
+	/**
+	 * Returns an ordered range of all the patcher fix packs that the user has permissions to view where patcherFixComponentId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixPackModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param start the lower bound of the range of patcher fix packs
+	 * @param end the upper bound of the range of patcher fix packs (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByPatcherFixComponentId(
+		long patcherFixComponentId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<PatcherFixPack>
+			orderByComparator);
+
+	/**
+	 * Returns the patcher fix packs before and after the current patcher fix pack in the ordered set of patcher fix packs that the user has permission to view where patcherFixComponentId = &#63;.
+	 *
+	 * @param patcherFixPackId the primary key of the current patcher fix pack
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher fix pack
+	 * @throws NoSuchPatcherFixPackException if a patcher fix pack with the primary key could not be found
+	 */
+	public PatcherFixPack[] filterFindByPatcherFixComponentId_PrevAndNext(
+			long patcherFixPackId, long patcherFixComponentId,
+			com.liferay.portal.kernel.util.OrderByComparator<PatcherFixPack>
+				orderByComparator)
+		throws NoSuchPatcherFixPackException;
+
+	/**
 	 * Removes all the patcher fix packs where patcherFixComponentId = &#63; from the database.
 	 *
 	 * @param patcherFixComponentId the patcher fix component ID
@@ -220,6 +277,14 @@ public interface PatcherFixPackPersistence
 	 * @return the number of matching patcher fix packs
 	 */
 	public int countByPatcherFixComponentId(long patcherFixComponentId);
+
+	/**
+	 * Returns the number of patcher fix packs that the user has permission to view where patcherFixComponentId = &#63;.
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @return the number of matching patcher fix packs that the user has permission to view
+	 */
+	public int filterCountByPatcherFixComponentId(long patcherFixComponentId);
 
 	/**
 	 * Returns all the patcher fix packs where version = &#63;.
@@ -350,6 +415,62 @@ public interface PatcherFixPackPersistence
 		throws NoSuchPatcherFixPackException;
 
 	/**
+	 * Returns all the patcher fix packs that the user has permission to view where version = &#63;.
+	 *
+	 * @param version the version
+	 * @return the matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByVersion(int version);
+
+	/**
+	 * Returns a range of all the patcher fix packs that the user has permission to view where version = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixPackModelImpl</code>.
+	 * </p>
+	 *
+	 * @param version the version
+	 * @param start the lower bound of the range of patcher fix packs
+	 * @param end the upper bound of the range of patcher fix packs (not inclusive)
+	 * @return the range of matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByVersion(
+		int version, int start, int end);
+
+	/**
+	 * Returns an ordered range of all the patcher fix packs that the user has permissions to view where version = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixPackModelImpl</code>.
+	 * </p>
+	 *
+	 * @param version the version
+	 * @param start the lower bound of the range of patcher fix packs
+	 * @param end the upper bound of the range of patcher fix packs (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByVersion(
+		int version, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<PatcherFixPack>
+			orderByComparator);
+
+	/**
+	 * Returns the patcher fix packs before and after the current patcher fix pack in the ordered set of patcher fix packs that the user has permission to view where version = &#63;.
+	 *
+	 * @param patcherFixPackId the primary key of the current patcher fix pack
+	 * @param version the version
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher fix pack
+	 * @throws NoSuchPatcherFixPackException if a patcher fix pack with the primary key could not be found
+	 */
+	public PatcherFixPack[] filterFindByVersion_PrevAndNext(
+			long patcherFixPackId, int version,
+			com.liferay.portal.kernel.util.OrderByComparator<PatcherFixPack>
+				orderByComparator)
+		throws NoSuchPatcherFixPackException;
+
+	/**
 	 * Removes all the patcher fix packs where version = &#63; from the database.
 	 *
 	 * @param version the version
@@ -363,6 +484,14 @@ public interface PatcherFixPackPersistence
 	 * @return the number of matching patcher fix packs
 	 */
 	public int countByVersion(int version);
+
+	/**
+	 * Returns the number of patcher fix packs that the user has permission to view where version = &#63;.
+	 *
+	 * @param version the version
+	 * @return the number of matching patcher fix packs that the user has permission to view
+	 */
+	public int filterCountByVersion(int version);
 
 	/**
 	 * Returns all the patcher fix packs where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63;.
@@ -507,6 +636,70 @@ public interface PatcherFixPackPersistence
 		throws NoSuchPatcherFixPackException;
 
 	/**
+	 * Returns all the patcher fix packs that the user has permission to view where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63;.
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @return the matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByPFCI_PPVI(
+		long patcherFixComponentId, long patcherProjectVersionId);
+
+	/**
+	 * Returns a range of all the patcher fix packs that the user has permission to view where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixPackModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param start the lower bound of the range of patcher fix packs
+	 * @param end the upper bound of the range of patcher fix packs (not inclusive)
+	 * @return the range of matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByPFCI_PPVI(
+		long patcherFixComponentId, long patcherProjectVersionId, int start,
+		int end);
+
+	/**
+	 * Returns an ordered range of all the patcher fix packs that the user has permissions to view where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixPackModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param start the lower bound of the range of patcher fix packs
+	 * @param end the upper bound of the range of patcher fix packs (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByPFCI_PPVI(
+		long patcherFixComponentId, long patcherProjectVersionId, int start,
+		int end,
+		com.liferay.portal.kernel.util.OrderByComparator<PatcherFixPack>
+			orderByComparator);
+
+	/**
+	 * Returns the patcher fix packs before and after the current patcher fix pack in the ordered set of patcher fix packs that the user has permission to view where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63;.
+	 *
+	 * @param patcherFixPackId the primary key of the current patcher fix pack
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher fix pack
+	 * @throws NoSuchPatcherFixPackException if a patcher fix pack with the primary key could not be found
+	 */
+	public PatcherFixPack[] filterFindByPFCI_PPVI_PrevAndNext(
+			long patcherFixPackId, long patcherFixComponentId,
+			long patcherProjectVersionId,
+			com.liferay.portal.kernel.util.OrderByComparator<PatcherFixPack>
+				orderByComparator)
+		throws NoSuchPatcherFixPackException;
+
+	/**
 	 * Removes all the patcher fix packs where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63; from the database.
 	 *
 	 * @param patcherFixComponentId the patcher fix component ID
@@ -523,6 +716,16 @@ public interface PatcherFixPackPersistence
 	 * @return the number of matching patcher fix packs
 	 */
 	public int countByPFCI_PPVI(
+		long patcherFixComponentId, long patcherProjectVersionId);
+
+	/**
+	 * Returns the number of patcher fix packs that the user has permission to view where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63;.
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @return the number of matching patcher fix packs that the user has permission to view
+	 */
+	public int filterCountByPFCI_PPVI(
 		long patcherFixComponentId, long patcherProjectVersionId);
 
 	/**
@@ -664,6 +867,67 @@ public interface PatcherFixPackPersistence
 		throws NoSuchPatcherFixPackException;
 
 	/**
+	 * Returns all the patcher fix packs that the user has permission to view where patcherFixComponentId = &#63; and version = &#63;.
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param version the version
+	 * @return the matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByPFCI_V(
+		long patcherFixComponentId, int version);
+
+	/**
+	 * Returns a range of all the patcher fix packs that the user has permission to view where patcherFixComponentId = &#63; and version = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixPackModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param version the version
+	 * @param start the lower bound of the range of patcher fix packs
+	 * @param end the upper bound of the range of patcher fix packs (not inclusive)
+	 * @return the range of matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByPFCI_V(
+		long patcherFixComponentId, int version, int start, int end);
+
+	/**
+	 * Returns an ordered range of all the patcher fix packs that the user has permissions to view where patcherFixComponentId = &#63; and version = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixPackModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param version the version
+	 * @param start the lower bound of the range of patcher fix packs
+	 * @param end the upper bound of the range of patcher fix packs (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByPFCI_V(
+		long patcherFixComponentId, int version, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<PatcherFixPack>
+			orderByComparator);
+
+	/**
+	 * Returns the patcher fix packs before and after the current patcher fix pack in the ordered set of patcher fix packs that the user has permission to view where patcherFixComponentId = &#63; and version = &#63;.
+	 *
+	 * @param patcherFixPackId the primary key of the current patcher fix pack
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param version the version
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher fix pack
+	 * @throws NoSuchPatcherFixPackException if a patcher fix pack with the primary key could not be found
+	 */
+	public PatcherFixPack[] filterFindByPFCI_V_PrevAndNext(
+			long patcherFixPackId, long patcherFixComponentId, int version,
+			com.liferay.portal.kernel.util.OrderByComparator<PatcherFixPack>
+				orderByComparator)
+		throws NoSuchPatcherFixPackException;
+
+	/**
 	 * Removes all the patcher fix packs where patcherFixComponentId = &#63; and version = &#63; from the database.
 	 *
 	 * @param patcherFixComponentId the patcher fix component ID
@@ -679,6 +943,15 @@ public interface PatcherFixPackPersistence
 	 * @return the number of matching patcher fix packs
 	 */
 	public int countByPFCI_V(long patcherFixComponentId, int version);
+
+	/**
+	 * Returns the number of patcher fix packs that the user has permission to view where patcherFixComponentId = &#63; and version = &#63;.
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param version the version
+	 * @return the number of matching patcher fix packs that the user has permission to view
+	 */
+	public int filterCountByPFCI_V(long patcherFixComponentId, int version);
 
 	/**
 	 * Returns the patcher fix pack where patcherProjectVersionId = &#63; and name = &#63; or throws a <code>NoSuchPatcherFixPackException</code> if it could not be found.
@@ -872,6 +1145,67 @@ public interface PatcherFixPackPersistence
 		throws NoSuchPatcherFixPackException;
 
 	/**
+	 * Returns all the patcher fix packs that the user has permission to view where patcherProjectVersionId = &#63; and status = &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param status the status
+	 * @return the matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByPFCI_S(
+		long patcherProjectVersionId, int status);
+
+	/**
+	 * Returns a range of all the patcher fix packs that the user has permission to view where patcherProjectVersionId = &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixPackModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param status the status
+	 * @param start the lower bound of the range of patcher fix packs
+	 * @param end the upper bound of the range of patcher fix packs (not inclusive)
+	 * @return the range of matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByPFCI_S(
+		long patcherProjectVersionId, int status, int start, int end);
+
+	/**
+	 * Returns an ordered range of all the patcher fix packs that the user has permissions to view where patcherProjectVersionId = &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixPackModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param status the status
+	 * @param start the lower bound of the range of patcher fix packs
+	 * @param end the upper bound of the range of patcher fix packs (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByPFCI_S(
+		long patcherProjectVersionId, int status, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<PatcherFixPack>
+			orderByComparator);
+
+	/**
+	 * Returns the patcher fix packs before and after the current patcher fix pack in the ordered set of patcher fix packs that the user has permission to view where patcherProjectVersionId = &#63; and status = &#63;.
+	 *
+	 * @param patcherFixPackId the primary key of the current patcher fix pack
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher fix pack
+	 * @throws NoSuchPatcherFixPackException if a patcher fix pack with the primary key could not be found
+	 */
+	public PatcherFixPack[] filterFindByPFCI_S_PrevAndNext(
+			long patcherFixPackId, long patcherProjectVersionId, int status,
+			com.liferay.portal.kernel.util.OrderByComparator<PatcherFixPack>
+				orderByComparator)
+		throws NoSuchPatcherFixPackException;
+
+	/**
 	 * Removes all the patcher fix packs where patcherProjectVersionId = &#63; and status = &#63; from the database.
 	 *
 	 * @param patcherProjectVersionId the patcher project version ID
@@ -887,6 +1221,15 @@ public interface PatcherFixPackPersistence
 	 * @return the number of matching patcher fix packs
 	 */
 	public int countByPFCI_S(long patcherProjectVersionId, int status);
+
+	/**
+	 * Returns the number of patcher fix packs that the user has permission to view where patcherProjectVersionId = &#63; and status = &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param status the status
+	 * @return the number of matching patcher fix packs that the user has permission to view
+	 */
+	public int filterCountByPFCI_S(long patcherProjectVersionId, int status);
 
 	/**
 	 * Returns all the patcher fix packs where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63; and version &gt; &#63;.
@@ -1042,6 +1385,74 @@ public interface PatcherFixPackPersistence
 		throws NoSuchPatcherFixPackException;
 
 	/**
+	 * Returns all the patcher fix packs that the user has permission to view where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63; and version &gt; &#63;.
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param version the version
+	 * @return the matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByPFCI_PPVI_GtV(
+		long patcherFixComponentId, long patcherProjectVersionId, int version);
+
+	/**
+	 * Returns a range of all the patcher fix packs that the user has permission to view where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63; and version &gt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixPackModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param version the version
+	 * @param start the lower bound of the range of patcher fix packs
+	 * @param end the upper bound of the range of patcher fix packs (not inclusive)
+	 * @return the range of matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByPFCI_PPVI_GtV(
+		long patcherFixComponentId, long patcherProjectVersionId, int version,
+		int start, int end);
+
+	/**
+	 * Returns an ordered range of all the patcher fix packs that the user has permissions to view where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63; and version &gt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixPackModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param version the version
+	 * @param start the lower bound of the range of patcher fix packs
+	 * @param end the upper bound of the range of patcher fix packs (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByPFCI_PPVI_GtV(
+		long patcherFixComponentId, long patcherProjectVersionId, int version,
+		int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<PatcherFixPack>
+			orderByComparator);
+
+	/**
+	 * Returns the patcher fix packs before and after the current patcher fix pack in the ordered set of patcher fix packs that the user has permission to view where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63; and version &gt; &#63;.
+	 *
+	 * @param patcherFixPackId the primary key of the current patcher fix pack
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param version the version
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher fix pack
+	 * @throws NoSuchPatcherFixPackException if a patcher fix pack with the primary key could not be found
+	 */
+	public PatcherFixPack[] filterFindByPFCI_PPVI_GtV_PrevAndNext(
+			long patcherFixPackId, long patcherFixComponentId,
+			long patcherProjectVersionId, int version,
+			com.liferay.portal.kernel.util.OrderByComparator<PatcherFixPack>
+				orderByComparator)
+		throws NoSuchPatcherFixPackException;
+
+	/**
 	 * Removes all the patcher fix packs where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63; and version &gt; &#63; from the database.
 	 *
 	 * @param patcherFixComponentId the patcher fix component ID
@@ -1060,6 +1471,17 @@ public interface PatcherFixPackPersistence
 	 * @return the number of matching patcher fix packs
 	 */
 	public int countByPFCI_PPVI_GtV(
+		long patcherFixComponentId, long patcherProjectVersionId, int version);
+
+	/**
+	 * Returns the number of patcher fix packs that the user has permission to view where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63; and version &gt; &#63;.
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param version the version
+	 * @return the number of matching patcher fix packs that the user has permission to view
+	 */
+	public int filterCountByPFCI_PPVI_GtV(
 		long patcherFixComponentId, long patcherProjectVersionId, int version);
 
 	/**
@@ -1216,6 +1638,74 @@ public interface PatcherFixPackPersistence
 		throws NoSuchPatcherFixPackException;
 
 	/**
+	 * Returns all the patcher fix packs that the user has permission to view where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63; and version &lt; &#63;.
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param version the version
+	 * @return the matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByPFCI_PPVI_LtV(
+		long patcherFixComponentId, long patcherProjectVersionId, int version);
+
+	/**
+	 * Returns a range of all the patcher fix packs that the user has permission to view where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63; and version &lt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixPackModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param version the version
+	 * @param start the lower bound of the range of patcher fix packs
+	 * @param end the upper bound of the range of patcher fix packs (not inclusive)
+	 * @return the range of matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByPFCI_PPVI_LtV(
+		long patcherFixComponentId, long patcherProjectVersionId, int version,
+		int start, int end);
+
+	/**
+	 * Returns an ordered range of all the patcher fix packs that the user has permissions to view where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63; and version &lt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherFixPackModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param version the version
+	 * @param start the lower bound of the range of patcher fix packs
+	 * @param end the upper bound of the range of patcher fix packs (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher fix packs that the user has permission to view
+	 */
+	public java.util.List<PatcherFixPack> filterFindByPFCI_PPVI_LtV(
+		long patcherFixComponentId, long patcherProjectVersionId, int version,
+		int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<PatcherFixPack>
+			orderByComparator);
+
+	/**
+	 * Returns the patcher fix packs before and after the current patcher fix pack in the ordered set of patcher fix packs that the user has permission to view where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63; and version &lt; &#63;.
+	 *
+	 * @param patcherFixPackId the primary key of the current patcher fix pack
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param version the version
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher fix pack
+	 * @throws NoSuchPatcherFixPackException if a patcher fix pack with the primary key could not be found
+	 */
+	public PatcherFixPack[] filterFindByPFCI_PPVI_LtV_PrevAndNext(
+			long patcherFixPackId, long patcherFixComponentId,
+			long patcherProjectVersionId, int version,
+			com.liferay.portal.kernel.util.OrderByComparator<PatcherFixPack>
+				orderByComparator)
+		throws NoSuchPatcherFixPackException;
+
+	/**
 	 * Removes all the patcher fix packs where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63; and version &lt; &#63; from the database.
 	 *
 	 * @param patcherFixComponentId the patcher fix component ID
@@ -1234,6 +1724,17 @@ public interface PatcherFixPackPersistence
 	 * @return the number of matching patcher fix packs
 	 */
 	public int countByPFCI_PPVI_LtV(
+		long patcherFixComponentId, long patcherProjectVersionId, int version);
+
+	/**
+	 * Returns the number of patcher fix packs that the user has permission to view where patcherFixComponentId = &#63; and patcherProjectVersionId = &#63; and version &lt; &#63;.
+	 *
+	 * @param patcherFixComponentId the patcher fix component ID
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param version the version
+	 * @return the number of matching patcher fix packs that the user has permission to view
+	 */
+	public int filterCountByPFCI_PPVI_LtV(
 		long patcherFixComponentId, long patcherProjectVersionId, int version);
 
 	/**

@@ -23,11 +23,13 @@ import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Query;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
@@ -529,6 +531,337 @@ public class PatcherBuildPersistenceImpl
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where patcherFixId = &#63;.
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByPatcherFixId(long patcherFixId) {
+		return filterFindByPatcherFixId(
+			patcherFixId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where patcherFixId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByPatcherFixId(
+		long patcherFixId, int start, int end) {
+
+		return filterFindByPatcherFixId(patcherFixId, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where patcherFixId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByPatcherFixId(
+		long patcherFixId, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByPatcherFixId(
+				patcherFixId, start, end, orderByComparator);
+		}
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				3 + (orderByComparator.getOrderByFields().length * 2));
+		}
+		else {
+			sb = new StringBundler(4);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(_FINDER_COLUMN_PATCHERFIXID_PATCHERFIXID_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			if (getDB().isSupportsInlineDistinct()) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+			}
+			else {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			if (getDB().isSupportsInlineDistinct()) {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+			}
+			else {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+			}
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(patcherFixId);
+
+			return (List<PatcherBuild>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where patcherFixId = &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param patcherFixId the patcher fix ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	@Override
+	public PatcherBuild[] filterFindByPatcherFixId_PrevAndNext(
+			long patcherBuildId, long patcherFixId,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws NoSuchPatcherBuildException {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByPatcherFixId_PrevAndNext(
+				patcherBuildId, patcherFixId, orderByComparator);
+		}
+
+		PatcherBuild patcherBuild = findByPrimaryKey(patcherBuildId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			PatcherBuild[] array = new PatcherBuildImpl[3];
+
+			array[0] = filterGetByPatcherFixId_PrevAndNext(
+				session, patcherBuild, patcherFixId, orderByComparator, true);
+
+			array[1] = patcherBuild;
+
+			array[2] = filterGetByPatcherFixId_PrevAndNext(
+				session, patcherBuild, patcherFixId, orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected PatcherBuild filterGetByPatcherFixId_PrevAndNext(
+		Session session, PatcherBuild patcherBuild, long patcherFixId,
+		OrderByComparator<PatcherBuild> orderByComparator, boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(4);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(_FINDER_COLUMN_PATCHERFIXID_PATCHERFIXID_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i],
+							true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i],
+							true));
+				}
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
+				}
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+		sqlQuery.setFirstResult(0);
+		sqlQuery.setMaxResults(2);
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+		}
+		else {
+			sqlQuery.addEntity(_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+		}
+
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+		queryPos.add(patcherFixId);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(patcherBuild)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<PatcherBuild> list = sqlQuery.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
 	 * Removes all the patcher builds where patcherFixId = &#63; from the database.
 	 *
 	 * @param patcherFixId the patcher fix ID
@@ -590,6 +923,54 @@ public class PatcherBuildPersistenceImpl
 		}
 
 		return count.intValue();
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where patcherFixId = &#63;.
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public int filterCountByPatcherFixId(long patcherFixId) {
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return countByPatcherFixId(patcherFixId);
+		}
+
+		StringBundler sb = new StringBundler(2);
+
+		sb.append(_FILTER_SQL_COUNT_PATCHERBUILD_WHERE);
+
+		sb.append(_FINDER_COLUMN_PATCHERFIXID_PATCHERFIXID_2);
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(
+				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(patcherFixId);
+
+			Long count = (Long)sqlQuery.uniqueResult();
+
+			return count.intValue();
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
 	}
 
 	private static final String _FINDER_COLUMN_PATCHERFIXID_PATCHERFIXID_2 =
@@ -1043,6 +1424,346 @@ public class PatcherBuildPersistenceImpl
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where patcherProjectVersionId = &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByPatcherProjectVersionId(
+		long patcherProjectVersionId) {
+
+		return filterFindByPatcherProjectVersionId(
+			patcherProjectVersionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			null);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where patcherProjectVersionId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByPatcherProjectVersionId(
+		long patcherProjectVersionId, int start, int end) {
+
+		return filterFindByPatcherProjectVersionId(
+			patcherProjectVersionId, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where patcherProjectVersionId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByPatcherProjectVersionId(
+		long patcherProjectVersionId, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByPatcherProjectVersionId(
+				patcherProjectVersionId, start, end, orderByComparator);
+		}
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				3 + (orderByComparator.getOrderByFields().length * 2));
+		}
+		else {
+			sb = new StringBundler(4);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(
+			_FINDER_COLUMN_PATCHERPROJECTVERSIONID_PATCHERPROJECTVERSIONID_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			if (getDB().isSupportsInlineDistinct()) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+			}
+			else {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			if (getDB().isSupportsInlineDistinct()) {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+			}
+			else {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+			}
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(patcherProjectVersionId);
+
+			return (List<PatcherBuild>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where patcherProjectVersionId = &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	@Override
+	public PatcherBuild[] filterFindByPatcherProjectVersionId_PrevAndNext(
+			long patcherBuildId, long patcherProjectVersionId,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws NoSuchPatcherBuildException {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByPatcherProjectVersionId_PrevAndNext(
+				patcherBuildId, patcherProjectVersionId, orderByComparator);
+		}
+
+		PatcherBuild patcherBuild = findByPrimaryKey(patcherBuildId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			PatcherBuild[] array = new PatcherBuildImpl[3];
+
+			array[0] = filterGetByPatcherProjectVersionId_PrevAndNext(
+				session, patcherBuild, patcherProjectVersionId,
+				orderByComparator, true);
+
+			array[1] = patcherBuild;
+
+			array[2] = filterGetByPatcherProjectVersionId_PrevAndNext(
+				session, patcherBuild, patcherProjectVersionId,
+				orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected PatcherBuild filterGetByPatcherProjectVersionId_PrevAndNext(
+		Session session, PatcherBuild patcherBuild,
+		long patcherProjectVersionId,
+		OrderByComparator<PatcherBuild> orderByComparator, boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(4);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(
+			_FINDER_COLUMN_PATCHERPROJECTVERSIONID_PATCHERPROJECTVERSIONID_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i],
+							true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i],
+							true));
+				}
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
+				}
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+		sqlQuery.setFirstResult(0);
+		sqlQuery.setMaxResults(2);
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+		}
+		else {
+			sqlQuery.addEntity(_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+		}
+
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+		queryPos.add(patcherProjectVersionId);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(patcherBuild)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<PatcherBuild> list = sqlQuery.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
 	 * Removes all the patcher builds where patcherProjectVersionId = &#63; from the database.
 	 *
 	 * @param patcherProjectVersionId the patcher project version ID
@@ -1106,6 +1827,57 @@ public class PatcherBuildPersistenceImpl
 		}
 
 		return count.intValue();
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where patcherProjectVersionId = &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public int filterCountByPatcherProjectVersionId(
+		long patcherProjectVersionId) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return countByPatcherProjectVersionId(patcherProjectVersionId);
+		}
+
+		StringBundler sb = new StringBundler(2);
+
+		sb.append(_FILTER_SQL_COUNT_PATCHERBUILD_WHERE);
+
+		sb.append(
+			_FINDER_COLUMN_PATCHERPROJECTVERSIONID_PATCHERPROJECTVERSIONID_2);
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(
+				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(patcherProjectVersionId);
+
+			Long count = (Long)sqlQuery.uniqueResult();
+
+			return count.intValue();
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
 	}
 
 	private static final String
@@ -1560,6 +2332,359 @@ public class PatcherBuildPersistenceImpl
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where key = &#63;.
+	 *
+	 * @param key the key
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByKey(String key) {
+		return filterFindByKey(key, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where key = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByKey(String key, int start, int end) {
+		return filterFindByKey(key, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where key = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByKey(
+		String key, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByKey(key, start, end, orderByComparator);
+		}
+
+		key = Objects.toString(key, "");
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				3 + (orderByComparator.getOrderByFields().length * 2));
+		}
+		else {
+			sb = new StringBundler(4);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		boolean bindKey = false;
+
+		if (key.isEmpty()) {
+			sb.append(_FINDER_COLUMN_KEY_KEY_3_SQL);
+		}
+		else {
+			bindKey = true;
+
+			sb.append(_FINDER_COLUMN_KEY_KEY_2_SQL);
+		}
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			if (getDB().isSupportsInlineDistinct()) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+			}
+			else {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			if (getDB().isSupportsInlineDistinct()) {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+			}
+			else {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+			}
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			if (bindKey) {
+				queryPos.add(key);
+			}
+
+			return (List<PatcherBuild>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where key = &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param key the key
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	@Override
+	public PatcherBuild[] filterFindByKey_PrevAndNext(
+			long patcherBuildId, String key,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws NoSuchPatcherBuildException {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByKey_PrevAndNext(
+				patcherBuildId, key, orderByComparator);
+		}
+
+		key = Objects.toString(key, "");
+
+		PatcherBuild patcherBuild = findByPrimaryKey(patcherBuildId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			PatcherBuild[] array = new PatcherBuildImpl[3];
+
+			array[0] = filterGetByKey_PrevAndNext(
+				session, patcherBuild, key, orderByComparator, true);
+
+			array[1] = patcherBuild;
+
+			array[2] = filterGetByKey_PrevAndNext(
+				session, patcherBuild, key, orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected PatcherBuild filterGetByKey_PrevAndNext(
+		Session session, PatcherBuild patcherBuild, String key,
+		OrderByComparator<PatcherBuild> orderByComparator, boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(4);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		boolean bindKey = false;
+
+		if (key.isEmpty()) {
+			sb.append(_FINDER_COLUMN_KEY_KEY_3_SQL);
+		}
+		else {
+			bindKey = true;
+
+			sb.append(_FINDER_COLUMN_KEY_KEY_2_SQL);
+		}
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i],
+							true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i],
+							true));
+				}
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
+				}
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+		sqlQuery.setFirstResult(0);
+		sqlQuery.setMaxResults(2);
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+		}
+		else {
+			sqlQuery.addEntity(_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+		}
+
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+		if (bindKey) {
+			queryPos.add(key);
+		}
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(patcherBuild)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<PatcherBuild> list = sqlQuery.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
 	 * Removes all the patcher builds where key = &#63; from the database.
 	 *
 	 * @param key the key
@@ -1635,11 +2760,78 @@ public class PatcherBuildPersistenceImpl
 		return count.intValue();
 	}
 
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where key = &#63;.
+	 *
+	 * @param key the key
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public int filterCountByKey(String key) {
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return countByKey(key);
+		}
+
+		key = Objects.toString(key, "");
+
+		StringBundler sb = new StringBundler(2);
+
+		sb.append(_FILTER_SQL_COUNT_PATCHERBUILD_WHERE);
+
+		boolean bindKey = false;
+
+		if (key.isEmpty()) {
+			sb.append(_FINDER_COLUMN_KEY_KEY_3_SQL);
+		}
+		else {
+			bindKey = true;
+
+			sb.append(_FINDER_COLUMN_KEY_KEY_2_SQL);
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(
+				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			if (bindKey) {
+				queryPos.add(key);
+			}
+
+			Long count = (Long)sqlQuery.uniqueResult();
+
+			return count.intValue();
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
 	private static final String _FINDER_COLUMN_KEY_KEY_2 =
 		"patcherBuild.key = ?";
 
 	private static final String _FINDER_COLUMN_KEY_KEY_3 =
 		"(patcherBuild.key IS NULL OR patcherBuild.key = '')";
+
+	private static final String _FINDER_COLUMN_KEY_KEY_2_SQL =
+		"patcherBuild.key_ = ?";
+
+	private static final String _FINDER_COLUMN_KEY_KEY_3_SQL =
+		"(patcherBuild.key_ IS NULL OR patcherBuild.key_ = '')";
 
 	private FinderPath _finderPathWithPaginationFindByP_P;
 	private FinderPath _finderPathWithoutPaginationFindByP_P;
@@ -2117,6 +3309,360 @@ public class PatcherBuildPersistenceImpl
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where patcherAccountId = &#63; and patcherProductVersionId = &#63;.
+	 *
+	 * @param patcherAccountId the patcher account ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByP_P(
+		long patcherAccountId, long patcherProductVersionId) {
+
+		return filterFindByP_P(
+			patcherAccountId, patcherProductVersionId, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where patcherAccountId = &#63; and patcherProductVersionId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherAccountId the patcher account ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByP_P(
+		long patcherAccountId, long patcherProductVersionId, int start,
+		int end) {
+
+		return filterFindByP_P(
+			patcherAccountId, patcherProductVersionId, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where patcherAccountId = &#63; and patcherProductVersionId = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherAccountId the patcher account ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByP_P(
+		long patcherAccountId, long patcherProductVersionId, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByP_P(
+				patcherAccountId, patcherProductVersionId, start, end,
+				orderByComparator);
+		}
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				4 + (orderByComparator.getOrderByFields().length * 2));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(_FINDER_COLUMN_P_P_PATCHERACCOUNTID_2);
+
+		sb.append(_FINDER_COLUMN_P_P_PATCHERPRODUCTVERSIONID_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			if (getDB().isSupportsInlineDistinct()) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+			}
+			else {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			if (getDB().isSupportsInlineDistinct()) {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+			}
+			else {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+			}
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(patcherAccountId);
+
+			queryPos.add(patcherProductVersionId);
+
+			return (List<PatcherBuild>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where patcherAccountId = &#63; and patcherProductVersionId = &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param patcherAccountId the patcher account ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	@Override
+	public PatcherBuild[] filterFindByP_P_PrevAndNext(
+			long patcherBuildId, long patcherAccountId,
+			long patcherProductVersionId,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws NoSuchPatcherBuildException {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByP_P_PrevAndNext(
+				patcherBuildId, patcherAccountId, patcherProductVersionId,
+				orderByComparator);
+		}
+
+		PatcherBuild patcherBuild = findByPrimaryKey(patcherBuildId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			PatcherBuild[] array = new PatcherBuildImpl[3];
+
+			array[0] = filterGetByP_P_PrevAndNext(
+				session, patcherBuild, patcherAccountId,
+				patcherProductVersionId, orderByComparator, true);
+
+			array[1] = patcherBuild;
+
+			array[2] = filterGetByP_P_PrevAndNext(
+				session, patcherBuild, patcherAccountId,
+				patcherProductVersionId, orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected PatcherBuild filterGetByP_P_PrevAndNext(
+		Session session, PatcherBuild patcherBuild, long patcherAccountId,
+		long patcherProductVersionId,
+		OrderByComparator<PatcherBuild> orderByComparator, boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(_FINDER_COLUMN_P_P_PATCHERACCOUNTID_2);
+
+		sb.append(_FINDER_COLUMN_P_P_PATCHERPRODUCTVERSIONID_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i],
+							true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i],
+							true));
+				}
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
+				}
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+		sqlQuery.setFirstResult(0);
+		sqlQuery.setMaxResults(2);
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+		}
+		else {
+			sqlQuery.addEntity(_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+		}
+
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+		queryPos.add(patcherAccountId);
+
+		queryPos.add(patcherProductVersionId);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(patcherBuild)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<PatcherBuild> list = sqlQuery.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
 	 * Removes all the patcher builds where patcherAccountId = &#63; and patcherProductVersionId = &#63; from the database.
 	 *
 	 * @param patcherAccountId the patcher account ID
@@ -2189,6 +3735,61 @@ public class PatcherBuildPersistenceImpl
 		}
 
 		return count.intValue();
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where patcherAccountId = &#63; and patcherProductVersionId = &#63;.
+	 *
+	 * @param patcherAccountId the patcher account ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public int filterCountByP_P(
+		long patcherAccountId, long patcherProductVersionId) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return countByP_P(patcherAccountId, patcherProductVersionId);
+		}
+
+		StringBundler sb = new StringBundler(3);
+
+		sb.append(_FILTER_SQL_COUNT_PATCHERBUILD_WHERE);
+
+		sb.append(_FINDER_COLUMN_P_P_PATCHERACCOUNTID_2);
+
+		sb.append(_FINDER_COLUMN_P_P_PATCHERPRODUCTVERSIONID_2);
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(
+				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(patcherAccountId);
+
+			queryPos.add(patcherProductVersionId);
+
+			Long count = (Long)sqlQuery.uniqueResult();
+
+			return count.intValue();
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
 	}
 
 	private static final String _FINDER_COLUMN_P_P_PATCHERACCOUNTID_2 =
@@ -2661,6 +4262,355 @@ public class PatcherBuildPersistenceImpl
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where patcherFixId = &#63; and childBuild = &#63;.
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param childBuild the child build
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByP_C(
+		long patcherFixId, boolean childBuild) {
+
+		return filterFindByP_C(
+			patcherFixId, childBuild, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			null);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where patcherFixId = &#63; and childBuild = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param childBuild the child build
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByP_C(
+		long patcherFixId, boolean childBuild, int start, int end) {
+
+		return filterFindByP_C(patcherFixId, childBuild, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where patcherFixId = &#63; and childBuild = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param childBuild the child build
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByP_C(
+		long patcherFixId, boolean childBuild, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByP_C(
+				patcherFixId, childBuild, start, end, orderByComparator);
+		}
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				4 + (orderByComparator.getOrderByFields().length * 2));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(_FINDER_COLUMN_P_C_PATCHERFIXID_2);
+
+		sb.append(_FINDER_COLUMN_P_C_CHILDBUILD_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			if (getDB().isSupportsInlineDistinct()) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+			}
+			else {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			if (getDB().isSupportsInlineDistinct()) {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+			}
+			else {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+			}
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(patcherFixId);
+
+			queryPos.add(childBuild);
+
+			return (List<PatcherBuild>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where patcherFixId = &#63; and childBuild = &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param patcherFixId the patcher fix ID
+	 * @param childBuild the child build
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	@Override
+	public PatcherBuild[] filterFindByP_C_PrevAndNext(
+			long patcherBuildId, long patcherFixId, boolean childBuild,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws NoSuchPatcherBuildException {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByP_C_PrevAndNext(
+				patcherBuildId, patcherFixId, childBuild, orderByComparator);
+		}
+
+		PatcherBuild patcherBuild = findByPrimaryKey(patcherBuildId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			PatcherBuild[] array = new PatcherBuildImpl[3];
+
+			array[0] = filterGetByP_C_PrevAndNext(
+				session, patcherBuild, patcherFixId, childBuild,
+				orderByComparator, true);
+
+			array[1] = patcherBuild;
+
+			array[2] = filterGetByP_C_PrevAndNext(
+				session, patcherBuild, patcherFixId, childBuild,
+				orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected PatcherBuild filterGetByP_C_PrevAndNext(
+		Session session, PatcherBuild patcherBuild, long patcherFixId,
+		boolean childBuild, OrderByComparator<PatcherBuild> orderByComparator,
+		boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(_FINDER_COLUMN_P_C_PATCHERFIXID_2);
+
+		sb.append(_FINDER_COLUMN_P_C_CHILDBUILD_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i],
+							true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i],
+							true));
+				}
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
+				}
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+		sqlQuery.setFirstResult(0);
+		sqlQuery.setMaxResults(2);
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+		}
+		else {
+			sqlQuery.addEntity(_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+		}
+
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+		queryPos.add(patcherFixId);
+
+		queryPos.add(childBuild);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(patcherBuild)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<PatcherBuild> list = sqlQuery.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
 	 * Removes all the patcher builds where patcherFixId = &#63; and childBuild = &#63; from the database.
 	 *
 	 * @param patcherFixId the patcher fix ID
@@ -2729,6 +4679,59 @@ public class PatcherBuildPersistenceImpl
 		}
 
 		return count.intValue();
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where patcherFixId = &#63; and childBuild = &#63;.
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param childBuild the child build
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public int filterCountByP_C(long patcherFixId, boolean childBuild) {
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return countByP_C(patcherFixId, childBuild);
+		}
+
+		StringBundler sb = new StringBundler(3);
+
+		sb.append(_FILTER_SQL_COUNT_PATCHERBUILD_WHERE);
+
+		sb.append(_FINDER_COLUMN_P_C_PATCHERFIXID_2);
+
+		sb.append(_FINDER_COLUMN_P_C_CHILDBUILD_2);
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(
+				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(patcherFixId);
+
+			queryPos.add(childBuild);
+
+			Long count = (Long)sqlQuery.uniqueResult();
+
+			return count.intValue();
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
 	}
 
 	private static final String _FINDER_COLUMN_P_C_PATCHERFIXID_2 =
@@ -3413,6 +5416,379 @@ public class PatcherBuildPersistenceImpl
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where key = &#63; and keyVersion &gt; &#63;.
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByK_GtKV(
+		String key, double keyVersion) {
+
+		return filterFindByK_GtKV(
+			key, keyVersion, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where key = &#63; and keyVersion &gt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByK_GtKV(
+		String key, double keyVersion, int start, int end) {
+
+		return filterFindByK_GtKV(key, keyVersion, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where key = &#63; and keyVersion &gt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByK_GtKV(
+		String key, double keyVersion, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByK_GtKV(key, keyVersion, start, end, orderByComparator);
+		}
+
+		key = Objects.toString(key, "");
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				4 + (orderByComparator.getOrderByFields().length * 2));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		boolean bindKey = false;
+
+		if (key.isEmpty()) {
+			sb.append(_FINDER_COLUMN_K_GTKV_KEY_3_SQL);
+		}
+		else {
+			bindKey = true;
+
+			sb.append(_FINDER_COLUMN_K_GTKV_KEY_2_SQL);
+		}
+
+		sb.append(_FINDER_COLUMN_K_GTKV_KEYVERSION_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			if (getDB().isSupportsInlineDistinct()) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+			}
+			else {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			if (getDB().isSupportsInlineDistinct()) {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+			}
+			else {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+			}
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			if (bindKey) {
+				queryPos.add(key);
+			}
+
+			queryPos.add(keyVersion);
+
+			return (List<PatcherBuild>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where key = &#63; and keyVersion &gt; &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	@Override
+	public PatcherBuild[] filterFindByK_GtKV_PrevAndNext(
+			long patcherBuildId, String key, double keyVersion,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws NoSuchPatcherBuildException {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByK_GtKV_PrevAndNext(
+				patcherBuildId, key, keyVersion, orderByComparator);
+		}
+
+		key = Objects.toString(key, "");
+
+		PatcherBuild patcherBuild = findByPrimaryKey(patcherBuildId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			PatcherBuild[] array = new PatcherBuildImpl[3];
+
+			array[0] = filterGetByK_GtKV_PrevAndNext(
+				session, patcherBuild, key, keyVersion, orderByComparator,
+				true);
+
+			array[1] = patcherBuild;
+
+			array[2] = filterGetByK_GtKV_PrevAndNext(
+				session, patcherBuild, key, keyVersion, orderByComparator,
+				false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected PatcherBuild filterGetByK_GtKV_PrevAndNext(
+		Session session, PatcherBuild patcherBuild, String key,
+		double keyVersion, OrderByComparator<PatcherBuild> orderByComparator,
+		boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		boolean bindKey = false;
+
+		if (key.isEmpty()) {
+			sb.append(_FINDER_COLUMN_K_GTKV_KEY_3_SQL);
+		}
+		else {
+			bindKey = true;
+
+			sb.append(_FINDER_COLUMN_K_GTKV_KEY_2_SQL);
+		}
+
+		sb.append(_FINDER_COLUMN_K_GTKV_KEYVERSION_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i],
+							true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i],
+							true));
+				}
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
+				}
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+		sqlQuery.setFirstResult(0);
+		sqlQuery.setMaxResults(2);
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+		}
+		else {
+			sqlQuery.addEntity(_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+		}
+
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+		if (bindKey) {
+			queryPos.add(key);
+		}
+
+		queryPos.add(keyVersion);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(patcherBuild)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<PatcherBuild> list = sqlQuery.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
 	 * Removes all the patcher builds where key = &#63; and keyVersion &gt; &#63; from the database.
 	 *
 	 * @param key the key
@@ -3496,11 +5872,83 @@ public class PatcherBuildPersistenceImpl
 		return count.intValue();
 	}
 
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where key = &#63; and keyVersion &gt; &#63;.
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public int filterCountByK_GtKV(String key, double keyVersion) {
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return countByK_GtKV(key, keyVersion);
+		}
+
+		key = Objects.toString(key, "");
+
+		StringBundler sb = new StringBundler(3);
+
+		sb.append(_FILTER_SQL_COUNT_PATCHERBUILD_WHERE);
+
+		boolean bindKey = false;
+
+		if (key.isEmpty()) {
+			sb.append(_FINDER_COLUMN_K_GTKV_KEY_3_SQL);
+		}
+		else {
+			bindKey = true;
+
+			sb.append(_FINDER_COLUMN_K_GTKV_KEY_2_SQL);
+		}
+
+		sb.append(_FINDER_COLUMN_K_GTKV_KEYVERSION_2);
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(
+				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			if (bindKey) {
+				queryPos.add(key);
+			}
+
+			queryPos.add(keyVersion);
+
+			Long count = (Long)sqlQuery.uniqueResult();
+
+			return count.intValue();
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
 	private static final String _FINDER_COLUMN_K_GTKV_KEY_2 =
 		"patcherBuild.key = ? AND ";
 
 	private static final String _FINDER_COLUMN_K_GTKV_KEY_3 =
 		"(patcherBuild.key IS NULL OR patcherBuild.key = '') AND ";
+
+	private static final String _FINDER_COLUMN_K_GTKV_KEY_2_SQL =
+		"patcherBuild.key_ = ? AND ";
+
+	private static final String _FINDER_COLUMN_K_GTKV_KEY_3_SQL =
+		"(patcherBuild.key_ IS NULL OR patcherBuild.key_ = '') AND ";
 
 	private static final String _FINDER_COLUMN_K_GTKV_KEYVERSION_2 =
 		"patcherBuild.keyVersion > ?";
@@ -3983,6 +6431,379 @@ public class PatcherBuildPersistenceImpl
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where key = &#63; and keyVersion &lt; &#63;.
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByK_LtKV(
+		String key, double keyVersion) {
+
+		return filterFindByK_LtKV(
+			key, keyVersion, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where key = &#63; and keyVersion &lt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByK_LtKV(
+		String key, double keyVersion, int start, int end) {
+
+		return filterFindByK_LtKV(key, keyVersion, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where key = &#63; and keyVersion &lt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByK_LtKV(
+		String key, double keyVersion, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByK_LtKV(key, keyVersion, start, end, orderByComparator);
+		}
+
+		key = Objects.toString(key, "");
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				4 + (orderByComparator.getOrderByFields().length * 2));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		boolean bindKey = false;
+
+		if (key.isEmpty()) {
+			sb.append(_FINDER_COLUMN_K_LTKV_KEY_3_SQL);
+		}
+		else {
+			bindKey = true;
+
+			sb.append(_FINDER_COLUMN_K_LTKV_KEY_2_SQL);
+		}
+
+		sb.append(_FINDER_COLUMN_K_LTKV_KEYVERSION_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			if (getDB().isSupportsInlineDistinct()) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+			}
+			else {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			if (getDB().isSupportsInlineDistinct()) {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+			}
+			else {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+			}
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			if (bindKey) {
+				queryPos.add(key);
+			}
+
+			queryPos.add(keyVersion);
+
+			return (List<PatcherBuild>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where key = &#63; and keyVersion &lt; &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	@Override
+	public PatcherBuild[] filterFindByK_LtKV_PrevAndNext(
+			long patcherBuildId, String key, double keyVersion,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws NoSuchPatcherBuildException {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByK_LtKV_PrevAndNext(
+				patcherBuildId, key, keyVersion, orderByComparator);
+		}
+
+		key = Objects.toString(key, "");
+
+		PatcherBuild patcherBuild = findByPrimaryKey(patcherBuildId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			PatcherBuild[] array = new PatcherBuildImpl[3];
+
+			array[0] = filterGetByK_LtKV_PrevAndNext(
+				session, patcherBuild, key, keyVersion, orderByComparator,
+				true);
+
+			array[1] = patcherBuild;
+
+			array[2] = filterGetByK_LtKV_PrevAndNext(
+				session, patcherBuild, key, keyVersion, orderByComparator,
+				false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected PatcherBuild filterGetByK_LtKV_PrevAndNext(
+		Session session, PatcherBuild patcherBuild, String key,
+		double keyVersion, OrderByComparator<PatcherBuild> orderByComparator,
+		boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		boolean bindKey = false;
+
+		if (key.isEmpty()) {
+			sb.append(_FINDER_COLUMN_K_LTKV_KEY_3_SQL);
+		}
+		else {
+			bindKey = true;
+
+			sb.append(_FINDER_COLUMN_K_LTKV_KEY_2_SQL);
+		}
+
+		sb.append(_FINDER_COLUMN_K_LTKV_KEYVERSION_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i],
+							true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i],
+							true));
+				}
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
+				}
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+		sqlQuery.setFirstResult(0);
+		sqlQuery.setMaxResults(2);
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+		}
+		else {
+			sqlQuery.addEntity(_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+		}
+
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+		if (bindKey) {
+			queryPos.add(key);
+		}
+
+		queryPos.add(keyVersion);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(patcherBuild)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<PatcherBuild> list = sqlQuery.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
 	 * Removes all the patcher builds where key = &#63; and keyVersion &lt; &#63; from the database.
 	 *
 	 * @param key the key
@@ -4066,11 +6887,83 @@ public class PatcherBuildPersistenceImpl
 		return count.intValue();
 	}
 
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where key = &#63; and keyVersion &lt; &#63;.
+	 *
+	 * @param key the key
+	 * @param keyVersion the key version
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public int filterCountByK_LtKV(String key, double keyVersion) {
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return countByK_LtKV(key, keyVersion);
+		}
+
+		key = Objects.toString(key, "");
+
+		StringBundler sb = new StringBundler(3);
+
+		sb.append(_FILTER_SQL_COUNT_PATCHERBUILD_WHERE);
+
+		boolean bindKey = false;
+
+		if (key.isEmpty()) {
+			sb.append(_FINDER_COLUMN_K_LTKV_KEY_3_SQL);
+		}
+		else {
+			bindKey = true;
+
+			sb.append(_FINDER_COLUMN_K_LTKV_KEY_2_SQL);
+		}
+
+		sb.append(_FINDER_COLUMN_K_LTKV_KEYVERSION_2);
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(
+				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			if (bindKey) {
+				queryPos.add(key);
+			}
+
+			queryPos.add(keyVersion);
+
+			Long count = (Long)sqlQuery.uniqueResult();
+
+			return count.intValue();
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
 	private static final String _FINDER_COLUMN_K_LTKV_KEY_2 =
 		"patcherBuild.key = ? AND ";
 
 	private static final String _FINDER_COLUMN_K_LTKV_KEY_3 =
 		"(patcherBuild.key IS NULL OR patcherBuild.key = '') AND ";
+
+	private static final String _FINDER_COLUMN_K_LTKV_KEY_2_SQL =
+		"patcherBuild.key_ = ? AND ";
+
+	private static final String _FINDER_COLUMN_K_LTKV_KEY_3_SQL =
+		"(patcherBuild.key_ IS NULL OR patcherBuild.key_ = '') AND ";
 
 	private static final String _FINDER_COLUMN_K_LTKV_KEYVERSION_2 =
 		"patcherBuild.keyVersion < ?";
@@ -4564,6 +7457,380 @@ public class PatcherBuildPersistenceImpl
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where key = &#63; and latestKeyBuild = &#63;.
+	 *
+	 * @param key the key
+	 * @param latestKeyBuild the latest key build
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByK_L(
+		String key, boolean latestKeyBuild) {
+
+		return filterFindByK_L(
+			key, latestKeyBuild, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where key = &#63; and latestKeyBuild = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param latestKeyBuild the latest key build
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByK_L(
+		String key, boolean latestKeyBuild, int start, int end) {
+
+		return filterFindByK_L(key, latestKeyBuild, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where key = &#63; and latestKeyBuild = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param key the key
+	 * @param latestKeyBuild the latest key build
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByK_L(
+		String key, boolean latestKeyBuild, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByK_L(
+				key, latestKeyBuild, start, end, orderByComparator);
+		}
+
+		key = Objects.toString(key, "");
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				4 + (orderByComparator.getOrderByFields().length * 2));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		boolean bindKey = false;
+
+		if (key.isEmpty()) {
+			sb.append(_FINDER_COLUMN_K_L_KEY_3_SQL);
+		}
+		else {
+			bindKey = true;
+
+			sb.append(_FINDER_COLUMN_K_L_KEY_2_SQL);
+		}
+
+		sb.append(_FINDER_COLUMN_K_L_LATESTKEYBUILD_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			if (getDB().isSupportsInlineDistinct()) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+			}
+			else {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			if (getDB().isSupportsInlineDistinct()) {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+			}
+			else {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+			}
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			if (bindKey) {
+				queryPos.add(key);
+			}
+
+			queryPos.add(latestKeyBuild);
+
+			return (List<PatcherBuild>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where key = &#63; and latestKeyBuild = &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param key the key
+	 * @param latestKeyBuild the latest key build
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	@Override
+	public PatcherBuild[] filterFindByK_L_PrevAndNext(
+			long patcherBuildId, String key, boolean latestKeyBuild,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws NoSuchPatcherBuildException {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByK_L_PrevAndNext(
+				patcherBuildId, key, latestKeyBuild, orderByComparator);
+		}
+
+		key = Objects.toString(key, "");
+
+		PatcherBuild patcherBuild = findByPrimaryKey(patcherBuildId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			PatcherBuild[] array = new PatcherBuildImpl[3];
+
+			array[0] = filterGetByK_L_PrevAndNext(
+				session, patcherBuild, key, latestKeyBuild, orderByComparator,
+				true);
+
+			array[1] = patcherBuild;
+
+			array[2] = filterGetByK_L_PrevAndNext(
+				session, patcherBuild, key, latestKeyBuild, orderByComparator,
+				false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected PatcherBuild filterGetByK_L_PrevAndNext(
+		Session session, PatcherBuild patcherBuild, String key,
+		boolean latestKeyBuild,
+		OrderByComparator<PatcherBuild> orderByComparator, boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		boolean bindKey = false;
+
+		if (key.isEmpty()) {
+			sb.append(_FINDER_COLUMN_K_L_KEY_3_SQL);
+		}
+		else {
+			bindKey = true;
+
+			sb.append(_FINDER_COLUMN_K_L_KEY_2_SQL);
+		}
+
+		sb.append(_FINDER_COLUMN_K_L_LATESTKEYBUILD_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i],
+							true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i],
+							true));
+				}
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
+				}
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+		sqlQuery.setFirstResult(0);
+		sqlQuery.setMaxResults(2);
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+		}
+		else {
+			sqlQuery.addEntity(_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+		}
+
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+		if (bindKey) {
+			queryPos.add(key);
+		}
+
+		queryPos.add(latestKeyBuild);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(patcherBuild)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<PatcherBuild> list = sqlQuery.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
 	 * Removes all the patcher builds where key = &#63; and latestKeyBuild = &#63; from the database.
 	 *
 	 * @param key the key
@@ -4647,11 +7914,83 @@ public class PatcherBuildPersistenceImpl
 		return count.intValue();
 	}
 
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where key = &#63; and latestKeyBuild = &#63;.
+	 *
+	 * @param key the key
+	 * @param latestKeyBuild the latest key build
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public int filterCountByK_L(String key, boolean latestKeyBuild) {
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return countByK_L(key, latestKeyBuild);
+		}
+
+		key = Objects.toString(key, "");
+
+		StringBundler sb = new StringBundler(3);
+
+		sb.append(_FILTER_SQL_COUNT_PATCHERBUILD_WHERE);
+
+		boolean bindKey = false;
+
+		if (key.isEmpty()) {
+			sb.append(_FINDER_COLUMN_K_L_KEY_3_SQL);
+		}
+		else {
+			bindKey = true;
+
+			sb.append(_FINDER_COLUMN_K_L_KEY_2_SQL);
+		}
+
+		sb.append(_FINDER_COLUMN_K_L_LATESTKEYBUILD_2);
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(
+				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			if (bindKey) {
+				queryPos.add(key);
+			}
+
+			queryPos.add(latestKeyBuild);
+
+			Long count = (Long)sqlQuery.uniqueResult();
+
+			return count.intValue();
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
 	private static final String _FINDER_COLUMN_K_L_KEY_2 =
 		"patcherBuild.key = ? AND ";
 
 	private static final String _FINDER_COLUMN_K_L_KEY_3 =
 		"(patcherBuild.key IS NULL OR patcherBuild.key = '') AND ";
+
+	private static final String _FINDER_COLUMN_K_L_KEY_2_SQL =
+		"patcherBuild.key_ = ? AND ";
+
+	private static final String _FINDER_COLUMN_K_L_KEY_3_SQL =
+		"(patcherBuild.key_ IS NULL OR patcherBuild.key_ = '') AND ";
 
 	private static final String _FINDER_COLUMN_K_L_LATESTKEYBUILD_2 =
 		"patcherBuild.latestKeyBuild = ?";
@@ -5158,6 +8497,386 @@ public class PatcherBuildPersistenceImpl
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where latestSupportTicketBuild = &#63; and supportTicket = &#63;.
+	 *
+	 * @param latestSupportTicketBuild the latest support ticket build
+	 * @param supportTicket the support ticket
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByL_S(
+		boolean latestSupportTicketBuild, String supportTicket) {
+
+		return filterFindByL_S(
+			latestSupportTicketBuild, supportTicket, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where latestSupportTicketBuild = &#63; and supportTicket = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param latestSupportTicketBuild the latest support ticket build
+	 * @param supportTicket the support ticket
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByL_S(
+		boolean latestSupportTicketBuild, String supportTicket, int start,
+		int end) {
+
+		return filterFindByL_S(
+			latestSupportTicketBuild, supportTicket, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where latestSupportTicketBuild = &#63; and supportTicket = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param latestSupportTicketBuild the latest support ticket build
+	 * @param supportTicket the support ticket
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByL_S(
+		boolean latestSupportTicketBuild, String supportTicket, int start,
+		int end, OrderByComparator<PatcherBuild> orderByComparator) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByL_S(
+				latestSupportTicketBuild, supportTicket, start, end,
+				orderByComparator);
+		}
+
+		supportTicket = Objects.toString(supportTicket, "");
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				4 + (orderByComparator.getOrderByFields().length * 2));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(_FINDER_COLUMN_L_S_LATESTSUPPORTTICKETBUILD_2);
+
+		boolean bindSupportTicket = false;
+
+		if (supportTicket.isEmpty()) {
+			sb.append(_FINDER_COLUMN_L_S_SUPPORTTICKET_3);
+		}
+		else {
+			bindSupportTicket = true;
+
+			sb.append(_FINDER_COLUMN_L_S_SUPPORTTICKET_2);
+		}
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			if (getDB().isSupportsInlineDistinct()) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+			}
+			else {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			if (getDB().isSupportsInlineDistinct()) {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+			}
+			else {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+			}
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(latestSupportTicketBuild);
+
+			if (bindSupportTicket) {
+				queryPos.add(supportTicket);
+			}
+
+			return (List<PatcherBuild>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where latestSupportTicketBuild = &#63; and supportTicket = &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param latestSupportTicketBuild the latest support ticket build
+	 * @param supportTicket the support ticket
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	@Override
+	public PatcherBuild[] filterFindByL_S_PrevAndNext(
+			long patcherBuildId, boolean latestSupportTicketBuild,
+			String supportTicket,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws NoSuchPatcherBuildException {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByL_S_PrevAndNext(
+				patcherBuildId, latestSupportTicketBuild, supportTicket,
+				orderByComparator);
+		}
+
+		supportTicket = Objects.toString(supportTicket, "");
+
+		PatcherBuild patcherBuild = findByPrimaryKey(patcherBuildId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			PatcherBuild[] array = new PatcherBuildImpl[3];
+
+			array[0] = filterGetByL_S_PrevAndNext(
+				session, patcherBuild, latestSupportTicketBuild, supportTicket,
+				orderByComparator, true);
+
+			array[1] = patcherBuild;
+
+			array[2] = filterGetByL_S_PrevAndNext(
+				session, patcherBuild, latestSupportTicketBuild, supportTicket,
+				orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected PatcherBuild filterGetByL_S_PrevAndNext(
+		Session session, PatcherBuild patcherBuild,
+		boolean latestSupportTicketBuild, String supportTicket,
+		OrderByComparator<PatcherBuild> orderByComparator, boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(_FINDER_COLUMN_L_S_LATESTSUPPORTTICKETBUILD_2);
+
+		boolean bindSupportTicket = false;
+
+		if (supportTicket.isEmpty()) {
+			sb.append(_FINDER_COLUMN_L_S_SUPPORTTICKET_3);
+		}
+		else {
+			bindSupportTicket = true;
+
+			sb.append(_FINDER_COLUMN_L_S_SUPPORTTICKET_2);
+		}
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i],
+							true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i],
+							true));
+				}
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
+				}
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+		sqlQuery.setFirstResult(0);
+		sqlQuery.setMaxResults(2);
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+		}
+		else {
+			sqlQuery.addEntity(_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+		}
+
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+		queryPos.add(latestSupportTicketBuild);
+
+		if (bindSupportTicket) {
+			queryPos.add(supportTicket);
+		}
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(patcherBuild)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<PatcherBuild> list = sqlQuery.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
 	 * Removes all the patcher builds where latestSupportTicketBuild = &#63; and supportTicket = &#63; from the database.
 	 *
 	 * @param latestSupportTicketBuild the latest support ticket build
@@ -5245,6 +8964,74 @@ public class PatcherBuildPersistenceImpl
 		}
 
 		return count.intValue();
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where latestSupportTicketBuild = &#63; and supportTicket = &#63;.
+	 *
+	 * @param latestSupportTicketBuild the latest support ticket build
+	 * @param supportTicket the support ticket
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public int filterCountByL_S(
+		boolean latestSupportTicketBuild, String supportTicket) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return countByL_S(latestSupportTicketBuild, supportTicket);
+		}
+
+		supportTicket = Objects.toString(supportTicket, "");
+
+		StringBundler sb = new StringBundler(3);
+
+		sb.append(_FILTER_SQL_COUNT_PATCHERBUILD_WHERE);
+
+		sb.append(_FINDER_COLUMN_L_S_LATESTSUPPORTTICKETBUILD_2);
+
+		boolean bindSupportTicket = false;
+
+		if (supportTicket.isEmpty()) {
+			sb.append(_FINDER_COLUMN_L_S_SUPPORTTICKET_3);
+		}
+		else {
+			bindSupportTicket = true;
+
+			sb.append(_FINDER_COLUMN_L_S_SUPPORTTICKET_2);
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(
+				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(latestSupportTicketBuild);
+
+			if (bindSupportTicket) {
+				queryPos.add(supportTicket);
+			}
+
+			Long count = (Long)sqlQuery.uniqueResult();
+
+			return count.intValue();
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
 	}
 
 	private static final String _FINDER_COLUMN_L_S_LATESTSUPPORTTICKETBUILD_2 =
@@ -5743,6 +9530,385 @@ public class PatcherBuildPersistenceImpl
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where supportTicket = &#63; and supportTicketVersion &gt; &#63;.
+	 *
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByS_GtS(
+		String supportTicket, double supportTicketVersion) {
+
+		return filterFindByS_GtS(
+			supportTicket, supportTicketVersion, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where supportTicket = &#63; and supportTicketVersion &gt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByS_GtS(
+		String supportTicket, double supportTicketVersion, int start, int end) {
+
+		return filterFindByS_GtS(
+			supportTicket, supportTicketVersion, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where supportTicket = &#63; and supportTicketVersion &gt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByS_GtS(
+		String supportTicket, double supportTicketVersion, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByS_GtS(
+				supportTicket, supportTicketVersion, start, end,
+				orderByComparator);
+		}
+
+		supportTicket = Objects.toString(supportTicket, "");
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				4 + (orderByComparator.getOrderByFields().length * 2));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		boolean bindSupportTicket = false;
+
+		if (supportTicket.isEmpty()) {
+			sb.append(_FINDER_COLUMN_S_GTS_SUPPORTTICKET_3);
+		}
+		else {
+			bindSupportTicket = true;
+
+			sb.append(_FINDER_COLUMN_S_GTS_SUPPORTTICKET_2);
+		}
+
+		sb.append(_FINDER_COLUMN_S_GTS_SUPPORTTICKETVERSION_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			if (getDB().isSupportsInlineDistinct()) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+			}
+			else {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			if (getDB().isSupportsInlineDistinct()) {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+			}
+			else {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+			}
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			if (bindSupportTicket) {
+				queryPos.add(supportTicket);
+			}
+
+			queryPos.add(supportTicketVersion);
+
+			return (List<PatcherBuild>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where supportTicket = &#63; and supportTicketVersion &gt; &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	@Override
+	public PatcherBuild[] filterFindByS_GtS_PrevAndNext(
+			long patcherBuildId, String supportTicket,
+			double supportTicketVersion,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws NoSuchPatcherBuildException {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByS_GtS_PrevAndNext(
+				patcherBuildId, supportTicket, supportTicketVersion,
+				orderByComparator);
+		}
+
+		supportTicket = Objects.toString(supportTicket, "");
+
+		PatcherBuild patcherBuild = findByPrimaryKey(patcherBuildId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			PatcherBuild[] array = new PatcherBuildImpl[3];
+
+			array[0] = filterGetByS_GtS_PrevAndNext(
+				session, patcherBuild, supportTicket, supportTicketVersion,
+				orderByComparator, true);
+
+			array[1] = patcherBuild;
+
+			array[2] = filterGetByS_GtS_PrevAndNext(
+				session, patcherBuild, supportTicket, supportTicketVersion,
+				orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected PatcherBuild filterGetByS_GtS_PrevAndNext(
+		Session session, PatcherBuild patcherBuild, String supportTicket,
+		double supportTicketVersion,
+		OrderByComparator<PatcherBuild> orderByComparator, boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		boolean bindSupportTicket = false;
+
+		if (supportTicket.isEmpty()) {
+			sb.append(_FINDER_COLUMN_S_GTS_SUPPORTTICKET_3);
+		}
+		else {
+			bindSupportTicket = true;
+
+			sb.append(_FINDER_COLUMN_S_GTS_SUPPORTTICKET_2);
+		}
+
+		sb.append(_FINDER_COLUMN_S_GTS_SUPPORTTICKETVERSION_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i],
+							true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i],
+							true));
+				}
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
+				}
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+		sqlQuery.setFirstResult(0);
+		sqlQuery.setMaxResults(2);
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+		}
+		else {
+			sqlQuery.addEntity(_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+		}
+
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+		if (bindSupportTicket) {
+			queryPos.add(supportTicket);
+		}
+
+		queryPos.add(supportTicketVersion);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(patcherBuild)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<PatcherBuild> list = sqlQuery.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
 	 * Removes all the patcher builds where supportTicket = &#63; and supportTicketVersion &gt; &#63; from the database.
 	 *
 	 * @param supportTicket the support ticket
@@ -5828,6 +9994,74 @@ public class PatcherBuildPersistenceImpl
 		}
 
 		return count.intValue();
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where supportTicket = &#63; and supportTicketVersion &gt; &#63;.
+	 *
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public int filterCountByS_GtS(
+		String supportTicket, double supportTicketVersion) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return countByS_GtS(supportTicket, supportTicketVersion);
+		}
+
+		supportTicket = Objects.toString(supportTicket, "");
+
+		StringBundler sb = new StringBundler(3);
+
+		sb.append(_FILTER_SQL_COUNT_PATCHERBUILD_WHERE);
+
+		boolean bindSupportTicket = false;
+
+		if (supportTicket.isEmpty()) {
+			sb.append(_FINDER_COLUMN_S_GTS_SUPPORTTICKET_3);
+		}
+		else {
+			bindSupportTicket = true;
+
+			sb.append(_FINDER_COLUMN_S_GTS_SUPPORTTICKET_2);
+		}
+
+		sb.append(_FINDER_COLUMN_S_GTS_SUPPORTTICKETVERSION_2);
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(
+				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			if (bindSupportTicket) {
+				queryPos.add(supportTicket);
+			}
+
+			queryPos.add(supportTicketVersion);
+
+			Long count = (Long)sqlQuery.uniqueResult();
+
+			return count.intValue();
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
 	}
 
 	private static final String _FINDER_COLUMN_S_GTS_SUPPORTTICKET_2 =
@@ -6326,6 +10560,385 @@ public class PatcherBuildPersistenceImpl
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where supportTicket = &#63; and supportTicketVersion &lt; &#63;.
+	 *
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByS_LtS(
+		String supportTicket, double supportTicketVersion) {
+
+		return filterFindByS_LtS(
+			supportTicket, supportTicketVersion, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where supportTicket = &#63; and supportTicketVersion &lt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByS_LtS(
+		String supportTicket, double supportTicketVersion, int start, int end) {
+
+		return filterFindByS_LtS(
+			supportTicket, supportTicketVersion, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where supportTicket = &#63; and supportTicketVersion &lt; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByS_LtS(
+		String supportTicket, double supportTicketVersion, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByS_LtS(
+				supportTicket, supportTicketVersion, start, end,
+				orderByComparator);
+		}
+
+		supportTicket = Objects.toString(supportTicket, "");
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				4 + (orderByComparator.getOrderByFields().length * 2));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		boolean bindSupportTicket = false;
+
+		if (supportTicket.isEmpty()) {
+			sb.append(_FINDER_COLUMN_S_LTS_SUPPORTTICKET_3);
+		}
+		else {
+			bindSupportTicket = true;
+
+			sb.append(_FINDER_COLUMN_S_LTS_SUPPORTTICKET_2);
+		}
+
+		sb.append(_FINDER_COLUMN_S_LTS_SUPPORTTICKETVERSION_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			if (getDB().isSupportsInlineDistinct()) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+			}
+			else {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			if (getDB().isSupportsInlineDistinct()) {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+			}
+			else {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+			}
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			if (bindSupportTicket) {
+				queryPos.add(supportTicket);
+			}
+
+			queryPos.add(supportTicketVersion);
+
+			return (List<PatcherBuild>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where supportTicket = &#63; and supportTicketVersion &lt; &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	@Override
+	public PatcherBuild[] filterFindByS_LtS_PrevAndNext(
+			long patcherBuildId, String supportTicket,
+			double supportTicketVersion,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws NoSuchPatcherBuildException {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByS_LtS_PrevAndNext(
+				patcherBuildId, supportTicket, supportTicketVersion,
+				orderByComparator);
+		}
+
+		supportTicket = Objects.toString(supportTicket, "");
+
+		PatcherBuild patcherBuild = findByPrimaryKey(patcherBuildId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			PatcherBuild[] array = new PatcherBuildImpl[3];
+
+			array[0] = filterGetByS_LtS_PrevAndNext(
+				session, patcherBuild, supportTicket, supportTicketVersion,
+				orderByComparator, true);
+
+			array[1] = patcherBuild;
+
+			array[2] = filterGetByS_LtS_PrevAndNext(
+				session, patcherBuild, supportTicket, supportTicketVersion,
+				orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected PatcherBuild filterGetByS_LtS_PrevAndNext(
+		Session session, PatcherBuild patcherBuild, String supportTicket,
+		double supportTicketVersion,
+		OrderByComparator<PatcherBuild> orderByComparator, boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(5);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		boolean bindSupportTicket = false;
+
+		if (supportTicket.isEmpty()) {
+			sb.append(_FINDER_COLUMN_S_LTS_SUPPORTTICKET_3);
+		}
+		else {
+			bindSupportTicket = true;
+
+			sb.append(_FINDER_COLUMN_S_LTS_SUPPORTTICKET_2);
+		}
+
+		sb.append(_FINDER_COLUMN_S_LTS_SUPPORTTICKETVERSION_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i],
+							true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i],
+							true));
+				}
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
+				}
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+		sqlQuery.setFirstResult(0);
+		sqlQuery.setMaxResults(2);
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+		}
+		else {
+			sqlQuery.addEntity(_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+		}
+
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+		if (bindSupportTicket) {
+			queryPos.add(supportTicket);
+		}
+
+		queryPos.add(supportTicketVersion);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(patcherBuild)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<PatcherBuild> list = sqlQuery.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
 	 * Removes all the patcher builds where supportTicket = &#63; and supportTicketVersion &lt; &#63; from the database.
 	 *
 	 * @param supportTicket the support ticket
@@ -6411,6 +11024,74 @@ public class PatcherBuildPersistenceImpl
 		}
 
 		return count.intValue();
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where supportTicket = &#63; and supportTicketVersion &lt; &#63;.
+	 *
+	 * @param supportTicket the support ticket
+	 * @param supportTicketVersion the support ticket version
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public int filterCountByS_LtS(
+		String supportTicket, double supportTicketVersion) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return countByS_LtS(supportTicket, supportTicketVersion);
+		}
+
+		supportTicket = Objects.toString(supportTicket, "");
+
+		StringBundler sb = new StringBundler(3);
+
+		sb.append(_FILTER_SQL_COUNT_PATCHERBUILD_WHERE);
+
+		boolean bindSupportTicket = false;
+
+		if (supportTicket.isEmpty()) {
+			sb.append(_FINDER_COLUMN_S_LTS_SUPPORTTICKET_3);
+		}
+		else {
+			bindSupportTicket = true;
+
+			sb.append(_FINDER_COLUMN_S_LTS_SUPPORTTICKET_2);
+		}
+
+		sb.append(_FINDER_COLUMN_S_LTS_SUPPORTTICKETVERSION_2);
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(
+				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			if (bindSupportTicket) {
+				queryPos.add(supportTicket);
+			}
+
+			queryPos.add(supportTicketVersion);
+
+			Long count = (Long)sqlQuery.uniqueResult();
+
+			return count.intValue();
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
 	}
 
 	private static final String _FINDER_COLUMN_S_LTS_SUPPORTTICKET_2 =
@@ -6927,6 +11608,565 @@ public class PatcherBuildPersistenceImpl
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and status = &#63;.
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param status the status
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByLtM_N_S(
+		Date modifiedDate, boolean notified, int status) {
+
+		return filterFindByLtM_N_S(
+			modifiedDate, notified, status, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param status the status
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByLtM_N_S(
+		Date modifiedDate, boolean notified, int status, int start, int end) {
+
+		return filterFindByLtM_N_S(
+			modifiedDate, notified, status, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where modifiedDate &lt; &#63; and notified = &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param status the status
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByLtM_N_S(
+		Date modifiedDate, boolean notified, int status, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByLtM_N_S(
+				modifiedDate, notified, status, start, end, orderByComparator);
+		}
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				5 + (orderByComparator.getOrderByFields().length * 2));
+		}
+		else {
+			sb = new StringBundler(6);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		boolean bindModifiedDate = false;
+
+		if (modifiedDate == null) {
+			sb.append(_FINDER_COLUMN_LTM_N_S_MODIFIEDDATE_1);
+		}
+		else {
+			bindModifiedDate = true;
+
+			sb.append(_FINDER_COLUMN_LTM_N_S_MODIFIEDDATE_2);
+		}
+
+		sb.append(_FINDER_COLUMN_LTM_N_S_NOTIFIED_2);
+
+		sb.append(_FINDER_COLUMN_LTM_N_S_STATUS_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			if (getDB().isSupportsInlineDistinct()) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+			}
+			else {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			if (getDB().isSupportsInlineDistinct()) {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+			}
+			else {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+			}
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			if (bindModifiedDate) {
+				queryPos.add(new Timestamp(modifiedDate.getTime()));
+			}
+
+			queryPos.add(notified);
+
+			queryPos.add(status);
+
+			return (List<PatcherBuild>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and status = &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param status the status
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	@Override
+	public PatcherBuild[] filterFindByLtM_N_S_PrevAndNext(
+			long patcherBuildId, Date modifiedDate, boolean notified,
+			int status, OrderByComparator<PatcherBuild> orderByComparator)
+		throws NoSuchPatcherBuildException {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByLtM_N_S_PrevAndNext(
+				patcherBuildId, modifiedDate, notified, status,
+				orderByComparator);
+		}
+
+		PatcherBuild patcherBuild = findByPrimaryKey(patcherBuildId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			PatcherBuild[] array = new PatcherBuildImpl[3];
+
+			array[0] = filterGetByLtM_N_S_PrevAndNext(
+				session, patcherBuild, modifiedDate, notified, status,
+				orderByComparator, true);
+
+			array[1] = patcherBuild;
+
+			array[2] = filterGetByLtM_N_S_PrevAndNext(
+				session, patcherBuild, modifiedDate, notified, status,
+				orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected PatcherBuild filterGetByLtM_N_S_PrevAndNext(
+		Session session, PatcherBuild patcherBuild, Date modifiedDate,
+		boolean notified, int status,
+		OrderByComparator<PatcherBuild> orderByComparator, boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				7 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(6);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		boolean bindModifiedDate = false;
+
+		if (modifiedDate == null) {
+			sb.append(_FINDER_COLUMN_LTM_N_S_MODIFIEDDATE_1);
+		}
+		else {
+			bindModifiedDate = true;
+
+			sb.append(_FINDER_COLUMN_LTM_N_S_MODIFIEDDATE_2);
+		}
+
+		sb.append(_FINDER_COLUMN_LTM_N_S_NOTIFIED_2);
+
+		sb.append(_FINDER_COLUMN_LTM_N_S_STATUS_2);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i],
+							true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i],
+							true));
+				}
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
+				}
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+		sqlQuery.setFirstResult(0);
+		sqlQuery.setMaxResults(2);
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+		}
+		else {
+			sqlQuery.addEntity(_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+		}
+
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+		if (bindModifiedDate) {
+			queryPos.add(new Timestamp(modifiedDate.getTime()));
+		}
+
+		queryPos.add(notified);
+
+		queryPos.add(status);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(patcherBuild)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<PatcherBuild> list = sqlQuery.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
+	 * Returns all the patcher builds that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and status = any &#63;.
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param statuses the statuses
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByLtM_N_S(
+		Date modifiedDate, boolean notified, int[] statuses) {
+
+		return filterFindByLtM_N_S(
+			modifiedDate, notified, statuses, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and status = any &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param statuses the statuses
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByLtM_N_S(
+		Date modifiedDate, boolean notified, int[] statuses, int start,
+		int end) {
+
+		return filterFindByLtM_N_S(
+			modifiedDate, notified, statuses, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and status = any &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param statuses the statuses
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByLtM_N_S(
+		Date modifiedDate, boolean notified, int[] statuses, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByLtM_N_S(
+				modifiedDate, notified, statuses, start, end,
+				orderByComparator);
+		}
+
+		if (statuses == null) {
+			statuses = new int[0];
+		}
+		else if (statuses.length > 1) {
+			statuses = ArrayUtil.sortedUnique(statuses);
+		}
+
+		StringBundler sb = new StringBundler();
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		boolean bindModifiedDate = false;
+
+		if (modifiedDate == null) {
+			sb.append(_FINDER_COLUMN_LTM_N_S_MODIFIEDDATE_1);
+		}
+		else {
+			bindModifiedDate = true;
+
+			sb.append(_FINDER_COLUMN_LTM_N_S_MODIFIEDDATE_2);
+		}
+
+		sb.append(_FINDER_COLUMN_LTM_N_S_NOTIFIED_2);
+
+		if (statuses.length > 0) {
+			sb.append("(");
+
+			sb.append(_FINDER_COLUMN_LTM_N_S_STATUS_7);
+
+			sb.append(StringUtil.merge(statuses));
+
+			sb.append(")");
+
+			sb.append(")");
+		}
+
+		sb.setStringAt(
+			removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			if (getDB().isSupportsInlineDistinct()) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+			}
+			else {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			if (getDB().isSupportsInlineDistinct()) {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+			}
+			else {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+			}
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			if (bindModifiedDate) {
+				queryPos.add(new Timestamp(modifiedDate.getTime()));
+			}
+
+			queryPos.add(notified);
+
+			return (List<PatcherBuild>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
 	 * Returns all the patcher builds where modifiedDate &lt; &#63; and notified = &#63; and status = any &#63;.
 	 *
 	 * <p>
@@ -7332,6 +12572,166 @@ public class PatcherBuildPersistenceImpl
 		}
 
 		return count.intValue();
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and status = &#63;.
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param status the status
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public int filterCountByLtM_N_S(
+		Date modifiedDate, boolean notified, int status) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return countByLtM_N_S(modifiedDate, notified, status);
+		}
+
+		StringBundler sb = new StringBundler(4);
+
+		sb.append(_FILTER_SQL_COUNT_PATCHERBUILD_WHERE);
+
+		boolean bindModifiedDate = false;
+
+		if (modifiedDate == null) {
+			sb.append(_FINDER_COLUMN_LTM_N_S_MODIFIEDDATE_1);
+		}
+		else {
+			bindModifiedDate = true;
+
+			sb.append(_FINDER_COLUMN_LTM_N_S_MODIFIEDDATE_2);
+		}
+
+		sb.append(_FINDER_COLUMN_LTM_N_S_NOTIFIED_2);
+
+		sb.append(_FINDER_COLUMN_LTM_N_S_STATUS_2);
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(
+				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			if (bindModifiedDate) {
+				queryPos.add(new Timestamp(modifiedDate.getTime()));
+			}
+
+			queryPos.add(notified);
+
+			queryPos.add(status);
+
+			Long count = (Long)sqlQuery.uniqueResult();
+
+			return count.intValue();
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where modifiedDate &lt; &#63; and notified = &#63; and status = any &#63;.
+	 *
+	 * @param modifiedDate the modified date
+	 * @param notified the notified
+	 * @param statuses the statuses
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public int filterCountByLtM_N_S(
+		Date modifiedDate, boolean notified, int[] statuses) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return countByLtM_N_S(modifiedDate, notified, statuses);
+		}
+
+		if (statuses == null) {
+			statuses = new int[0];
+		}
+		else if (statuses.length > 1) {
+			statuses = ArrayUtil.sortedUnique(statuses);
+		}
+
+		StringBundler sb = new StringBundler();
+
+		sb.append(_FILTER_SQL_COUNT_PATCHERBUILD_WHERE);
+
+		boolean bindModifiedDate = false;
+
+		if (modifiedDate == null) {
+			sb.append(_FINDER_COLUMN_LTM_N_S_MODIFIEDDATE_1);
+		}
+		else {
+			bindModifiedDate = true;
+
+			sb.append(_FINDER_COLUMN_LTM_N_S_MODIFIEDDATE_2);
+		}
+
+		sb.append(_FINDER_COLUMN_LTM_N_S_NOTIFIED_2);
+
+		if (statuses.length > 0) {
+			sb.append("(");
+
+			sb.append(_FINDER_COLUMN_LTM_N_S_STATUS_7);
+
+			sb.append(StringUtil.merge(statuses));
+
+			sb.append(")");
+
+			sb.append(")");
+		}
+
+		sb.setStringAt(
+			removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(
+				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			if (bindModifiedDate) {
+				queryPos.add(new Timestamp(modifiedDate.getTime()));
+			}
+
+			queryPos.add(notified);
+
+			Long count = (Long)sqlQuery.uniqueResult();
+
+			return count.intValue();
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
 	}
 
 	private static final String _FINDER_COLUMN_LTM_N_S_MODIFIEDDATE_1 =
@@ -7867,6 +13267,387 @@ public class PatcherBuildPersistenceImpl
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where patcherFixId = &#63; and patcherProductVersionId &ne; &#63; and childBuild = &#63; and type &ne; &#63;.
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param childBuild the child build
+	 * @param type the type
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByP_NotP_C_NotT(
+		long patcherFixId, long patcherProductVersionId, boolean childBuild,
+		int type) {
+
+		return filterFindByP_NotP_C_NotT(
+			patcherFixId, patcherProductVersionId, childBuild, type,
+			QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where patcherFixId = &#63; and patcherProductVersionId &ne; &#63; and childBuild = &#63; and type &ne; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param childBuild the child build
+	 * @param type the type
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByP_NotP_C_NotT(
+		long patcherFixId, long patcherProductVersionId, boolean childBuild,
+		int type, int start, int end) {
+
+		return filterFindByP_NotP_C_NotT(
+			patcherFixId, patcherProductVersionId, childBuild, type, start, end,
+			null);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where patcherFixId = &#63; and patcherProductVersionId &ne; &#63; and childBuild = &#63; and type &ne; &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param childBuild the child build
+	 * @param type the type
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByP_NotP_C_NotT(
+		long patcherFixId, long patcherProductVersionId, boolean childBuild,
+		int type, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByP_NotP_C_NotT(
+				patcherFixId, patcherProductVersionId, childBuild, type, start,
+				end, orderByComparator);
+		}
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				6 + (orderByComparator.getOrderByFields().length * 2));
+		}
+		else {
+			sb = new StringBundler(7);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(_FINDER_COLUMN_P_NOTP_C_NOTT_PATCHERFIXID_2);
+
+		sb.append(_FINDER_COLUMN_P_NOTP_C_NOTT_PATCHERPRODUCTVERSIONID_2);
+
+		sb.append(_FINDER_COLUMN_P_NOTP_C_NOTT_CHILDBUILD_2);
+
+		sb.append(_FINDER_COLUMN_P_NOTP_C_NOTT_TYPE_2_SQL);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			if (getDB().isSupportsInlineDistinct()) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+			}
+			else {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			if (getDB().isSupportsInlineDistinct()) {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+			}
+			else {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+			}
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(patcherFixId);
+
+			queryPos.add(patcherProductVersionId);
+
+			queryPos.add(childBuild);
+
+			queryPos.add(type);
+
+			return (List<PatcherBuild>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where patcherFixId = &#63; and patcherProductVersionId &ne; &#63; and childBuild = &#63; and type &ne; &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param patcherFixId the patcher fix ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param childBuild the child build
+	 * @param type the type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	@Override
+	public PatcherBuild[] filterFindByP_NotP_C_NotT_PrevAndNext(
+			long patcherBuildId, long patcherFixId,
+			long patcherProductVersionId, boolean childBuild, int type,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws NoSuchPatcherBuildException {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByP_NotP_C_NotT_PrevAndNext(
+				patcherBuildId, patcherFixId, patcherProductVersionId,
+				childBuild, type, orderByComparator);
+		}
+
+		PatcherBuild patcherBuild = findByPrimaryKey(patcherBuildId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			PatcherBuild[] array = new PatcherBuildImpl[3];
+
+			array[0] = filterGetByP_NotP_C_NotT_PrevAndNext(
+				session, patcherBuild, patcherFixId, patcherProductVersionId,
+				childBuild, type, orderByComparator, true);
+
+			array[1] = patcherBuild;
+
+			array[2] = filterGetByP_NotP_C_NotT_PrevAndNext(
+				session, patcherBuild, patcherFixId, patcherProductVersionId,
+				childBuild, type, orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected PatcherBuild filterGetByP_NotP_C_NotT_PrevAndNext(
+		Session session, PatcherBuild patcherBuild, long patcherFixId,
+		long patcherProductVersionId, boolean childBuild, int type,
+		OrderByComparator<PatcherBuild> orderByComparator, boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				8 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(7);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(_FINDER_COLUMN_P_NOTP_C_NOTT_PATCHERFIXID_2);
+
+		sb.append(_FINDER_COLUMN_P_NOTP_C_NOTT_PATCHERPRODUCTVERSIONID_2);
+
+		sb.append(_FINDER_COLUMN_P_NOTP_C_NOTT_CHILDBUILD_2);
+
+		sb.append(_FINDER_COLUMN_P_NOTP_C_NOTT_TYPE_2_SQL);
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i],
+							true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i],
+							true));
+				}
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
+				}
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+		sqlQuery.setFirstResult(0);
+		sqlQuery.setMaxResults(2);
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+		}
+		else {
+			sqlQuery.addEntity(_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+		}
+
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+		queryPos.add(patcherFixId);
+
+		queryPos.add(patcherProductVersionId);
+
+		queryPos.add(childBuild);
+
+		queryPos.add(type);
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(patcherBuild)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<PatcherBuild> list = sqlQuery.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
 	 * Removes all the patcher builds where patcherFixId = &#63; and patcherProductVersionId &ne; &#63; and childBuild = &#63; and type &ne; &#63; from the database.
 	 *
 	 * @param patcherFixId the patcher fix ID
@@ -7957,6 +13738,73 @@ public class PatcherBuildPersistenceImpl
 		return count.intValue();
 	}
 
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where patcherFixId = &#63; and patcherProductVersionId &ne; &#63; and childBuild = &#63; and type &ne; &#63;.
+	 *
+	 * @param patcherFixId the patcher fix ID
+	 * @param patcherProductVersionId the patcher product version ID
+	 * @param childBuild the child build
+	 * @param type the type
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public int filterCountByP_NotP_C_NotT(
+		long patcherFixId, long patcherProductVersionId, boolean childBuild,
+		int type) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return countByP_NotP_C_NotT(
+				patcherFixId, patcherProductVersionId, childBuild, type);
+		}
+
+		StringBundler sb = new StringBundler(5);
+
+		sb.append(_FILTER_SQL_COUNT_PATCHERBUILD_WHERE);
+
+		sb.append(_FINDER_COLUMN_P_NOTP_C_NOTT_PATCHERFIXID_2);
+
+		sb.append(_FINDER_COLUMN_P_NOTP_C_NOTT_PATCHERPRODUCTVERSIONID_2);
+
+		sb.append(_FINDER_COLUMN_P_NOTP_C_NOTT_CHILDBUILD_2);
+
+		sb.append(_FINDER_COLUMN_P_NOTP_C_NOTT_TYPE_2_SQL);
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(
+				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(patcherFixId);
+
+			queryPos.add(patcherProductVersionId);
+
+			queryPos.add(childBuild);
+
+			queryPos.add(type);
+
+			Long count = (Long)sqlQuery.uniqueResult();
+
+			return count.intValue();
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
 	private static final String _FINDER_COLUMN_P_NOTP_C_NOTT_PATCHERFIXID_2 =
 		"patcherBuild.patcherFixId = ? AND ";
 
@@ -7969,6 +13817,9 @@ public class PatcherBuildPersistenceImpl
 
 	private static final String _FINDER_COLUMN_P_NOTP_C_NOTT_TYPE_2 =
 		"patcherBuild.type != ?";
+
+	private static final String _FINDER_COLUMN_P_NOTP_C_NOTT_TYPE_2_SQL =
+		"patcherBuild.type_ != ?";
 
 	private FinderPath _finderPathWithPaginationFindByP_N_L_A;
 	private FinderPath _finderPathWithoutPaginationFindByP_N_L_A;
@@ -8560,6 +14411,440 @@ public class PatcherBuildPersistenceImpl
 	}
 
 	/**
+	 * Returns all the patcher builds that the user has permission to view where patcherProjectVersionId = &#63; and accountEntryCode = &#63; and latestKeyBuild = &#63; and name = &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param accountEntryCode the account entry code
+	 * @param latestKeyBuild the latest key build
+	 * @param name the name
+	 * @return the matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByP_N_L_A(
+		long patcherProjectVersionId, String accountEntryCode,
+		boolean latestKeyBuild, String name) {
+
+		return filterFindByP_N_L_A(
+			patcherProjectVersionId, accountEntryCode, latestKeyBuild, name,
+			QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the patcher builds that the user has permission to view where patcherProjectVersionId = &#63; and accountEntryCode = &#63; and latestKeyBuild = &#63; and name = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param accountEntryCode the account entry code
+	 * @param latestKeyBuild the latest key build
+	 * @param name the name
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @return the range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByP_N_L_A(
+		long patcherProjectVersionId, String accountEntryCode,
+		boolean latestKeyBuild, String name, int start, int end) {
+
+		return filterFindByP_N_L_A(
+			patcherProjectVersionId, accountEntryCode, latestKeyBuild, name,
+			start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the patcher builds that the user has permissions to view where patcherProjectVersionId = &#63; and accountEntryCode = &#63; and latestKeyBuild = &#63; and name = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildModelImpl</code>.
+	 * </p>
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param accountEntryCode the account entry code
+	 * @param latestKeyBuild the latest key build
+	 * @param name the name
+	 * @param start the lower bound of the range of patcher builds
+	 * @param end the upper bound of the range of patcher builds (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public List<PatcherBuild> filterFindByP_N_L_A(
+		long patcherProjectVersionId, String accountEntryCode,
+		boolean latestKeyBuild, String name, int start, int end,
+		OrderByComparator<PatcherBuild> orderByComparator) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByP_N_L_A(
+				patcherProjectVersionId, accountEntryCode, latestKeyBuild, name,
+				start, end, orderByComparator);
+		}
+
+		accountEntryCode = Objects.toString(accountEntryCode, "");
+		name = Objects.toString(name, "");
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				6 + (orderByComparator.getOrderByFields().length * 2));
+		}
+		else {
+			sb = new StringBundler(7);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(_FINDER_COLUMN_P_N_L_A_PATCHERPROJECTVERSIONID_2);
+
+		boolean bindAccountEntryCode = false;
+
+		if (accountEntryCode.isEmpty()) {
+			sb.append(_FINDER_COLUMN_P_N_L_A_ACCOUNTENTRYCODE_3);
+		}
+		else {
+			bindAccountEntryCode = true;
+
+			sb.append(_FINDER_COLUMN_P_N_L_A_ACCOUNTENTRYCODE_2);
+		}
+
+		sb.append(_FINDER_COLUMN_P_N_L_A_LATESTKEYBUILD_2);
+
+		boolean bindName = false;
+
+		if (name.isEmpty()) {
+			sb.append(_FINDER_COLUMN_P_N_L_A_NAME_3);
+		}
+		else {
+			bindName = true;
+
+			sb.append(_FINDER_COLUMN_P_N_L_A_NAME_2);
+		}
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			if (getDB().isSupportsInlineDistinct()) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+			}
+			else {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			if (getDB().isSupportsInlineDistinct()) {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+			}
+			else {
+				sqlQuery.addEntity(
+					_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+			}
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(patcherProjectVersionId);
+
+			if (bindAccountEntryCode) {
+				queryPos.add(accountEntryCode);
+			}
+
+			queryPos.add(latestKeyBuild);
+
+			if (bindName) {
+				queryPos.add(name);
+			}
+
+			return (List<PatcherBuild>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	/**
+	 * Returns the patcher builds before and after the current patcher build in the ordered set of patcher builds that the user has permission to view where patcherProjectVersionId = &#63; and accountEntryCode = &#63; and latestKeyBuild = &#63; and name = &#63;.
+	 *
+	 * @param patcherBuildId the primary key of the current patcher build
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param accountEntryCode the account entry code
+	 * @param latestKeyBuild the latest key build
+	 * @param name the name
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next patcher build
+	 * @throws NoSuchPatcherBuildException if a patcher build with the primary key could not be found
+	 */
+	@Override
+	public PatcherBuild[] filterFindByP_N_L_A_PrevAndNext(
+			long patcherBuildId, long patcherProjectVersionId,
+			String accountEntryCode, boolean latestKeyBuild, String name,
+			OrderByComparator<PatcherBuild> orderByComparator)
+		throws NoSuchPatcherBuildException {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return findByP_N_L_A_PrevAndNext(
+				patcherBuildId, patcherProjectVersionId, accountEntryCode,
+				latestKeyBuild, name, orderByComparator);
+		}
+
+		accountEntryCode = Objects.toString(accountEntryCode, "");
+		name = Objects.toString(name, "");
+
+		PatcherBuild patcherBuild = findByPrimaryKey(patcherBuildId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			PatcherBuild[] array = new PatcherBuildImpl[3];
+
+			array[0] = filterGetByP_N_L_A_PrevAndNext(
+				session, patcherBuild, patcherProjectVersionId,
+				accountEntryCode, latestKeyBuild, name, orderByComparator,
+				true);
+
+			array[1] = patcherBuild;
+
+			array[2] = filterGetByP_N_L_A_PrevAndNext(
+				session, patcherBuild, patcherProjectVersionId,
+				accountEntryCode, latestKeyBuild, name, orderByComparator,
+				false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected PatcherBuild filterGetByP_N_L_A_PrevAndNext(
+		Session session, PatcherBuild patcherBuild,
+		long patcherProjectVersionId, String accountEntryCode,
+		boolean latestKeyBuild, String name,
+		OrderByComparator<PatcherBuild> orderByComparator, boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				8 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(7);
+		}
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sb.append(_FILTER_SQL_SELECT_PATCHERBUILD_WHERE);
+		}
+		else {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1);
+		}
+
+		sb.append(_FINDER_COLUMN_P_N_L_A_PATCHERPROJECTVERSIONID_2);
+
+		boolean bindAccountEntryCode = false;
+
+		if (accountEntryCode.isEmpty()) {
+			sb.append(_FINDER_COLUMN_P_N_L_A_ACCOUNTENTRYCODE_3);
+		}
+		else {
+			bindAccountEntryCode = true;
+
+			sb.append(_FINDER_COLUMN_P_N_L_A_ACCOUNTENTRYCODE_2);
+		}
+
+		sb.append(_FINDER_COLUMN_P_N_L_A_LATESTKEYBUILD_2);
+
+		boolean bindName = false;
+
+		if (name.isEmpty()) {
+			sb.append(_FINDER_COLUMN_P_N_L_A_NAME_3);
+		}
+		else {
+			bindName = true;
+
+			sb.append(_FINDER_COLUMN_P_N_L_A_NAME_2);
+		}
+
+		if (!getDB().isSupportsInlineDistinct()) {
+			sb.append(
+				_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i],
+							true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i],
+							true));
+				}
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				if (getDB().isSupportsInlineDistinct()) {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
+				}
+				else {
+					sb.append(
+						getColumnName(
+							_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
+				}
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			if (getDB().isSupportsInlineDistinct()) {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
+			}
+			else {
+				sb.append(PatcherBuildModelImpl.ORDER_BY_SQL);
+			}
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+		sqlQuery.setFirstResult(0);
+		sqlQuery.setMaxResults(2);
+
+		if (getDB().isSupportsInlineDistinct()) {
+			sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, PatcherBuildImpl.class);
+		}
+		else {
+			sqlQuery.addEntity(_FILTER_ENTITY_TABLE, PatcherBuildImpl.class);
+		}
+
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+		queryPos.add(patcherProjectVersionId);
+
+		if (bindAccountEntryCode) {
+			queryPos.add(accountEntryCode);
+		}
+
+		queryPos.add(latestKeyBuild);
+
+		if (bindName) {
+			queryPos.add(name);
+		}
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(patcherBuild)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<PatcherBuild> list = sqlQuery.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
 	 * Removes all the patcher builds where patcherProjectVersionId = &#63; and accountEntryCode = &#63; and latestKeyBuild = &#63; and name = &#63; from the database.
 	 *
 	 * @param patcherProjectVersionId the patcher project version ID
@@ -8673,6 +14958,99 @@ public class PatcherBuildPersistenceImpl
 		}
 
 		return count.intValue();
+	}
+
+	/**
+	 * Returns the number of patcher builds that the user has permission to view where patcherProjectVersionId = &#63; and accountEntryCode = &#63; and latestKeyBuild = &#63; and name = &#63;.
+	 *
+	 * @param patcherProjectVersionId the patcher project version ID
+	 * @param accountEntryCode the account entry code
+	 * @param latestKeyBuild the latest key build
+	 * @param name the name
+	 * @return the number of matching patcher builds that the user has permission to view
+	 */
+	@Override
+	public int filterCountByP_N_L_A(
+		long patcherProjectVersionId, String accountEntryCode,
+		boolean latestKeyBuild, String name) {
+
+		if (!InlineSQLHelperUtil.isEnabled()) {
+			return countByP_N_L_A(
+				patcherProjectVersionId, accountEntryCode, latestKeyBuild,
+				name);
+		}
+
+		accountEntryCode = Objects.toString(accountEntryCode, "");
+		name = Objects.toString(name, "");
+
+		StringBundler sb = new StringBundler(5);
+
+		sb.append(_FILTER_SQL_COUNT_PATCHERBUILD_WHERE);
+
+		sb.append(_FINDER_COLUMN_P_N_L_A_PATCHERPROJECTVERSIONID_2);
+
+		boolean bindAccountEntryCode = false;
+
+		if (accountEntryCode.isEmpty()) {
+			sb.append(_FINDER_COLUMN_P_N_L_A_ACCOUNTENTRYCODE_3);
+		}
+		else {
+			bindAccountEntryCode = true;
+
+			sb.append(_FINDER_COLUMN_P_N_L_A_ACCOUNTENTRYCODE_2);
+		}
+
+		sb.append(_FINDER_COLUMN_P_N_L_A_LATESTKEYBUILD_2);
+
+		boolean bindName = false;
+
+		if (name.isEmpty()) {
+			sb.append(_FINDER_COLUMN_P_N_L_A_NAME_3);
+		}
+		else {
+			bindName = true;
+
+			sb.append(_FINDER_COLUMN_P_N_L_A_NAME_2);
+		}
+
+		String sql = InlineSQLHelperUtil.replacePermissionCheck(
+			sb.toString(), PatcherBuild.class.getName(),
+			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(
+				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(patcherProjectVersionId);
+
+			if (bindAccountEntryCode) {
+				queryPos.add(accountEntryCode);
+			}
+
+			queryPos.add(latestKeyBuild);
+
+			if (bindName) {
+				queryPos.add(name);
+			}
+
+			Long count = (Long)sqlQuery.uniqueResult();
+
+			return count.intValue();
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
 	}
 
 	private static final String
@@ -10276,7 +16654,32 @@ public class PatcherBuildPersistenceImpl
 	private static final String _SQL_COUNT_PATCHERBUILD_WHERE =
 		"SELECT COUNT(patcherBuild) FROM PatcherBuild patcherBuild WHERE ";
 
+	private static final String _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN =
+		"patcherBuild.patcherBuildId";
+
+	private static final String _FILTER_SQL_SELECT_PATCHERBUILD_WHERE =
+		"SELECT DISTINCT {patcherBuild.*} FROM OSBPatcher_PatcherBuild patcherBuild WHERE ";
+
+	private static final String
+		_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_1 =
+			"SELECT {OSBPatcher_PatcherBuild.*} FROM (SELECT DISTINCT patcherBuild.patcherBuildId FROM OSBPatcher_PatcherBuild patcherBuild WHERE ";
+
+	private static final String
+		_FILTER_SQL_SELECT_PATCHERBUILD_NO_INLINE_DISTINCT_WHERE_2 =
+			") TEMP_TABLE INNER JOIN OSBPatcher_PatcherBuild ON TEMP_TABLE.patcherBuildId = OSBPatcher_PatcherBuild.patcherBuildId";
+
+	private static final String _FILTER_SQL_COUNT_PATCHERBUILD_WHERE =
+		"SELECT COUNT(DISTINCT patcherBuild.patcherBuildId) AS COUNT_VALUE FROM OSBPatcher_PatcherBuild patcherBuild WHERE ";
+
+	private static final String _FILTER_ENTITY_ALIAS = "patcherBuild";
+
+	private static final String _FILTER_ENTITY_TABLE =
+		"OSBPatcher_PatcherBuild";
+
 	private static final String _ORDER_BY_ENTITY_ALIAS = "patcherBuild.";
+
+	private static final String _ORDER_BY_ENTITY_TABLE =
+		"OSBPatcher_PatcherBuild.";
 
 	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY =
 		"No PatcherBuild exists with the primary key ";

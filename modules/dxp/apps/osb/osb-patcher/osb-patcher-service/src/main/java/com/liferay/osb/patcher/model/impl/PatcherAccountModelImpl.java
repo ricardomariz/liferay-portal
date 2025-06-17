@@ -94,6 +94,9 @@ public class PatcherAccountModelImpl
 	public static final String ORDER_BY_SQL =
 		" ORDER BY OSBPatcher_PatcherAccount.patcherAccountId ASC";
 
+	public static final String ORDER_BY_SQL_INLINE_DISTINCT =
+		" ORDER BY patcherAccount.patcherAccountId ASC";
+
 	public static final String DATA_SOURCE = "liferayDataSource";
 
 	public static final String SESSION_FACTORY = "liferaySessionFactory";

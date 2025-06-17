@@ -103,6 +103,9 @@ public class PatcherFixPackModelImpl
 	public static final String ORDER_BY_SQL =
 		" ORDER BY OSBPatcher_PatcherFixPack.patcherFixPackId ASC";
 
+	public static final String ORDER_BY_SQL_INLINE_DISTINCT =
+		" ORDER BY patcherFixPack.patcherFixPackId ASC";
+
 	public static final String DATA_SOURCE = "liferayDataSource";
 
 	public static final String SESSION_FACTORY = "liferaySessionFactory";
