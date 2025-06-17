@@ -578,6 +578,15 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 				).build()),
 			_bundleContext.registerService(
 				MVCActionCommand.class,
+				new ExpireObjectEntryMVCActionCommand(
+					_objectEntryLocalService, _objectEntryService),
+				HashMapDictionaryBuilder.<String, Object>put(
+					"jakarta.portlet.name", objectDefinition.getPortletId()
+				).put(
+					"mvc.command.name", "/object_entries/expire_object_entry"
+				).build()),
+			_bundleContext.registerService(
+				MVCActionCommand.class,
 				new UploadAttachmentMVCActionCommand(
 					_attachmentUploadFileEntryHandler,
 					_attachmentUploadResponseHandler, _uploadHandler),
@@ -585,15 +594,6 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 					"jakarta.portlet.name", objectDefinition.getPortletId()
 				).put(
 					"mvc.command.name", "/object_entries/upload_attachment"
-				).build()),
-			_bundleContext.registerService(
-				MVCActionCommand.class,
-				new ExpireObjectEntryMVCActionCommand(
-					_objectEntryLocalService, _objectEntryService),
-				HashMapDictionaryBuilder.<String, Object>put(
-					"jakarta.portlet.name", objectDefinition.getPortletId()
-				).put(
-					"mvc.command.name", "/object_entries/expire_object_entry"
 				).build()),
 			_bundleContext.registerService(
 				MVCRenderCommand.class,
