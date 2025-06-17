@@ -64,8 +64,10 @@ initContainers:
                     -   bash
                     -   -c
                     -   |
-                            rm -rf /temp/liferay/liferay.pid 2>/dev/null
+                            rm -fr /temp/liferay/liferay.pid 2>/dev/null
+
                             mkdir -p /temp/liferay
+
                             touch /temp/liferay/liferay.pid
 
                             if [ ! -d /temp/liferay/data ] || [ -z "$(ls -A /temp/liferay/data)" ]
