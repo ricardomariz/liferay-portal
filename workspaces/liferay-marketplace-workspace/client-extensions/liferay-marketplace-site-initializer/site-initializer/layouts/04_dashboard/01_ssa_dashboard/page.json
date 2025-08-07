@@ -14,7 +14,9 @@
 			"scope": 4
 		},
 		{
-			"actionIds": ["VIEW"],
+			"actionIds": [
+				"VIEW"
+			],
 			"roleName": "SSA User",
 			"scope": 4
 		},
