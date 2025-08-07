@@ -7,6 +7,7 @@ package com.liferay.object.rest.internal.manager.v1_0;
 
 import com.liferay.account.exception.NoSuchGroupException;
 import com.liferay.batch.engine.attachment.BatchEngineAttachmentManager;
+import com.liferay.depot.constants.DepotConstants;
 import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.object.action.engine.ObjectActionEngine;
@@ -97,6 +98,7 @@ import com.liferay.portal.kernel.service.PersistedModelLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.service.RoleService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.permission.ModelPermissions;
@@ -485,6 +487,22 @@ public class DefaultObjectEntryManagerImpl
 	}
 
 	@Override
+	public ObjectEntry expireObjectEntry(
+			DTOConverterContext dtoConverterContext,
+			String externalReferenceCode, ObjectDefinition objectDefinition,
+			String scopeKey)
+		throws Exception {
+
+		com.liferay.object.model.ObjectEntry serviceBuilderObjectEntry =
+			_objectEntryService.getObjectEntry(
+				externalReferenceCode, getGroupId(objectDefinition, scopeKey),
+				objectDefinition.getObjectDefinitionId());
+
+		return expireObjectEntry(
+			dtoConverterContext, serviceBuilderObjectEntry.getObjectEntryId());
+	}
+
+	@Override
 	public ObjectEntry expireObjectEntryByVersion(
 			DTOConverterContext dtoConverterContext,
 			ObjectDefinition objectDefinition, long objectEntryId, int version)
@@ -627,7 +645,8 @@ public class DefaultObjectEntryManagerImpl
 
 			groupIds = TransformUtil.transformToArray(
 				_depotEntryLocalService.getGroupConnectedDepotEntries(
-					groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS),
+					groupId, DepotConstants.TYPE_ANY, QueryUtil.ALL_POS,
+					QueryUtil.ALL_POS),
 				depotEntry -> depotEntry.getGroupId(), Long.class);
 		}
 		else {
@@ -1551,10 +1570,8 @@ public class DefaultObjectEntryManagerImpl
 					className = roleTypeContributor.getClassName();
 				}
 
-				_roleLocalService.getOrAddEmptyRole(
-					permission.getRoleExternalReferenceCode(),
-					objectDefinition.getCompanyId(),
-					dtoConverterContext.getUserId(), className, 0,
+				_roleService.getOrAddEmptyRole(
+					permission.getRoleExternalReferenceCode(), className, 0,
 					permission.getRoleName(),
 					RoleConstants.getLabelType(permission.getRoleType()));
 			}
@@ -2987,6 +3004,9 @@ public class DefaultObjectEntryManagerImpl
 
 	@Reference
 	private RoleLocalService _roleLocalService;
+
+	@Reference
+	private RoleService _roleService;
 
 	@Reference
 	private RoleTypeContributorProvider _roleTypeContributorProvider;

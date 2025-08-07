@@ -5,17 +5,22 @@
 
 import React, {createContext, useReducer} from 'react';
 
-import {Individuals, MetricType, RangeSelectors} from './types/global';
+import {
+	RangeSelector,
+	RangeSelectors,
+} from './components/RangeSelectorsDropdown';
+import {Individuals, MetricType} from './types/global';
 
 export type State = {
+	changeChannelFilter: (value: any) => void;
 	changeIndividualFilter: (value: any) => void;
 	changeMetricFilter: (value: any) => void;
-	changeRangeSelectorFilter: (value: any) => void;
+	changeRangeSelectorFilter: (value: RangeSelector) => void;
 	filters: {
 		channel: string;
 		individual: Individuals;
 		metric: MetricType;
-		rangeSelector: RangeSelectors;
+		rangeSelector: RangeSelector;
 	};
 	[key: string]: any;
 };
@@ -33,7 +38,7 @@ type Action = {
 };
 
 const initialState: State = {
-	ChangeChannelFilter: () => {},
+	changeChannelFilter: () => {},
 	changeIndividualFilter: () => {},
 	changeMetricFilter: () => {},
 	changeRangeSelectorFilter: () => {},
@@ -41,7 +46,11 @@ const initialState: State = {
 		channel: '',
 		individual: Individuals.AllIndividuals,
 		metric: MetricType.Undefined,
-		rangeSelector: RangeSelectors.Last30Days,
+		rangeSelector: {
+			rangeEnd: '',
+			rangeKey: RangeSelectors.Last7Days,
+			rangeStart: '',
+		},
 	},
 };
 
@@ -109,6 +118,13 @@ const ContextProvider: React.FC<IContextProviderProps> = ({
 }) => {
 	const [state, dispatch] = useReducer(reducer, initialState);
 
+	const changeChannelFilter = (payload: any) => {
+		dispatch({
+			payload,
+			type: Types.ChangeChannelFilter,
+		});
+	};
+
 	const changeIndividualFilter = (payload: any) => {
 		dispatch({
 			payload,
@@ -135,6 +151,7 @@ const ContextProvider: React.FC<IContextProviderProps> = ({
 			value={{
 				...customState,
 				...state,
+				changeChannelFilter,
 				changeIndividualFilter,
 				changeMetricFilter,
 				changeRangeSelectorFilter,

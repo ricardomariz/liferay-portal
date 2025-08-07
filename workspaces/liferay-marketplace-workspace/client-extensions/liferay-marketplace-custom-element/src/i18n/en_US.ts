@@ -28,6 +28,7 @@ export default {
 	'add-new-version': 'Add New Version',
 	'add-packages': 'Add Package(s)',
 	'add-up-to-x-images': 'Add up to {0} images',
+	'additional-admin': 'Additional Admin',
 	'additional-apps-requested': 'Additional Apps Requested',
 	'address': 'Address',
 	'admin-dashboard': 'Admin Dashboard',
@@ -94,6 +95,7 @@ export default {
 	'becoming-a-liferay-marketplace-publisher':
 		'Becoming a Liferay Marketplace publisher',
 	'billing-address': 'Billing Address',
+	'blank-site': 'Blank Site',
 	'build': 'Build',
 	'business-address': 'Business Address',
 	'by-requesting-a-publisher-account-you-agree-to-the':
@@ -206,6 +208,7 @@ export default {
 	'download-key': 'Download Key',
 	'draft': 'Draft',
 	'drag-and-drop-to-upload-or': 'Drag and drop to upload or',
+	'duration-days': 'Duration (days)',
 	'duration-of-the-extension': 'Duration of the extension',
 	'dxp-app': 'DXP App',
 	'dxp-connections': 'DXP Connections',
@@ -244,6 +247,7 @@ export default {
 	'exit-from-providing-app-build': 'Exit from providing app build',
 	'exp-date': 'Exp. Date',
 	'expiration-date': 'Expiration Date',
+	'expire': 'Expire',
 	'expire-trial': 'Expire Trial',
 	'expired': 'Expired',
 	'explore-over-800-apps-available-in-the-liferay-marketplace-from-a-variety-of-publishers-apps-allow-you-to-accelerate-your-liferay-development-get-to-market-faster':
@@ -254,6 +258,11 @@ export default {
 	'extension-optional': 'Extension (optional)',
 	'extension-request': 'Extension Request',
 	'extension-status': 'Extension Status',
+	'failed-to-approve-trial-extension': 'Failed to approve trial extension',
+	'failed-to-expire-trial': 'Failed to expire the trial.',
+	'failed-to-extend-trial': 'Failed to extend trial',
+	'failed-to-reject-trial-extension': 'Failed to reject trial extension.',
+	'failure': 'Failure',
 	'file-not-available-for-download': 'File not available for download',
 	'filter': 'Filter',
 	'first-name': 'First Name',
@@ -273,6 +282,7 @@ export default {
 	'go-to-dxp': 'Go to DXP',
 	'go-to-marketplace': 'Go to Marketplace',
 	'go-to-my-apps': 'Go to My Apps',
+	'go-to-ssa-trial-listing': 'Go to SSA Trial Listing',
 	'go-to-trial': 'Go to Trial',
 	'got-it': 'Got it',
 	'header': 'Header',
@@ -337,6 +347,7 @@ export default {
 		'Login as a user that has access to a project or contact your project administrator to add you to a project.',
 	'low-code-configuration': 'Low-Code Configuration',
 	'mac-addresses': 'Mac Addresses',
+	'main': 'Main',
 	'manage': 'Manage',
 	'manage-all-your-app-purchases-and-subscriptions-in-one-place-read-other-users-reviews-get-notifications-when-updates-are-available-and-get-the-most-out-of-our-apps-catalog':
 		'Manage all your app purchases and subscriptions in one place, read other users reviews, get notifications when updates are available and get the most out of our Apps catalog.',
@@ -385,6 +396,7 @@ export default {
 		'Notes pertaining to the release of the project. These will be displayed when the customer goes to purchase and/or update the app.',
 	'number-of-cpus': 'Number of CPUs',
 	'object-action': 'Object Action',
+	'objective': 'Objective',
 	'of-target': 'of target',
 	'on-hold': 'On Hold',
 	'only-gif-jpg-jpeg-png-are-allowed-max-file-size-is-5mb':
@@ -492,6 +504,7 @@ export default {
 	'search': 'Search',
 	'select-a-file': 'Select a file',
 	'select-a-local-file-to-upload': 'Select a local file to upload',
+	'select-an-option': 'Select an Option',
 	'select-areas': 'Select areas',
 	'select-categories': 'Select categories',
 	'select-category': 'Select category',
@@ -508,6 +521,7 @@ export default {
 	'showing-x-to-x-of-x': 'Showing {0} to {1} of {2}',
 	'sign-in-with-a-different-account': 'Sign in with a different Account',
 	'site-initializer': 'Site Intializer',
+	'solution': 'Solution',
 	'solution-details': 'Solution Details',
 	'solution-header': 'Solution Header',
 	'solution-submission': 'Solution Submission',
@@ -518,6 +532,7 @@ export default {
 	'sorry-there-are-no-results-found': 'Sorry, there are no results found',
 	'specify-your-apps-version-this-will-help-the-user-to-understand-the-latest-version-of-your-app-offered-on-the-marketplace':
 		'Specify your app’s version. This will help the user to understand the latest version of your app offered on the Marketplace.',
+	'ssa-trial-installation-in-progress': 'SSA Trial Installation in Progress',
 	'ssa-trial-summary': 'SSA Trial Summary',
 	'ssa-trials': 'SSA Trials',
 	'ssa-trials-limit-reached': 'SSA Trials Limit Reached',
@@ -568,6 +583,8 @@ export default {
 		'The DXP app is module-based and is compatible with 7.4 builds of Liferay Self-Managed.',
 	'the-installation-process-is-ongoing-and-may-take-some-time':
 		'The installation process is ongoing and may take some time. Navigating to other sections will not cancel the process.',
+	'the-installation-process-is-ongoing-and-may-take-some-time-navigating-to-other-sections-will-not-cancel-the-process':
+		'The installation process is ongoing and may take some time... Navigating to other sections will not cancel the process.',
 	'the-installation-process-is-underway-and-should-be-completed-shortly':
 		'The installation process is underway and should be completed shortly...',
 	'the-liferay-marketplace-gives-you-the-opportunity-to-monetize-your-app-or-solutions-from-a-single-use-case-to-many-while-engaging-with-new-customer-opportunities-and-generating-ongoing-revenue':
@@ -604,6 +621,12 @@ export default {
 	'trial': 'Trial',
 	'trial-details': 'Trial Details',
 	'trial-end-date': 'Trial End Date',
+	'trial-expired-successfully': 'Trial expired successfully.',
+	'trial-extension-approved-successfully':
+		'Trial extension approved successfully',
+	'trial-extension-rejected-successfully':
+		'Trial extension rejected successfully.',
+	'trial-extension-successfully': 'Trial extension successfully',
 	'trial-info': 'Trial Info',
 	'trial-resources': 'Trial Resources',
 	'trial-start-date': 'Trial Start Date',
@@ -631,6 +654,7 @@ export default {
 	'user-account': 'User Account',
 	'users-requests-to-become-a-publisher':
 		'Users requests to become a publisher',
+	'value-between-1-and-60': 'Value between 1 and 60',
 	'version': 'Version',
 	'via-github-repo': 'Via GitHub Repo',
 	'via-liferay-experience-cloud-integration': 'Via Liferay SaaS Integration',

@@ -65,6 +65,10 @@ import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 </#list>
 
 <#if generateDepotEntry>
+	<#if freeMarkerTool.isVersionCompatible(configYAML, 11)>
+		import com.liferay.depot.constants.DepotConstants;
+	</#if>
+
 	import com.liferay.depot.model.DepotEntry;
 	import com.liferay.depot.service.DepotEntryLocalServiceUtil;
 </#if>
@@ -197,6 +201,11 @@ public abstract class Base${schemaName}ResourceTestCase {
 		<#if generateDepotEntry>
 			irrelevantDepotEntry = DepotEntryLocalServiceUtil.addDepotEntry(
 				Collections.singletonMap(LocaleUtil.getDefault(), RandomTestUtil.randomString()), null,
+
+				<#if freeMarkerTool.isVersionCompatible(configYAML, 11)>
+					DepotConstants.TYPE_ASSET_LIBRARY,
+				</#if>
+
 				new ServiceContext() {
 					{
 						setCompanyId(testCompany.getCompanyId());
@@ -206,6 +215,11 @@ public abstract class Base${schemaName}ResourceTestCase {
 			irrelevantDepotEntryGroup = irrelevantDepotEntry.getGroup();
 			testDepotEntry = DepotEntryLocalServiceUtil.addDepotEntry(
 				Collections.singletonMap(LocaleUtil.getDefault(), RandomTestUtil.randomString()), null,
+
+				<#if freeMarkerTool.isVersionCompatible(configYAML, 11)>
+					DepotConstants.TYPE_ASSET_LIBRARY,
+				</#if>
+
 				new ServiceContext() {
 					{
 						setCompanyId(testCompany.getCompanyId());
@@ -3794,7 +3808,9 @@ public abstract class Base${schemaName}ResourceTestCase {
 					<#assign relatedSchemaProperties = freeMarkerTool.getDTOProperties(configYAML, openAPIYAML, relatedSchemaName, allSchemas) />
 
 					<#list relatedSchemaProperties?keys as propertyName>
-						<#if randomDataTypes?seq_contains(relatedSchemaProperties[propertyName])>
+						<#if stringUtil.equals(relatedSchemaProperties[propertyName], "Integer")>
+							${propertyName} = RandomTestUtil.randomInt();
+						<#elseif randomDataTypes?seq_contains(relatedSchemaProperties[propertyName])>
 							${propertyName} = RandomTestUtil.random${relatedSchemaProperties[propertyName]}();
 						<#elseif stringUtil.equals(relatedSchemaProperties[propertyName], "Date")>
 							${propertyName} = RandomTestUtil.nextDate();

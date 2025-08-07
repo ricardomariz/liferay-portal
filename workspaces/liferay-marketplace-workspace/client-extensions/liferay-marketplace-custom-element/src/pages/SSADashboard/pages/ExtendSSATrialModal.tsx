@@ -5,14 +5,15 @@
 
 import ClayAlert from '@clayui/alert';
 import ClayButton from '@clayui/button';
-import {ClayInput} from '@clayui/form';
+import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {zodResolver} from '@hookform/resolvers/zod';
-import classNames from 'classnames';
+import {addDays} from 'date-fns';
 import {useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {KeyedMutator} from 'swr';
 
-import BaseWrapper from '../../../components/Form/BaseWrapper';
+import FormInput from '../../../components/Input/formInput';
+import {OrderCustomFields} from '../../../enums/Order';
 import i18n from '../../../i18n';
 import {Liferay} from '../../../liferay/liferay';
 import zodSchema, {z} from '../../../schema/zod';
@@ -24,32 +25,42 @@ import {ExtendRequestStatus} from '../enums/SSATrials';
 type ExtendSSATrialModalProps = {
 	accountId: number;
 	firstExtendRequest: boolean;
+	mutatePlacedOrder?: KeyedMutator<any>;
 	onClose: () => void;
 	order: PlacedOrder;
+	orderMutate?: KeyedMutator<any>;
 	ssaTrialExtendMutate: KeyedMutator<any>;
 };
 
 const ExtendSSATrialModal: React.FC<ExtendSSATrialModalProps> = ({
 	accountId,
 	firstExtendRequest,
+	mutatePlacedOrder,
 	onClose,
 	order,
+	orderMutate,
 	ssaTrialExtendMutate,
 }) => {
-	const [duration, setDuration] = useState<number | undefined>(undefined);
-	const [reason, setReason] = useState<string>('');
+	const [submitting, setSubmitting] = useState<boolean>(false);
 
-	const {formState, handleSubmit, setValue, trigger} = useForm({
+	const {
+		formState: {errors, isLoading},
+		handleSubmit,
+		register,
+	} = useForm({
 		defaultValues: {
-			duration: 0,
+			duration: '' as unknown as number,
 			reason: '',
 		},
-		mode: 'all',
-		reValidateMode: 'onChange',
+		mode: 'onSubmit',
 		resolver: zodResolver(zodSchema.extendSSATrial),
 	});
 
-	const {isLoading, isValid} = formState;
+	const inputProps = {
+		errors,
+		register,
+		required: true,
+	};
 
 	const extendType = firstExtendRequest
 		? EXTEND_TYPES.AUTO_EXTEND
@@ -60,6 +71,12 @@ const ExtendSSATrialModal: React.FC<ExtendSSATrialModalProps> = ({
 	);
 
 	const onSubmit = async (form: z.infer<typeof zodSchema.extendSSATrial>) => {
+		setSubmitting(true);
+
+		const trialSettings =
+			order.customFields?.[OrderCustomFields.TRIAL_SETTINGS];
+		const projectId = JSON.parse(trialSettings)?.projectId;
+
 		try {
 			const extendTrial = {
 				dueStatus: {
@@ -69,6 +86,7 @@ const ExtendSSATrialModal: React.FC<ExtendSSATrialModalProps> = ({
 							: ExtendRequestStatus.PENDING,
 				},
 				duration: form.duration,
+				projectId,
 				r_accountToTrialExtensionRequest_accountEntryId: accountId,
 				r_orderToTrialExtensionRequest_commerceOrderId: order.id,
 				reason: form.reason,
@@ -93,15 +111,86 @@ const ExtendSSATrialModal: React.FC<ExtendSSATrialModalProps> = ({
 				{revalidate: false}
 			);
 
+			if (extendType === EXTEND_TYPES.AUTO_EXTEND) {
+				if (mutatePlacedOrder) {
+					mutatePlacedOrder(
+						(apireposne: any) => {
+							return {
+								...apireposne,
+								placedOrder: {
+									...apireposne.placedOrder,
+									customFields: {
+										...apireposne.placedOrder.customFields,
+										[OrderCustomFields.END_DATE]: addDays(
+											new Date(
+												apireposne.placedOrder.customFields[
+													OrderCustomFields.END_DATE
+												]
+											),
+											form.duration
+										).toISOString(),
+									},
+								},
+							};
+						},
+						{revalidate: false}
+					);
+				}
+
+				if (orderMutate) {
+					orderMutate(
+						(orders: any) => {
+							const updatedOrder = {
+								...order,
+								items: orders.items.map((item: any) => {
+									if (item.id !== order.id) {
+										return item;
+									}
+
+									return {
+										...item,
+										customFields: {
+											...item.customFields,
+											[OrderCustomFields.END_DATE]:
+												addDays(
+													new Date(
+														order.customFields[
+															OrderCustomFields.END_DATE
+														]
+													),
+													form.duration
+												).toISOString(),
+										},
+									};
+								}),
+							};
+
+							return updatedOrder;
+						},
+						{revalidate: false}
+					);
+				}
+			}
+
+			Liferay.Util.openToast({
+				message: i18n.translate('trial-extension-successfully'),
+				title: i18n.translate('success'),
+				type: 'success',
+			});
+
+			setSubmitting(false);
+
 			onClose();
 		}
 		catch (error) {
 			console.error(error);
 
 			Liferay.Util.openToast({
-				message: i18n.translate('an-unexpected-error-occurred'),
+				message: i18n.translate('failed-to-extend-trial'),
+				title: i18n.translate('failure'),
 				type: 'danger',
 			});
+			setSubmitting(false);
 		}
 	};
 
@@ -110,54 +199,43 @@ const ExtendSSATrialModal: React.FC<ExtendSSATrialModalProps> = ({
 			<ClayAlert displayType={extendOptions?.alertType}>
 				{extendOptions?.alertText}
 			</ClayAlert>
-			<BaseWrapper label="Duration (days)" required>
-				<ClayInput
-					className={classNames('my-4', {
-						'has-error': formState.errors.duration,
-					})}
-					max={60}
-					min={1}
-					onChange={(event) => {
-						setDuration(
-							Number(event.target.value) < 1
-								? undefined
-								: Number(event.target.value)
-						);
-						setValue('duration', Number(event.target.value));
-						trigger();
-					}}
-					placeholder="Value between 1 and 60"
-					type="number"
-					value={duration}
-				></ClayInput>
-			</BaseWrapper>
-			<BaseWrapper label="Reason" required>
-				<ClayInput
-					className={classNames('my-4', {
-						'has-error': formState.errors.reason,
-					})}
-					onChange={(event) => {
-						setReason(event.target.value);
-						setValue('reason', event.target.value);
-						trigger();
-					}}
-					type="text"
-					value={reason}
-				></ClayInput>
-			</BaseWrapper>
+			<FormInput
+				{...inputProps}
+				boldLabel
+				label="Duration"
+				name="duration"
+				placeholder="Value between 1 and 60"
+				required={true}
+				type="number"
+			/>
+			<FormInput
+				{...inputProps}
+				boldLabel
+				label={i18n.translate('reason')}
+				name="reason"
+				placeholder="Tell why you need to extend the trial"
+				required={true}
+				type="textarea"
+			/>
 			<div className="d-flex justify-content-end">
 				<ClayButton
 					className="mr-4"
+					disabled={!!submitting}
 					displayType="secondary"
 					onClick={onClose}
 				>
 					{i18n.translate('cancel')}
 				</ClayButton>
 				<ClayButton
-					disabled={!isValid || isLoading}
+					disabled={isLoading || submitting}
 					onClick={handleSubmit(onSubmit)}
 				>
-					{extendOptions?.actionText}
+					<div className="align-items-center d-flex">
+						{submitting && (
+							<ClayLoadingIndicator className="mr-3 my-0" />
+						)}
+						{extendOptions?.actionText}
+					</div>
 				</ClayButton>
 			</div>
 		</div>

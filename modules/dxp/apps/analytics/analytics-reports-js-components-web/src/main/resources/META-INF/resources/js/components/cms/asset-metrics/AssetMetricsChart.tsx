@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {ColorType} from '@clayui/core/lib/typography/Text';
 import React, {useMemo, useState} from 'react';
 import {Line} from 'recharts';
 
-import {Colors, MetricType} from '../../../types/global';
+import {Colors, MetricName, MetricType} from '../../../types/global';
 import {formatTooltipDate, toUnix} from '../../../utils/date';
 import {CircleDot, DashedDotIcon, PreviousDot} from '../../metrics/Dots';
 import MetricsChart from '../../metrics/MetricsChart';
@@ -107,6 +108,18 @@ export function formatData(
 	};
 }
 
+type Metrics = {
+	[key in MetricName]: string;
+};
+
+const MetricsTitle: Metrics = {
+	[MetricName.Comments]: Liferay.Language.get('comments'),
+	[MetricName.Downloads]: Liferay.Language.get('downloads'),
+	[MetricName.Impressions]: Liferay.Language.get('impressions'),
+	[MetricName.Undefined]: Liferay.Language.get('undefined'),
+	[MetricName.Views]: Liferay.Language.get('views'),
+};
+
 export type DotProps = {
 	cx?: number;
 	cy?: number;
@@ -124,6 +137,7 @@ export interface IMetricsChartLegendProps {
 		block?: boolean;
 		dataKey: string;
 		dotColor: string;
+		textColor?: ColorType;
 		title: string;
 		total?: string | number;
 		url?: string;
@@ -151,35 +165,28 @@ const AssetMetricsChart: React.FC<ICommonProps> = ({histogram, metricType}) => {
 			Dot: DashedDotIcon,
 			dataKey: MetricDataKey.Previous,
 			dotColor: prevMetricsChartData?.color ?? 'none',
+			textColor: 'secondary',
 			title: Liferay.Language.get('previous-period'),
 		},
 		{
 			Dot: CircleDot,
 			dataKey: MetricDataKey.Current,
 			dotColor: metricsChartData?.color ?? 'none',
+			textColor: 'secondary',
 			title: Liferay.Language.get('current-period'),
 		},
 	];
 
 	return (
 		<>
+			<span className="text-3 text-nowrap text-secondary">
+				{MetricsTitle[histogram.metricName as MetricName]}
+			</span>
 			<MetricsChart
 				MetricsChartTooltip={AssetMetricsTooltip}
 				activeTabIndex={activeTabIndex}
 				emptyChartProps={{
-					description: Liferay.Language.get(
-						'check-back-later-to-see-if-your-data-sources-are-populated-with-data'
-					),
-					link: {
-						title: Liferay.Language.get(
-							'learn-more-about-visitors-behavior'
-						),
-						url: 'https://learn.liferay.com/w/dxp/content-authoring-and-management/content-dashboard/content-dashboard-interface',
-					},
-					show: !formattedData.combinedData.length,
-					title: Liferay.Language.get(
-						'there-is-no-data-for-visitors-behavior'
-					),
+					show: false,
 				}}
 				formattedData={formattedData}
 				legendAlign="text-right"
