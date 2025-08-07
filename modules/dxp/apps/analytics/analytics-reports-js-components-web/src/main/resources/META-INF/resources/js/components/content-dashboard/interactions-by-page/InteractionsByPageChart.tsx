@@ -55,7 +55,7 @@ const InteractionsByPageChart: React.FC<IInteractionsByPageChartProps> = ({
 	);
 
 	const legendItems = Object.keys(formattedData.data)
-		.map((dataKey) => {
+		.map((dataKey, index) => {
 			if (dataKey === DataKey.AxisX || dataKey === DataKey.AxisY) {
 				return false;
 			}
@@ -71,6 +71,7 @@ const InteractionsByPageChart: React.FC<IInteractionsByPageChartProps> = ({
 				block: true,
 				dataKey,
 				dotColor: data?.color ?? 'none',
+				textColor: index !== 0 ? undefined : 'dark',
 				title: data.title,
 				total: data.total,
 				url: data?.url,
@@ -107,7 +108,7 @@ const InteractionsByPageChart: React.FC<IInteractionsByPageChartProps> = ({
 				onDatakeyChange={(dataKey) =>
 					setActiveLegendItem(dataKey as InteractionsByPageDataKey)
 				}
-				rangeSelector={filters.rangeSelector}
+				rangeSelector={filters.rangeSelector.rangeKey}
 				tooltipTitle={
 					assetContent[metricName].interactionsByPageTooltipTitle
 				}
@@ -182,7 +183,7 @@ const InteractionsByPageChart: React.FC<IInteractionsByPageChartProps> = ({
 						formattedData.combinedData[0]?.[
 							InteractionsByPageDataKey.AxisX
 						] as number,
-						filters.rangeSelector
+						filters.rangeSelector.rangeKey
 					)
 				)}
 				data-testid="interactions-by-page-chart-data"

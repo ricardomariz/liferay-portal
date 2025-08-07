@@ -6,6 +6,7 @@
 package com.liferay.headless.asset.library.internal.resource.v1_0;
 
 import com.liferay.depot.constants.DepotActionKeys;
+import com.liferay.depot.constants.DepotConstants;
 import com.liferay.depot.model.DepotAppCustomization;
 import com.liferay.depot.model.DepotEntry;
 import com.liferay.depot.model.DepotEntryPin;
@@ -383,7 +384,8 @@ public class AssetLibraryResourceImpl extends BaseAssetLibraryResourceImpl {
 		}
 
 		DepotEntry depotEntry = _depotEntryService.addDepotEntry(
-			nameMap, descriptionMap, serviceContext);
+			nameMap, descriptionMap, DepotConstants.TYPE_ASSET_LIBRARY,
+			serviceContext);
 
 		group = depotEntry.getGroup();
 
@@ -638,15 +640,22 @@ public class AssetLibraryResourceImpl extends BaseAssetLibraryResourceImpl {
 
 		MimeTypeLimit[] mimeTypeLimits = settings.getMimeTypeLimits();
 
-		if (mimeTypeLimits != null) {
-			for (MimeTypeLimit mimeTypeLimit : settings.getMimeTypeLimits()) {
-				String mimeType = mimeTypeLimit.getMimeType();
+		if (mimeTypeLimits == null) {
+			_dlSizeLimitConfigurationProvider.updateGroupSizeLimit(
+				groupId, 0L, 0L, mimeTypeSizeLimits);
 
-				if (Validator.isNotNull(mimeType)) {
-					mimeTypeSizeLimits.put(
-						mimeType,
-						GetterUtil.getLong(mimeTypeLimit.getMaximumSize()));
-				}
+			return;
+		}
+
+		mimeTypeSizeLimits = new LinkedHashMap<>();
+
+		for (MimeTypeLimit mimeTypeLimit : mimeTypeLimits) {
+			String mimeType = mimeTypeLimit.getMimeType();
+
+			if (Validator.isNotNull(mimeType)) {
+				mimeTypeSizeLimits.put(
+					mimeType,
+					GetterUtil.getLong(mimeTypeLimit.getMaximumSize()));
 			}
 		}
 

@@ -5,24 +5,38 @@
 
 package com.liferay.headless.admin.site.resource.v1_0.test.util;
 
+import com.liferay.client.extension.constants.ClientExtensionEntryConstants;
+import com.liferay.client.extension.model.ClientExtensionEntryRel;
+import com.liferay.client.extension.service.ClientExtensionEntryLocalServiceUtil;
+import com.liferay.client.extension.service.ClientExtensionEntryRelLocalServiceUtil;
+import com.liferay.headless.admin.site.client.dto.v1_0.ClientExtension;
+import com.liferay.headless.admin.site.client.dto.v1_0.FavIcon;
 import com.liferay.headless.admin.site.client.dto.v1_0.ItemExternalReference;
 import com.liferay.headless.admin.site.client.dto.v1_0.Settings;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServiceUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.TreeMapBuilder;
 import com.liferay.portal.kernel.util.UnicodeProperties;
+import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.style.book.model.StyleBookEntry;
 import com.liferay.style.book.service.StyleBookEntryLocalServiceUtil;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -51,6 +65,34 @@ public class SettingsTestUtil {
 		else {
 			Assert.assertEquals(layout.getCss(), settings.getCss());
 		}
+
+		ClientExtension clientExtension = null;
+
+		FavIcon favIcon = settings.getFavIcon();
+
+		if ((favIcon != null) &&
+			Objects.equals(
+				favIcon.getClassName(),
+				com.liferay.headless.admin.site.dto.v1_0.ClientExtension.class.
+					getName())) {
+
+			clientExtension = new ClientExtension() {
+				{
+					setClientExtensionConfig(favIcon::getClientExtensionConfig);
+					setExternalReferenceCode(favIcon::getExternalReferenceCode);
+				}
+			};
+		}
+
+		_assertClientExtensions(
+			settings.getGlobalCSSClientExtensions(), layout,
+			ClientExtensionEntryConstants.TYPE_GLOBAL_CSS);
+		_assertClientExtensions(
+			settings.getGlobalJSClientExtensions(), layout,
+			ClientExtensionEntryConstants.TYPE_GLOBAL_JS);
+		_assertClientExtension(
+			clientExtension, layout,
+			ClientExtensionEntryConstants.TYPE_THEME_FAVICON);
 
 		UnicodeProperties unicodeProperties =
 			layout.getTypeSettingsProperties();
@@ -92,6 +134,10 @@ public class SettingsTestUtil {
 				styleBookItemExternalReference.getExternalReferenceCode());
 		}
 
+		_assertClientExtension(
+			settings.getThemeCSSClientExtension(), layout,
+			ClientExtensionEntryConstants.TYPE_THEME_CSS);
+
 		if (Validator.isNull(layout.getThemeId())) {
 			Assert.assertTrue(Validator.isNull(settings.getThemeName()));
 		}
@@ -119,6 +165,10 @@ public class SettingsTestUtil {
 					entry.getValue(), themeSettings.get(entry.getKey()));
 			}
 		}
+
+		_assertClientExtension(
+			settings.getThemeSpritemapClientExtension(), layout,
+			ClientExtensionEntryConstants.TYPE_THEME_SPRITEMAP);
 	}
 
 	public static void assertSettings(
@@ -134,19 +184,31 @@ public class SettingsTestUtil {
 			expectedSettings.getColorSchemeName(),
 			actualSettings.getColorSchemeName());
 		Assert.assertEquals(expectedSettings.getCss(), actualSettings.getCss());
+		Assert.assertTrue(
+			Objects.deepEquals(
+				expectedSettings.getFavIcon(), actualSettings.getFavIcon()));
+		Assert.assertTrue(
+			Objects.deepEquals(
+				expectedSettings.getGlobalCSSClientExtensions(),
+				actualSettings.getGlobalCSSClientExtensions()));
+		Assert.assertTrue(
+			Objects.deepEquals(
+				expectedSettings.getGlobalJSClientExtensions(),
+				actualSettings.getGlobalJSClientExtensions()));
 		Assert.assertEquals(
 			expectedSettings.getJavascript(), actualSettings.getJavascript());
-
 		Assert.assertTrue(
 			Objects.deepEquals(
 				expectedSettings.getMasterPageItemExternalReference(),
 				actualSettings.getMasterPageItemExternalReference()));
-
 		Assert.assertTrue(
 			Objects.deepEquals(
 				expectedSettings.getStyleBookItemExternalReference(),
 				actualSettings.getStyleBookItemExternalReference()));
-
+		Assert.assertTrue(
+			Objects.deepEquals(
+				expectedSettings.getThemeCSSClientExtension(),
+				actualSettings.getThemeCSSClientExtension()));
 		Assert.assertEquals(
 			expectedSettings.getThemeName(), actualSettings.getThemeName());
 
@@ -165,6 +227,27 @@ public class SettingsTestUtil {
 		Assert.assertEquals(
 			MapUtil.toString(curThemeSettings), themeSettings,
 			curThemeSettings);
+
+		Assert.assertTrue(
+			Objects.deepEquals(
+				expectedSettings.getThemeSpritemapClientExtension(),
+				actualSettings.getThemeSpritemapClientExtension()));
+	}
+
+	public static ItemExternalReference getMasterPageItemExternalReference(
+			ServiceContext serviceContext)
+		throws Exception {
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			LayoutPageTemplateEntryTestUtil.getMasterLayoutPageTemplateEntry(
+				serviceContext, WorkflowConstants.STATUS_APPROVED);
+
+		return new ItemExternalReference() {
+			{
+				setExternalReferenceCode(
+					layoutPageTemplateEntry::getExternalReferenceCode);
+			}
+		};
 	}
 
 	public static Settings getSettings(ServiceContext serviceContext) {
@@ -172,11 +255,23 @@ public class SettingsTestUtil {
 			{
 				setColorSchemeName(() -> "01");
 				setCss(RandomTestUtil::randomString);
+				setFavIcon(() -> _getFavIcon());
+				setGlobalCSSClientExtensions(
+					() -> new ClientExtension[] {
+						_getClientExtension(), _getClientExtension()
+					});
+				setGlobalJSClientExtensions(
+					() -> new ClientExtension[] {
+						_getClientExtension(), _getClientExtension()
+					});
 				setJavascript(RandomTestUtil::randomString);
 				setMasterPageItemExternalReference(
-					() -> _getMasterPageItemExternalReference(serviceContext));
+					() -> SettingsTestUtil.getMasterPageItemExternalReference(
+						serviceContext));
 				setStyleBookItemExternalReference(
-					() -> _getStyleBookItemExternalReference(serviceContext));
+					() -> SettingsTestUtil.getStyleBookItemExternalReference(
+						serviceContext));
+				setThemeCSSClientExtension(() -> _getClientExtension());
 				setThemeName(() -> "classic_WAR_classictheme");
 				setThemeSettings(
 					() -> TreeMapBuilder.put(
@@ -186,6 +281,26 @@ public class SettingsTestUtil {
 						"lfr-theme:" + RandomTestUtil.randomString(),
 						RandomTestUtil.randomString()
 					).build());
+				setThemeSpritemapClientExtension(() -> _getClientExtension());
+			}
+		};
+	}
+
+	public static ItemExternalReference getStyleBookItemExternalReference(
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		StyleBookEntry styleBookEntry =
+			StyleBookEntryLocalServiceUtil.addStyleBookEntry(
+				null, TestPropsValues.getUserId(),
+				serviceContext.getScopeGroupId(), false, null,
+				RandomTestUtil.randomString(), null,
+				RandomTestUtil.randomString(), serviceContext);
+
+		return new ItemExternalReference() {
+			{
+				setExternalReferenceCode(
+					styleBookEntry::getExternalReferenceCode);
 			}
 		};
 	}
@@ -193,6 +308,33 @@ public class SettingsTestUtil {
 	public static void modifySettings(
 			ServiceContext serviceContext, Settings settings)
 		throws Exception {
+
+		if (Validator.isNotNull(settings.getFavIcon())) {
+			settings.setFavIcon(() -> null);
+		}
+		else {
+			settings.setFavIcon(() -> _getFavIcon());
+		}
+
+		if (Validator.isNotNull(settings.getGlobalCSSClientExtensions())) {
+			settings.setGlobalCSSClientExtensions(() -> null);
+		}
+		else {
+			settings.setGlobalCSSClientExtensions(
+				new ClientExtension[] {
+					_getClientExtension(), _getClientExtension()
+				});
+		}
+
+		if (Validator.isNotNull(settings.getGlobalJSClientExtensions())) {
+			settings.setGlobalJSClientExtensions(() -> null);
+		}
+		else {
+			settings.setGlobalJSClientExtensions(
+				new ClientExtension[] {
+					_getClientExtension(), _getClientExtension()
+				});
+		}
 
 		if (Validator.isNotNull(settings.getJavascript())) {
 			settings.setJavascript(() -> null);
@@ -239,6 +381,13 @@ public class SettingsTestUtil {
 				});
 		}
 
+		if (Validator.isNotNull(settings.getThemeCSSClientExtension())) {
+			settings.setThemeCSSClientExtension(() -> null);
+		}
+		else {
+			settings.setThemeCSSClientExtension(_getClientExtension());
+		}
+
 		if (Validator.isNotNull(settings.getThemeName())) {
 			settings.setColorSchemeName(() -> null);
 			settings.setThemeName(() -> null);
@@ -262,39 +411,117 @@ public class SettingsTestUtil {
 					"true"
 				).build());
 		}
+
+		if (Validator.isNotNull(settings.getThemeSpritemapClientExtension())) {
+			settings.setThemeSpritemapClientExtension(() -> null);
+		}
+		else {
+			settings.setThemeSpritemapClientExtension(_getClientExtension());
+		}
 	}
 
-	private static ItemExternalReference _getMasterPageItemExternalReference(
-			ServiceContext serviceContext)
-		throws Exception {
+	private static void _assertClientExtension(
+		ClientExtension clientExtension, Layout layout, String type) {
 
-		LayoutPageTemplateEntry layoutPageTemplateEntry =
-			LayoutPageTemplateEntryTestUtil.getMasterLayoutPageTemplateEntry(
-				serviceContext, WorkflowConstants.STATUS_APPROVED);
+		ClientExtensionEntryRel clientExtensionEntryRel =
+			ClientExtensionEntryRelLocalServiceUtil.
+				fetchClientExtensionEntryRel(
+					PortalUtil.getClassNameId(Layout.class), layout.getPlid(),
+					type);
 
-		return new ItemExternalReference() {
+		if (clientExtensionEntryRel == null) {
+			Assert.assertNull(clientExtension);
+		}
+		else {
+			Assert.assertEquals(
+				clientExtensionEntryRel.getCETExternalReferenceCode(),
+				clientExtension.getExternalReferenceCode());
+			Assert.assertEquals(
+				clientExtensionEntryRel.getTypeSettings(),
+				UnicodePropertiesBuilder.create(
+					clientExtension.getClientExtensionConfig(), true
+				).buildString());
+		}
+	}
+
+	private static void _assertClientExtensions(
+		ClientExtension[] clientExtensions, Layout layout, String type) {
+
+		List<ClientExtensionEntryRel> clientExtensionEntryRels =
+			ClientExtensionEntryRelLocalServiceUtil.getClientExtensionEntryRels(
+				PortalUtil.getClassNameId(Layout.class), layout.getPlid(),
+				type);
+
+		if (ArrayUtil.isEmpty(clientExtensions)) {
+			Assert.assertEquals(
+				clientExtensionEntryRels.toString(), 0,
+				clientExtensionEntryRels.size());
+
+			return;
+		}
+
+		Map<String, String> map = new HashMap<>();
+
+		for (ClientExtension clientExtension : clientExtensions) {
+			map.put(
+				clientExtension.getExternalReferenceCode(),
+				UnicodePropertiesBuilder.create(
+					clientExtension.getClientExtensionConfig(), true
+				).buildString());
+		}
+
+		for (ClientExtensionEntryRel clientExtensionEntryRel :
+				clientExtensionEntryRels) {
+
+			Assert.assertTrue(
+				clientExtensionEntryRel.toString(),
+				map.containsKey(
+					clientExtensionEntryRel.getCETExternalReferenceCode()));
+			Assert.assertEquals(
+				map.get(clientExtensionEntryRel.getCETExternalReferenceCode()),
+				clientExtensionEntryRel.getTypeSettings());
+		}
+	}
+
+	private static ClientExtension _getClientExtension() throws Exception {
+		ClientExtension clientExtension = new ClientExtension() {
 			{
-				setExternalReferenceCode(
-					layoutPageTemplateEntry::getExternalReferenceCode);
+				setClientExtensionConfig(
+					() -> HashMapBuilder.put(
+						RandomTestUtil::randomString,
+						RandomTestUtil::randomString
+					).build());
+				setExternalReferenceCode(RandomTestUtil::randomString);
 			}
 		};
+
+		ClientExtensionEntryLocalServiceUtil.addClientExtensionEntry(
+			clientExtension.getExternalReferenceCode(),
+			TestPropsValues.getUserId(), StringPool.BLANK,
+			Collections.singletonMap(
+				LocaleUtil.getDefault(), RandomTestUtil.randomString()),
+			StringPool.BLANK, StringPool.BLANK,
+			ClientExtensionEntryConstants.TYPE_THEME_CSS,
+			UnicodePropertiesBuilder.create(
+				clientExtension.getClientExtensionConfig(), true
+			).buildString());
+
+		return clientExtension;
 	}
 
-	private static ItemExternalReference _getStyleBookItemExternalReference(
-			ServiceContext serviceContext)
-		throws PortalException {
+	private static FavIcon _getFavIcon() throws Exception {
+		ClientExtension clientExtension = _getClientExtension();
 
-		StyleBookEntry styleBookEntry =
-			StyleBookEntryLocalServiceUtil.addStyleBookEntry(
-				null, TestPropsValues.getUserId(),
-				serviceContext.getScopeGroupId(), false, null,
-				RandomTestUtil.randomString(), null,
-				RandomTestUtil.randomString(), serviceContext);
-
-		return new ItemExternalReference() {
+		return new FavIcon() {
 			{
+				setClassName(
+					() ->
+						com.liferay.headless.admin.site.dto.v1_0.
+							ClientExtension.class.getName());
+				setClientExtensionConfig(
+					clientExtension::getClientExtensionConfig);
 				setExternalReferenceCode(
-					styleBookEntry::getExternalReferenceCode);
+					clientExtension::getExternalReferenceCode);
 			}
 		};
 	}

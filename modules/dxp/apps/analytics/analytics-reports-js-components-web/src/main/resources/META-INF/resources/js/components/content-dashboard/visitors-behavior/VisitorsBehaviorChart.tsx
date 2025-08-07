@@ -64,6 +64,7 @@ const VisitorsBehaviorChart: React.FC<IVisitorsBehaviorChartProps> = ({
 			Dot: PublishedVersionDot,
 			dataKey: VisitorsBehaviorDataKey.PublishedVersionData,
 			dotColor: publishedVersionsChartData?.color ?? 'none',
+			textColor: 'secondary',
 			title: publishedVersionsChartData.title,
 			total: publishedVersionsChartData.total,
 		},
@@ -96,7 +97,7 @@ const VisitorsBehaviorChart: React.FC<IVisitorsBehaviorChartProps> = ({
 				onDatakeyChange={(dataKey) =>
 					setActiveLegendItem(dataKey as VisitorsBehaviorDataKey)
 				}
-				rangeSelector={filters.rangeSelector}
+				rangeSelector={filters.rangeSelector.rangeKey}
 				tooltipTitle={Liferay.Language.get('visitors-behavior')}
 				xAxisDataKey={VisitorsBehaviorDataKey.Metric}
 			>
@@ -152,7 +153,7 @@ const VisitorsBehaviorChart: React.FC<IVisitorsBehaviorChartProps> = ({
 						formattedData.combinedData[0]?.[
 							VisitorsBehaviorDataKey.AxisX
 						] as number,
-						filters.rangeSelector
+						filters.rangeSelector.rangeKey
 					)
 				)}
 				data-testid="visitors-behavior-chart-data"

@@ -78,6 +78,8 @@ export type ListViewProps<T extends Record<string, any>> = {
 		| 'totalItems'
 	>;
 
+	onDataLoad?: (data: {items: T[]}) => void;
+
 	/**
 	 * The options for the pagination.
 	 *
@@ -86,6 +88,8 @@ export type ListViewProps<T extends Record<string, any>> = {
 	paginationOptions?: {
 		displayType: boolean;
 	};
+
+	refreshInterval?: number;
 
 	resource: string;
 
@@ -116,6 +120,7 @@ function getMatchedOption(rawValue: string, field?: RendererFields) {
 }
 
 const ListView = <T extends Record<string, any>>({
+	onDataLoad,
 	children,
 	defaultFilters,
 	emptyStateProps,
@@ -127,6 +132,7 @@ const ListView = <T extends Record<string, any>>({
 	resource,
 	tableProps,
 	transformData = (item) => item,
+	refreshInterval,
 }: ListViewProps<T>) => {
 	const [listViewContext, dispatch] = useContext(ListViewContext);
 
@@ -247,9 +253,19 @@ const ListView = <T extends Record<string, any>>({
 		isValidating,
 		loading,
 		mutate,
-	} = useFetch(resource, {
-		params: getURLSearchParams(),
-	});
+	} = useFetch(
+		resource,
+		{
+			params: getURLSearchParams(),
+		},
+		refreshInterval
+	);
+
+	useEffect(() => {
+		if (response?.items && onDataLoad) {
+			onDataLoad({items: response.items});
+		}
+	}, [onDataLoad, response?.items]);
 
 	const {
 		actions = {},
@@ -301,11 +317,13 @@ const ListView = <T extends Record<string, any>>({
 			)}
 
 			{!items.length && (
-				<EmptyState
-					description={error?.message}
-					type={error ? 'EMPTY_SEARCH' : 'EMPTY_STATE'}
-					{...emptyStateProps}
-				/>
+				<>
+					<EmptyState
+						description={error?.message}
+						type={error ? 'EMPTY_SEARCH' : 'EMPTY_STATE'}
+						{...emptyStateProps}
+					/>
+				</>
 			)}
 			{!!items.length && (
 				<>
@@ -318,15 +336,14 @@ const ListView = <T extends Record<string, any>>({
 					/>
 
 					{paginationOptions.displayType && Pagination}
-
-					{children &&
-						children(response!, {
-							dispatch,
-							listViewContext,
-							mutate,
-						})}
 				</>
 			)}
+			{children &&
+				children(response!, {
+					dispatch,
+					listViewContext,
+					mutate,
+				})}
 		</>
 	);
 };

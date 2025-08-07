@@ -5,9 +5,15 @@
 
 package com.liferay.headless.admin.site.internal.resource.v1_0.util;
 
+import com.liferay.client.extension.constants.ClientExtensionEntryConstants;
+import com.liferay.client.extension.service.ClientExtensionEntryRelLocalServiceUtil;
+import com.liferay.client.extension.type.CET;
+import com.liferay.client.extension.type.manager.CETManager;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.service.DLFileEntryServiceUtil;
+import com.liferay.headless.admin.site.dto.v1_0.ClientExtension;
 import com.liferay.headless.admin.site.dto.v1_0.ContentPageSpecification;
+import com.liferay.headless.admin.site.dto.v1_0.FavIcon;
 import com.liferay.headless.admin.site.dto.v1_0.ItemExternalReference;
 import com.liferay.headless.admin.site.dto.v1_0.PageExperience;
 import com.liferay.headless.admin.site.dto.v1_0.PageSpecification;
@@ -23,15 +29,19 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
+import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutServiceUtil;
 import com.liferay.portal.kernel.service.LayoutSetLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutSetPrototypeLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
+import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.vulcan.custom.field.CustomFieldsUtil;
@@ -52,13 +62,13 @@ import java.util.Objects;
 public class LayoutUtil {
 
 	public static Layout addContentLayout(
-			long groupId, PageSpecification[] pageSpecifications,
-			boolean privateLayout, Map<Locale, String> nameMap,
-			Map<Locale, String> titleMap, Map<Locale, String> descriptionMap,
-			Map<Locale, String> robotsMap, String type,
-			UnicodeProperties typeSettingsUnicodeProperties, boolean hidden,
-			boolean system, Map<Locale, String> friendlyURLMap, int status,
-			ServiceContext serviceContext)
+			CETManager cetManager, long groupId,
+			PageSpecification[] pageSpecifications, boolean privateLayout,
+			Map<Locale, String> nameMap, Map<Locale, String> titleMap,
+			Map<Locale, String> descriptionMap, Map<Locale, String> robotsMap,
+			String type, UnicodeProperties typeSettingsUnicodeProperties,
+			boolean hidden, boolean system, Map<Locale, String> friendlyURLMap,
+			int status, ServiceContext serviceContext)
 		throws Exception {
 
 		if (typeSettingsUnicodeProperties == null) {
@@ -230,16 +240,18 @@ public class LayoutUtil {
 		}
 
 		updateLayout(
-			draftContentPageSpecification, draftLayout, nameMap, titleMap,
-			descriptionMap, draftLayout.getRobotsMap(),
+			cetManager, draftContentPageSpecification, draftLayout, nameMap,
+			titleMap, descriptionMap, draftLayout.getRobotsMap(),
 			draftLayout.getFriendlyURLMap(), draftLayoutStatus, serviceContext);
 
 		return updateLayout(
-			publishedContentPageSpecification, layout, nameMap, titleMap,
-			descriptionMap, robotsMap, friendlyURLMap, status, serviceContext);
+			cetManager, publishedContentPageSpecification, layout, nameMap,
+			titleMap, descriptionMap, robotsMap, friendlyURLMap, status,
+			serviceContext);
 	}
 
 	public static Layout addDraftToLayout(
+			CETManager cetManager,
 			ContentPageSpecification contentPageSpecification, Layout layout,
 			ServiceContext serviceContext)
 		throws Exception {
@@ -267,10 +279,11 @@ public class LayoutUtil {
 		}
 
 		return updateLayout(
-			contentPageSpecification, draftLayout, layout.getNameMap(),
-			layout.getTitleMap(), layout.getDescriptionMap(),
-			draftLayout.getRobotsMap(), draftLayout.getFriendlyURLMap(),
-			WorkflowConstants.STATUS_DRAFT, serviceContext);
+			cetManager, contentPageSpecification, draftLayout,
+			layout.getNameMap(), layout.getTitleMap(),
+			layout.getDescriptionMap(), draftLayout.getRobotsMap(),
+			draftLayout.getFriendlyURLMap(), WorkflowConstants.STATUS_DRAFT,
+			serviceContext);
 	}
 
 	public static Layout addPortletLayout(
@@ -378,7 +391,7 @@ public class LayoutUtil {
 	}
 
 	public static Layout updateContentLayout(
-			Layout layout, Map<Locale, String> nameMap,
+			CETManager cetManager, Layout layout, Map<Locale, String> nameMap,
 			Map<Locale, String> titleMap, Map<Locale, String> descriptionMap,
 			Map<Locale, String> robotsMap, Map<Locale, String> friendlyURLMap,
 			PageSpecification[] pageSpecifications,
@@ -450,17 +463,18 @@ public class LayoutUtil {
 		}
 
 		updateLayout(
-			draftContentPageSpecification, draftLayout, nameMap, titleMap,
-			descriptionMap, robotsMap, draftLayout.getFriendlyURLMap(),
-			draftLayoutStatus, serviceContext);
+			cetManager, draftContentPageSpecification, draftLayout, nameMap,
+			titleMap, descriptionMap, robotsMap,
+			draftLayout.getFriendlyURLMap(), draftLayoutStatus, serviceContext);
 
 		return updateLayout(
-			publishedContentPageSpecification, layout, nameMap, titleMap,
-			descriptionMap, robotsMap, friendlyURLMap, status, serviceContext);
+			cetManager, publishedContentPageSpecification, layout, nameMap,
+			titleMap, descriptionMap, robotsMap, friendlyURLMap, status,
+			serviceContext);
 	}
 
 	public static Layout updateContentLayout(
-			Layout layout, Map<Locale, String> nameMap,
+			CETManager cetManager, Layout layout, Map<Locale, String> nameMap,
 			Map<Locale, String> titleMap, Map<Locale, String> descriptionMap,
 			Map<Locale, String> robotsMap, Map<Locale, String> friendlyURLMap,
 			PageSpecification[] pageSpecifications,
@@ -473,11 +487,12 @@ public class LayoutUtil {
 			typeSettingsUnicodeProperties.toString());
 
 		return updateContentLayout(
-			layout, nameMap, titleMap, descriptionMap, robotsMap,
+			cetManager, layout, nameMap, titleMap, descriptionMap, robotsMap,
 			friendlyURLMap, pageSpecifications, serviceContext);
 	}
 
 	public static Layout updateLayout(
+			CETManager cetManager,
 			ContentPageSpecification contentPageSpecification, Layout layout,
 			Map<Locale, String> nameMap, Map<Locale, String> titleMap,
 			Map<Locale, String> descriptionMap, Map<Locale, String> robotsMap,
@@ -486,7 +501,7 @@ public class LayoutUtil {
 		throws Exception {
 
 		updateLayout(
-			layout, nameMap, titleMap, descriptionMap, robotsMap,
+			cetManager, layout, nameMap, titleMap, descriptionMap, robotsMap,
 			friendlyURLMap, contentPageSpecification, serviceContext);
 
 		_updatePageExperiences(
@@ -499,7 +514,7 @@ public class LayoutUtil {
 	}
 
 	public static Layout updateLayout(
-			Layout layout, Map<Locale, String> nameMap,
+			CETManager cetManager, Layout layout, Map<Locale, String> nameMap,
 			Map<Locale, String> titleMap, Map<Locale, String> descriptionMap,
 			Map<Locale, String> robotsMap, Map<Locale, String> friendlyURLMap,
 			PageSpecification pageSpecification, ServiceContext serviceContext)
@@ -510,6 +525,8 @@ public class LayoutUtil {
 		if (pageSpecification != null) {
 			settings = pageSpecification.getSettings();
 		}
+
+		_updateClientExtensions(cetManager, layout, settings, serviceContext);
 
 		layout = _updateLookAndFeel(layout, settings);
 
@@ -525,7 +542,7 @@ public class LayoutUtil {
 	}
 
 	public static Layout updatePortletLayout(
-			Layout layout, Map<Locale, String> nameMap,
+			CETManager cetManager, Layout layout, Map<Locale, String> nameMap,
 			Map<Locale, String> friendlyURLMap,
 			UnicodeProperties typeSettingsUnicodeProperties,
 			ServiceContext serviceContext,
@@ -533,9 +550,9 @@ public class LayoutUtil {
 		throws Exception {
 
 		layout = updateLayout(
-			layout, nameMap, layout.getTitleMap(), layout.getDescriptionMap(),
-			layout.getRobotsMap(), friendlyURLMap, widgetPageSpecification,
-			serviceContext);
+			cetManager, layout, nameMap, layout.getTitleMap(),
+			layout.getDescriptionMap(), layout.getRobotsMap(), friendlyURLMap,
+			widgetPageSpecification, serviceContext);
 
 		if (typeSettingsUnicodeProperties == null) {
 			return layout;
@@ -555,24 +572,22 @@ public class LayoutUtil {
 			Settings settings, ServiceContext serviceContext)
 		throws Exception {
 
-		if ((settings == null) || (settings.getFavIcon() == null) ||
-			!(settings.getFavIcon() instanceof ItemExternalReference)) {
-
+		if ((settings == null) || (settings.getFavIcon() == null)) {
 			return 0;
 		}
 
-		ItemExternalReference itemExternalReference =
-			(ItemExternalReference)settings.getFavIcon();
+		FavIcon favIcon = settings.getFavIcon();
 
-		if (Validator.isNull(
-				itemExternalReference.getExternalReferenceCode())) {
+		if (!Objects.equals(
+				favIcon.getClassName(), FileEntry.class.getName()) ||
+			Validator.isNull(favIcon.getExternalReferenceCode())) {
 
 			return 0;
 		}
 
 		long groupId = serviceContext.getScopeGroupId();
 
-		Scope scope = itemExternalReference.getScope();
+		Scope scope = favIcon.getScope();
 
 		if (scope != null) {
 			groupId = GroupUtil.getGroupId(
@@ -582,7 +597,7 @@ public class LayoutUtil {
 
 		DLFileEntry dlFileEntry =
 			DLFileEntryServiceUtil.fetchFileEntryByExternalReferenceCode(
-				groupId, itemExternalReference.getExternalReferenceCode());
+				groupId, favIcon.getExternalReferenceCode());
 
 		if (dlFileEntry == null) {
 			throw new UnsupportedOperationException();
@@ -677,6 +692,122 @@ public class LayoutUtil {
 					Layout.class.getName(), serviceContext.getCompanyId(),
 					pageSpecification.getCustomFields(), null));
 		}
+	}
+
+	private static void _updateClientExtensionEntryRel(
+			CETManager cetManager, long classNameId,
+			ClientExtension clientExtension, Layout layout, String type,
+			ServiceContext serviceContext)
+		throws Exception {
+
+		ClientExtension[] clientExtensions = null;
+
+		if (clientExtension != null) {
+			clientExtensions = new ClientExtension[] {clientExtension};
+		}
+
+		_updateClientExtensionEntryRels(
+			cetManager, classNameId, clientExtensions, layout, type,
+			serviceContext);
+	}
+
+	private static void _updateClientExtensionEntryRels(
+			CETManager cetManager, long classNameId,
+			ClientExtension[] clientExtensions, Layout layout, String type,
+			ServiceContext serviceContext)
+		throws Exception {
+
+		ClientExtensionEntryRelLocalServiceUtil.deleteClientExtensionEntryRels(
+			classNameId, layout.getPlid(), type);
+
+		if (ArrayUtil.isEmpty(clientExtensions)) {
+			return;
+		}
+
+		for (ClientExtension clientExtension : clientExtensions) {
+			CET cet = cetManager.getCET(
+				layout.getCompanyId(),
+				clientExtension.getExternalReferenceCode());
+
+			if (cet == null) {
+				throw new UnsupportedOperationException();
+			}
+
+			ClientExtensionEntryRelLocalServiceUtil.addClientExtensionEntryRel(
+				serviceContext.getUserId(), layout.getGroupId(), classNameId,
+				layout.getPlid(), clientExtension.getExternalReferenceCode(),
+				type,
+				UnicodePropertiesBuilder.create(
+					clientExtension.getClientExtensionConfig(), true
+				).buildString(),
+				serviceContext);
+		}
+	}
+
+	private static void _updateClientExtensions(
+			CETManager cetManager, Layout layout, Settings settings,
+			ServiceContext serviceContext)
+		throws Exception {
+
+		if (settings == null) {
+			ClientExtensionEntryRelLocalServiceUtil.
+				deleteClientExtensionEntryRels(
+					PortalUtil.getClassNameId(Layout.class), layout.getPlid());
+
+			return;
+		}
+
+		if (layout.isTypeUtility()) {
+			if (Validator.isNotNull(settings.getFavIcon()) ||
+				ArrayUtil.isNotEmpty(settings.getGlobalCSSClientExtensions()) ||
+				ArrayUtil.isNotEmpty(settings.getGlobalJSClientExtensions()) ||
+				Validator.isNotNull(settings.getThemeCSSClientExtension()) ||
+				Validator.isNotNull(
+					settings.getThemeSpritemapClientExtension())) {
+
+				throw new UnsupportedOperationException();
+			}
+
+			return;
+		}
+
+		long classNameId = PortalUtil.getClassNameId(Layout.class);
+
+		ClientExtension clientExtension = null;
+
+		FavIcon favIcon = settings.getFavIcon();
+
+		if ((favIcon != null) &&
+			Objects.equals(
+				favIcon.getClassName(), ClientExtension.class.getName())) {
+
+			clientExtension = new ClientExtension() {
+				{
+					setClientExtensionConfig(favIcon::getClientExtensionConfig);
+					setExternalReferenceCode(favIcon::getExternalReferenceCode);
+				}
+			};
+		}
+
+		_updateClientExtensionEntryRels(
+			cetManager, classNameId, settings.getGlobalCSSClientExtensions(),
+			layout, ClientExtensionEntryConstants.TYPE_GLOBAL_CSS,
+			serviceContext);
+		_updateClientExtensionEntryRels(
+			cetManager, classNameId, settings.getGlobalJSClientExtensions(),
+			layout, ClientExtensionEntryConstants.TYPE_GLOBAL_JS,
+			serviceContext);
+		_updateClientExtensionEntryRel(
+			cetManager, classNameId, settings.getThemeCSSClientExtension(),
+			layout, ClientExtensionEntryConstants.TYPE_THEME_CSS,
+			serviceContext);
+		_updateClientExtensionEntryRel(
+			cetManager, classNameId, clientExtension, layout,
+			ClientExtensionEntryConstants.TYPE_THEME_FAVICON, serviceContext);
+		_updateClientExtensionEntryRel(
+			cetManager, classNameId,
+			settings.getThemeSpritemapClientExtension(), layout,
+			ClientExtensionEntryConstants.TYPE_THEME_SPRITEMAP, serviceContext);
 	}
 
 	private static Layout _updateLayout(

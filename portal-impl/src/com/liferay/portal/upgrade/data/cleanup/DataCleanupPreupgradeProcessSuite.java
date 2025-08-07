@@ -77,10 +77,15 @@ public class DataCleanupPreupgradeProcessSuite {
 	private final List<DataCleanupPreupgradeProcess>
 		_dataCleanupPreupgradeProcesses = ListUtil.fromArray(
 
-			// Company, then group, and then the rest for optimal performance
-			// since cleaning companies will remove its groups and related data
+			// Company, then user, then group, and then the rest for optimal
+			// performance since cleaning companies will remove its users,
+			// groups, and related data
 
 			new CompanyDataCleanupPreupgradeProcess(),
+
+			//
+
+			new UserDataCleanupPreupgradeProcess(),
 
 			//
 
@@ -88,6 +93,7 @@ public class DataCleanupPreupgradeProcessSuite {
 
 			//
 
+			new ConfigurationDataCleanupPreupgradeProcess(),
 			new DDMStructureDataCleanupPreupgradeProcess(),
 			new DLFileEntryDataCleanupPreupgradeProcess(),
 			new QuartzJobDetailsDataCleanupPreupgradeProcess());
