@@ -321,7 +321,10 @@ public class MarketplaceRestController extends BaseRestController {
 				"[%APP_LOGO%]",
 				new URL(
 					"http://" + lxcDXPMainDomain + product.getThumbnail()
-				).toString()
+				).toString(
+				).replaceAll(
+					"(?<=accounts/)-?\\d+(?=/images)", "-1"
+				)
 			).put(
 				"[%APP_NAME%]",
 				product.getName(
@@ -341,9 +344,9 @@ public class MarketplaceRestController extends BaseRestController {
 			).put(
 				"[%CATALOG%]", catalog.getName()
 			).put(
-				"[%CONTACT_PERSON%]", "[%CONTACT_PERSON%]"
-			).put(
 				"[%EMAIL_ADDRESS%]", order.getCreatorEmailAddress()
+			).put(
+				"[%LICENSE_TYPE%]", productSpecificationsMap.get("license-type")
 			).put(
 				"[%NET_PRICE_FORMATTED%]", order.getSubtotalFormatted()
 			).put(
@@ -360,11 +363,12 @@ public class MarketplaceRestController extends BaseRestController {
 				order.getId(
 				).toString()
 			).put(
-				"[%ORDER_PAYMENT_METHOD%]", order.getPaymentMethod()
+				"[%ORDER_PAYMENT_METHOD%]",
+				MarketplaceConstants.getOrderPaymentMethodLabel(
+					order.getPaymentMethod())
 			).put(
 				"[%ORDER_STATUS%]",
-				order.getOrderStatusInfo(
-				).getLabel()
+				MarketplaceConstants.getOrderStatusLabel(order.getOrderStatus())
 			).put(
 				"[%PAYMENT_TERMS%]", order.getPaymentTermDescription()
 			).put(
