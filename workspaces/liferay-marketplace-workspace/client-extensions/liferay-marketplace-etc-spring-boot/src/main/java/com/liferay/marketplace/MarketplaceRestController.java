@@ -153,29 +153,33 @@ public class MarketplaceRestController extends BaseRestController {
 		Order order = _marketplaceService.getOrder(
 			commerceOrderJSONObject.getLong("id"));
 
+		if ((Objects.equals(
+				commerceOrderJSONObject.getString("paymentMethod"),
+				MarketplaceConstants.ORDER_PAYMENT_METHOD_MONEY_ORDER) &&
+			 (paymentStatus ==
+				 MarketplaceConstants.ORDER_PAYMENT_STATUS_PENDING)) ||
+			(Objects.equals(
+				commerceOrderJSONObject.getString("paymentMethod"),
+				MarketplaceConstants.ORDER_PAYMENT_METHOD_PAYPAL) &&
+			 (paymentStatus == MarketplaceConstants.ORDER_STATUS_COMPLETED))) {
+
+			if (_log.isInfoEnabled()) {
+				_log.info("Sending Invoice Notification EMAIL...");
+			}
+
+			_sendOrderPurchasedNotification(order);
+		}
+
 		if ((paymentStatus !=
 				MarketplaceConstants.ORDER_PAYMENT_STATUS_COMPLETED) &&
 			(paymentStatus !=
 				MarketplaceConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED)) {
 
-			if (Objects.equals(
-					commerceOrderJSONObject.getString("paymentMethod"),
-					MarketplaceConstants.ORDER_PAYMENT_METHOD_MONEY_ORDER) &&
-				(paymentStatus ==
-					MarketplaceConstants.ORDER_PAYMENT_STATUS_PENDING)) {
-
-				if (_log.isInfoEnabled()) {
-					_log.info("Sending Invoice Notification EMAIL...");
-				}
-
-				_sendOrderPurchasedNotification(order);
-
-				if (_log.isInfoEnabled()) {
-					_log.info(
-						"Skipping POST product purchase for order " +
-							commerceOrderJSONObject.getLong("id") +
-								" because payment status is not completed");
-				}
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					"Skipping POST product purchase for order " +
+						commerceOrderJSONObject.getLong("id") +
+							" because payment status is not completed");
 			}
 
 			return;
