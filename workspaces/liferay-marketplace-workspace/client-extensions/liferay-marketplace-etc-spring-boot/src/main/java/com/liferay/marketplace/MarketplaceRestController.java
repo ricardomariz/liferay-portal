@@ -8,8 +8,11 @@ package com.liferay.marketplace;
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.resource.v1_0.AccountResource;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Catalog;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.SkuResource;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.BillingAddress;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.headless.commerce.admin.order.client.pagination.Page;
@@ -147,6 +150,9 @@ public class MarketplaceRestController extends BaseRestController {
 
 		int paymentStatus = commerceOrderJSONObject.getInt("paymentStatus");
 
+		Order order = _marketplaceService.getOrder(
+			commerceOrderJSONObject.getLong("id"));
+
 		if ((paymentStatus !=
 				MarketplaceConstants.ORDER_PAYMENT_STATUS_COMPLETED) &&
 			(paymentStatus !=
@@ -159,30 +165,21 @@ public class MarketplaceRestController extends BaseRestController {
 					MarketplaceConstants.ORDER_PAYMENT_STATUS_PENDING)) {
 
 				if (_log.isInfoEnabled()) {
-					_log.info("Sending INVOICE EMAIL...");
+					_log.info("Sending Invoice Notification EMAIL...");
 				}
 
-				_marketplaceService.postNotificationQueueEntry(
-						"finance@liferay.com",
-						"MARKETPLACE-INVOICE-ORDER-SUBMIT-TEMPLATE",
-						new HashMapBuilder<String, Object>().put(
-								"[%ORDER_ID%]",
-								commerceOrderJSONObject.getString("id")
-						).build());
-			}
+				_sendOrderPurchasedNotification(order);
 
-			if (_log.isInfoEnabled()) {
-				_log.info(
-					"Skipping POST product purchase for order " +
-						commerceOrderJSONObject.getLong("id") +
-							" because payment status is not completed");
+				if (_log.isInfoEnabled()) {
+					_log.info(
+						"Skipping POST product purchase for order " +
+							commerceOrderJSONObject.getLong("id") +
+								" because payment status is not completed");
+				}
 			}
 
 			return;
 		}
-
-		Order order = _marketplaceService.getOrder(
-			commerceOrderJSONObject.getLong("id"));
 
 		_marketplaceService.updateOrder(
 			null, order.getId(), MarketplaceConstants.ORDER_STATUS_PROCESSING);
@@ -279,6 +276,101 @@ public class MarketplaceRestController extends BaseRestController {
 				"[%CPDEFINITION_ID%]",
 				String.valueOf(
 					modelCPDefinitionJSONObject.getLong("CPDefinitionId"))
+			).build());
+	}
+
+	private void _sendOrderPurchasedNotification(Order order) throws Exception {
+		OrderItem orderItem = order.getOrderItems()[0];
+
+		if (orderItem == null) {
+			return;
+		}
+
+		Sku sku = _marketplaceService.getSkuResource(
+		).getSku(
+			orderItem.getSkuId()
+		);
+
+		BillingAddress billingAddress = _marketplaceService.getBillingAddress(
+			order.getId());
+
+		Product product = _marketplaceService.getProduct(sku.getProductId());
+
+		Catalog catalog = _marketplaceService.getCatalog(
+			product.getCatalogId());
+
+		Map<String, String> productSpecificationsMap =
+			_marketplaceService.getProductSpecificationsMap(
+				product.getProductId());
+
+		_marketplaceService.postNotificationQueueEntry(
+			"finance@liferay.com", "MARKETPLACE-INVOICE-ORDER-SUBMIT-TEMPLATE",
+			new HashMapBuilder<String, Object>().put(
+				"[%ACCOUNT_ID%]",
+				order.getAccountId(
+				).toString()
+			).put(
+				"[%ACCOUNT_NAME%]",
+				order.getAccount(
+				).getName()
+			).put(
+				"[%APP_LOGO%]",
+				new URL(
+					"http://" + lxcDXPMainDomain + product.getThumbnail()
+				).toString()
+			).put(
+				"[%APP_NAME%]",
+				product.getName(
+				).get(
+					"en_US"
+				)
+			).put(
+				"[%APP_TYPE%]", productSpecificationsMap.get("type")
+			).put(
+				"[%BILLING_ADDRESS_FORMATTED%]",
+				StringBundler.concat(
+					billingAddress.getStreet1(), billingAddress.getCity(),
+					billingAddress.getRegionISOCode(),
+					billingAddress.getCountryISOCode())
+			).put(
+				"[%BILLING_ADDRESS_PERSON_NAME%]", billingAddress.getName()
+			).put(
+				"[%CATALOG%]", catalog.getName()
+			).put(
+				"[%CONTACT_PERSON%]", "[%CONTACT_PERSON%]"
+			).put(
+				"[%EMAIL_ADDRESS%]", order.getCreatorEmailAddress()
+			).put(
+				"[%NET_PRICE_FORMATTED%]", order.getSubtotalFormatted()
+			).put(
+				"[%ORDER_DATE%]",
+				ZonedDateTime.ofInstant(
+					order.getCreateDate(
+					).toInstant(),
+					ZoneOffset.UTC
+				).format(
+					DateTimeFormatter.ofPattern("MMMM d, yyyy")
+				)
+			).put(
+				"[%ORDER_ID%]",
+				order.getId(
+				).toString()
+			).put(
+				"[%ORDER_PAYMENT_METHOD%]", order.getPaymentMethod()
+			).put(
+				"[%ORDER_STATUS%]",
+				order.getOrderStatusInfo(
+				).getLabel()
+			).put(
+				"[%PAYMENT_TERMS%]", order.getPaymentTermDescription()
+			).put(
+				"[%TOTAL_FORMATTED%]", order.getTotalFormatted()
+			).put(
+				"[%VAT_FORMATTED%]", order.getTaxAmountFormatted()
+			).put(
+				"[%VAT_NUMBER%]",
+				order.getAccount(
+				).getTaxId()
 			).build());
 	}
 
