@@ -12,6 +12,9 @@ public class MarketplaceConstants {
 
 	public static final String ORDER_PAYMENT_METHOD_MONEY_ORDER = "money-order";
 
+	public static final String ORDER_PAYMENT_METHOD_PAYPAL =
+		"paypal-integration";
+
 	public static final int ORDER_PAYMENT_STATUS_COMPLETED = 0;
 
 	public static final int ORDER_PAYMENT_STATUS_NOT_REQUIRED = 23;
