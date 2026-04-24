@@ -1037,6 +1037,8 @@ public class MarketplaceCommandLineRunner
 					_patchReport(
 						new JSONObject(
 						).put(
+							"name", erc
+						).put(
 							"value", valuePayload
 						).toString(),
 						erc);
@@ -1046,6 +1048,8 @@ public class MarketplaceCommandLineRunner
 						new JSONObject(
 						).put(
 							"externalReferenceCode", erc
+						).put(
+							"name", erc
 						).put(
 							"value", valuePayload
 						).toString());
