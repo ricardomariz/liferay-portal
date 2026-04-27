@@ -189,8 +189,12 @@ const AppOutlet = () => (
 					visible:
 						orderCompleted &&
 						isPaidApp &&
-						placedOrder.orderTypeExternalReferenceCode ===
+						[
+							OrderTypes.COMPOSITE_APP,
 							OrderTypes.DXP_APP,
+						].includes(
+							placedOrder.orderTypeExternalReferenceCode as OrderTypes
+						),
 				},
 				{
 					name: i18n.translate('support'),
