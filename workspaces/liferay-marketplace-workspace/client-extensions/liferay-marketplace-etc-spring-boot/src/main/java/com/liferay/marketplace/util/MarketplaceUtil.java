@@ -347,24 +347,32 @@ public class MarketplaceUtil {
 	private static void _addPropertiesToZipFile(
 			Map<String, Properties> propertiesMap,
 			ZipOutputStream zipOutputStream)
-		throws IOException {
+			throws IOException {
 
 		for (Map.Entry<String, Properties> entry : propertiesMap.entrySet()) {
+			Properties properties = entry.getValue();
+
+			if (properties == null) {
+				continue;
+			}
+
 			String key = entry.getKey();
 
 			int lastPathIndex = StringUtil.lastIndexOfAny(
-				key, new char[] {'/'});
+					key, new char[] {'/'});
 
 			if (lastPathIndex != -1) {
 				zipOutputStream.putNextEntry(
-					new ZipEntry(key.substring(0, lastPathIndex + 1)));
+						new ZipEntry(key.substring(0, lastPathIndex + 1)));
 				zipOutputStream.closeEntry();
 			}
 
 			zipOutputStream.putNextEntry(new ZipEntry(key));
 
 			ByteArrayOutputStream byteArrayOutputStream =
-				new ByteArrayOutputStream();
+					new ByteArrayOutputStream();
+
+			properties.store(byteArrayOutputStream, null);
 
 			zipOutputStream.write(byteArrayOutputStream.toByteArray());
 
