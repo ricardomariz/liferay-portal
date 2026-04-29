@@ -843,13 +843,16 @@ public class MarketplaceCommandLineRunner
 				}
 			});
 
+		JSONArray productPurchasesJSONArray = new JSONArray();
+
+		for (JSONObject productJSONObject : productPurchases.values()) {
+			productPurchasesJSONArray.put(productJSONObject);
+		}
+
 		_patchReport(
 			new JSONObject(
 			).put(
-				"value",
-				new JSONObject(
-					productPurchases
-				).toString()
+				"value", productPurchasesJSONArray.toString()
 			).toString(),
 			"PRODUCT-PURCHASES-COUNT");
 
