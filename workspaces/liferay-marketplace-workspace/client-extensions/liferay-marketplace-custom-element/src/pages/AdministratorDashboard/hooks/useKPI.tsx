@@ -139,13 +139,9 @@ const queries = [
 			},
 		},
 		{
-			koroneikeProjects: SearchBuilder.contains(
+			koroneikiProjects: SearchBuilder.contains(
 				'externalReferenceCode',
-				'KORONEIKE-PROJECT-'
-			),
-			lastYearProjectsCount: SearchBuilder.eq(
-				'name',
-				'lastYearProjectsUsingMarketplaceCount'
+				'KORONEIKI-PROJECT-'
 			),
 		}
 	),
@@ -169,7 +165,10 @@ const useKPI = () => {
 	});
 
 	const {
-		properties: {kpi: anualTargetKPIs},
+		properties: {
+			kpi: anualTargetKPIs,
+			lastYearProjectsUsingMarketplaceAppsCount,
+		},
 	} = useMarketplaceContext();
 
 	const {
@@ -206,17 +205,17 @@ const useKPI = () => {
 
 		const lastYearLabel = `${lastYear}`;
 
-		const koroneikeReports =
-			projectsKPI?.data?.metrics?.koroneikeProjects?.items ?? [];
+		const koroneikiReports =
+			projectsKPI?.data?.metrics?.koroneikiProjects?.items ?? [];
 
 		const projectsByKorKey: Record<
 			string,
 			{accountName: string; orders: unknown[]}
 		> = {};
 
-		for (const report of koroneikeReports) {
+		for (const report of koroneikiReports) {
 			const match = report.externalReferenceCode?.match(
-				/^KORONEIKE-PROJECT-(.+)$/
+				/^KORONEIKI-PROJECT-(.+)$/
 			);
 
 			if (!match) {
@@ -232,14 +231,6 @@ const useKPI = () => {
 		}
 
 		const projectsUsingMarkeplaceApps = Object.entries(projectsByKorKey);
-
-		const lastYearCountReport =
-			projectsKPI?.data?.metrics?.lastYearProjectsCount?.items?.[0];
-
-		const lastYearProjectsCount = safeJSONParse<{
-			count: number;
-			year: number;
-		}>(lastYearCountReport?.value ?? null, {count: 0, year: 0});
 
 		const catalogs = Object.groupBy(
 			appsAndConnectorSupportingQRelease.items.map((product) => ({
@@ -267,10 +258,9 @@ const useKPI = () => {
 						projectsUsingMarkeplaceApps.length
 					),
 					colors: ['#9CE269', '#D4F3BE'],
-					lastYearCount:
-						lastYearProjectsCount.year === lastYear
-							? lastYearProjectsCount.count
-							: undefined,
+					lastYearCount: lastYearProjectsUsingMarketplaceAppsCount
+						? Number(lastYearProjectsUsingMarketplaceAppsCount)
+						: undefined,
 					lastYearLabel,
 					onClick: projectsUsingMarkeplaceApps.length
 						? () =>
