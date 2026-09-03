@@ -8,6 +8,7 @@ import type {CustomField} from './product';
 export type Account = {
 	customFields?: CustomField[];
 	dateCreated: string;
+	defaultBillingAddressId?: number;
 	description: string;
 	emailAddress: string;
 	externalReferenceCode: string;

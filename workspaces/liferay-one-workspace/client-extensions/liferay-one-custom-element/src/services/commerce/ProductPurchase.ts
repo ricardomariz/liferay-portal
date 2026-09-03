@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import FetcherError from '~/services/fetcher/FetcherError';
 import CommerceUI from '~/services/headless/CommerceUI';
 import HeadlessCommerceDeliveryCart from '~/services/headless/HeadlessCommerceDeliveryCart';
 import {Analytics} from '~/services/liferay/Analytics';
@@ -86,6 +87,14 @@ export default class ProductPurchase {
 				this.orderTypeExternalReferenceCode;
 		}
 
+		if (
+			!body.billingAddress &&
+			!body.billingAddressId &&
+			this.account.defaultBillingAddressId
+		) {
+			body.billingAddressId = this.account.defaultBillingAddressId;
+		}
+
 		const newCart = await (cart?.id
 			? HeadlessCommerceDeliveryCart.updateCart(cart.id, body)
 			: HeadlessCommerceDeliveryCart.createCart(
@@ -93,10 +102,14 @@ export default class ProductPurchase {
 					body
 				));
 
-		await Promise.all([
+		const [, checkedOutCart] = await Promise.all([
 			CommerceUI.selectAccount(this.account.id),
 			HeadlessCommerceDeliveryCart.checkoutCart(newCart.id),
 		]);
+
+		if (checkedOutCart.errorMessages?.length) {
+			throw new FetcherError(checkedOutCart.errorMessages.join(', '));
+		}
 
 		this.analyticsTrack();
 
